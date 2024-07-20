@@ -10,4 +10,4 @@ class COLOR(str, Enum):
 class SIZE(int, Enum):
     WIDTH = 1080
     HEIGHT = 720
-    IMAGE = 45
+    IMAGE = 60
