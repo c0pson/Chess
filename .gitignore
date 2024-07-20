@@ -1,0 +1,3 @@
+.vscode/
+mypy.ini
+src/__pycache__/
