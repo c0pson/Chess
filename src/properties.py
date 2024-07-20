@@ -8,6 +8,6 @@ class COLOR(str, Enum):
     TRANSPARENT = 'transparent'
 
 class SIZE(int, Enum):
-    WIDTH = 1080
-    HEIGHT = 720
+    WIDTH = 620
+    HEIGHT = 520
     IMAGE = 60

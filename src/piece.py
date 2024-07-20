@@ -81,7 +81,6 @@ class Knight(Piece):
                     ( 2,-1), ( 2, 1)   ] 
         for i, move in enumerate(moves):
             if i in exceptions:
-                print(i, move)
                 continue
             new_position = (self.position[0] + move[0], self.position[1] + move[1])
             if 0 <= new_position[0] <= 7 and 0 <= new_position[1] <= 7:
@@ -143,3 +142,13 @@ class King(Piece):
         self.board = board
         self.load_image()
         self.first_move = True
+
+    def check_possible_moves(self) -> list[tuple[int, int]]:
+        possible_moves: list[tuple[int, int]] = []
+        for i in range(max(0, self.position[0]-1), min(8, self.position[0]+2)):
+            for j in range(max(0, self.position[1]-1), min(8, self.position[1]+2)):
+                if not self.board.board[i][j].figure:
+                    possible_moves.append((i, j))
+                if self.board.board[i][j].figure and self.board.board[i][j].figure.color != self.color:
+                    possible_moves.append((i, j))
+        return possible_moves
