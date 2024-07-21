@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from PIL import Image
+import pywinstyles
 import sys
 import os
 
@@ -26,14 +27,20 @@ class Piece():
     def check_turn(self, current_color) -> bool:
         return False if current_color == self.color else True
 
-    def load_image(self) -> None:
-        piece_name = (self.__class__.__name__).lower()
+    def load_image(self, piece = None) -> None | ctk.CTkImage:
+        if not piece:
+            piece_name = (self.__class__.__name__).lower()
+        else:
+            piece_name = piece
         path: str = resource_path(f'assets\\{piece_name}_{self.color}.png')
         try: 
             loaded_image = Image.open(path).convert('RGBA')
+            if piece:
+                return ctk.CTkImage(light_image=loaded_image, dark_image=loaded_image, size=(SIZE.IMAGE, SIZE.IMAGE))
             self.image = ctk.CTkImage(light_image=loaded_image, dark_image=loaded_image, size=(SIZE.IMAGE, SIZE.IMAGE))
         except (FileExistsError, FileNotFoundError) as e:
             print(f'Couldn`t load image for due to error: {e}')
+        return None
 
     def __str__(self) -> str:
         return f'Piece: {self.__class__.__name__} Color: {'white' if self.color == 'w' else 'black'}'
@@ -68,8 +75,31 @@ class Pawn(Piece):
                     possible_moves.append(capture_position)
         return possible_moves
 
-    def upgrade(self):
-        pass
+    def choose_figure(self, event, figure, choose_piece_menu, choose_piece_menu_1):
+        self.board.board[self.position[0]][self.position[1]].figure = figure(self.color, self.board, self.position)
+        self.board.board[self.position[0]][self.position[1]].update()
+        choose_piece_menu.destroy()
+        choose_piece_menu_1.destroy()
+
+    def create_button(self, choose_piece_menu, figure, choose_piece_menu_1):
+        piece_image = self.load_image(str(figure.__name__))
+        button_figure = ctk.CTkLabel(choose_piece_menu, text='', image=piece_image,
+                                    corner_radius=0)
+        button_figure.pack(side=ctk.LEFT, padx=10, pady=10)
+        button_figure.bind('<Button-1>', lambda e: self.choose_figure(e, figure, choose_piece_menu, choose_piece_menu_1))
+
+    def promote(self):
+        if self.position[0] in {0, 7}:
+            choose_piece_menu_1 = ctk.CTkFrame(self.board.master, corner_radius=0,
+                                            fg_color=COLOR.BACKGROUND)
+            choose_piece_menu_1.place(relx=0, rely=0, relwidth=1, relheight=1)
+            pywinstyles.set_opacity(choose_piece_menu_1, value=0.01, color="#000001")
+            choose_piece_menu = ctk.CTkFrame(self.board.master, fg_color=COLOR.BACKGROUND)
+            choose_piece_menu.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
+            pywinstyles.set_opacity(choose_piece_menu, color="#000001")
+            possible_figures = [Knight, Bishop, Rook, Queen]
+            for i, figure in enumerate(possible_figures):
+                self.create_button(choose_piece_menu, figure, choose_piece_menu_1)
 
 class Knight(Piece):
     def __init__(self, color: str, board, position: tuple[int, int]) -> None:
