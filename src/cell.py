@@ -33,7 +33,7 @@ class Board(ctk.CTkFrame):
         self.previous_click: tuple[None, None] | tuple[int, int] = (None, None)
         self.highlighted: list[Cell] = []
         self.clicked_figure: piece.Piece | None = None
-        self.clicked_coords: tuple[int, int] | None = None
+        self.previous_coords: tuple[int, int] | None = None
         self.current_turn = 'w'
 
     @staticmethod
@@ -84,39 +84,77 @@ class Board(ctk.CTkFrame):
             cell.configure(fg_color=color)
         self.highlighted = []
 
+    def display_check_message(self):
+        pass
+
     def handle_clicks(self, figure: piece.Piece, position: tuple[int, int]) -> None:
-        possible_moves: list[tuple[int, int]] | None = figure.check_possible_moves(self.current_turn)
+        possible_moves = figure.check_possible_moves(self.current_turn)
         if not possible_moves and self.board[position[0]][position[1]].figure:
             return
         self.clicked_figure = figure if figure else None
-        self.clicked_coords = position
-        if self.board[position[0]][position[1]] in self.highlighted:
-            pass
+        self.previous_coords = position
         if self.highlighted:
             self.remove_highlights()
         if self.board and possible_moves:
+            valid_moves = []
             for coords in possible_moves:
+                if not self.check_check(position, coords):
+                    self.display_check_message()
+                    valid_moves.append(coords)
+            for coords in valid_moves:
                 color = self.board[coords[0]][coords[1]].cget('fg_color')
-                if color == COLOR.TILE_1:
-                    new_color = COLOR.HIGH_TILE_1
-                else:
-                    new_color = COLOR.HIGH_TILE_2
+                new_color = COLOR.HIGH_TILE_1 if color == COLOR.TILE_1 else COLOR.HIGH_TILE_2
                 self.board[coords[0]][coords[1]].configure(fg_color=new_color)
                 self.highlighted.append(self.board[coords[0]][coords[1]])
 
+    def check_check(self, move_from: tuple[int, int], move_to: tuple[int, int]) -> bool:
+        original_from_figure = self.board[move_from[0]][move_from[1]].figure
+        original_to_figure = self.board[move_to[0]][move_to[1]].figure
+        self.board[move_to[0]][move_to[1]].figure = original_from_figure
+        self.board[move_from[0]][move_from[1]].figure = None
+        king_position = None
+        if isinstance(original_from_figure, piece.King):
+            king_position = move_to
+        else:
+            for row in self.board:
+                for cell in row:
+                    if isinstance(cell.figure, piece.King) and cell.figure.color == self.current_turn:
+                        king_position = cell.figure.position
+                        break
+                if king_position:
+                    break
+        is_in_check = False
+        for row in self.board:
+            for cell in row:
+                if cell.figure and cell.figure.color != self.current_turn:
+                    possible_moves = cell.figure.check_possible_moves(cell.figure.color)
+                    if king_position in possible_moves:
+                        is_in_check = True
+                        break
+            if is_in_check:
+                break
+        self.board[move_from[0]][move_from[1]].figure = original_from_figure
+        self.board[move_to[0]][move_to[1]].figure = original_to_figure
+        return is_in_check
+
     def handle_move(self, position: tuple[int, int]) -> None:
-        if self.clicked_figure and self.clicked_coords:
-            if  self.board[position[0]][position[1]] in self.highlighted and (self.clicked_coords != position):
-                self.board[position[0]][position[1]].figure = self.clicked_figure
-                self.board[position[0]][position[1]].figure.position = position # type: ignore
-                self.board[position[0]][position[1]].update()
-                self.board[self.clicked_coords[0]][self.clicked_coords[1]].figure = None
-                self.board[self.clicked_coords[0]][self.clicked_coords[1]].update()
-                if isinstance(self.board[position[0]][position[1]].figure, piece.Pawn):
-                    self.board[position[0]][position[1]].figure.promote() # type: ignore
-                if self.board[position[0]][position[1]].figure.first_move: # type: ignore
-                    self.board[position[0]][position[1]].figure.first_move = False # type: ignore
-                self.current_turn = 'b' if self.current_turn == 'w' else 'w'
+        if self.clicked_figure and self.previous_coords:
+            row, col = position
+            cell = self.board[row][col]
+            if cell in self.highlighted and self.previous_coords != position:
+                if not self.check_check(self.previous_coords, position):
+                    cell.figure = self.clicked_figure
+                    cell.figure.position = position
+                    cell.update()
+                    self.board[self.previous_coords[0]][self.previous_coords[1]].figure = None
+                    self.board[self.previous_coords[0]][self.previous_coords[1]].update()
+                    if isinstance(cell.figure, piece.Pawn):
+                        cell.figure.promote()
+                    if cell.figure.first_move:
+                        cell.figure.first_move = False
+                    self.current_turn = 'b' if self.current_turn == 'w' else 'w'
+                else:
+                    print("Move not allowed as it puts the king in check.")
             self.clicked_figure = None
-            self.clicked_coords = None
+            self.previous_coords = None
         self.remove_highlights()
