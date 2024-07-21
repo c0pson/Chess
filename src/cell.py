@@ -153,8 +153,6 @@ class Board(ctk.CTkFrame):
                     if cell.figure.first_move:
                         cell.figure.first_move = False
                     self.current_turn = 'b' if self.current_turn == 'w' else 'w'
-                else:
-                    print("Move not allowed as it puts the king in check.")
             self.clicked_figure = None
             self.previous_coords = None
         self.remove_highlights()
