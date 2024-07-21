@@ -36,7 +36,8 @@ class Board(ctk.CTkFrame):
         self.clicked_coords: tuple[int, int] | None = None
         self.current_turn = 'w'
 
-    def determine_tile_color(self, pos: tuple[int, int]) -> str:
+    @staticmethod
+    def determine_tile_color(pos: tuple[int, int]) -> str:
         if (pos[0]%2 and pos[1]%2) or (not pos[0]%2 and not pos[1]%2):
             return COLOR.TILE_1
         else:
@@ -95,7 +96,12 @@ class Board(ctk.CTkFrame):
             self.remove_highlights()
         if self.board and possible_moves:
             for coords in possible_moves:
-                self.board[coords[0]][coords[1]].configure(fg_color=COLOR.TEXT)
+                color = self.board[coords[0]][coords[1]].cget('fg_color')
+                if color == COLOR.TILE_1:
+                    new_color = COLOR.HIGH_TILE_1
+                else:
+                    new_color = COLOR.HIGH_TILE_2
+                self.board[coords[0]][coords[1]].configure(fg_color=new_color)
                 self.highlighted.append(self.board[coords[0]][coords[1]])
 
     def handle_move(self, position: tuple[int, int]) -> None:
@@ -106,6 +112,8 @@ class Board(ctk.CTkFrame):
                 self.board[position[0]][position[1]].update()
                 self.board[self.clicked_coords[0]][self.clicked_coords[1]].figure = None
                 self.board[self.clicked_coords[0]][self.clicked_coords[1]].update()
+                if isinstance(self.board[position[0]][position[1]].figure, piece.Pawn):
+                    self.board[position[0]][position[1]].figure.promote() # type: ignore
                 if self.board[position[0]][position[1]].figure.first_move: # type: ignore
                     self.board[position[0]][position[1]].figure.first_move = False # type: ignore
                 self.current_turn = 'b' if self.current_turn == 'w' else 'w'
