@@ -84,7 +84,7 @@ class Board(ctk.CTkFrame):
         self.highlighted = []
 
     def handle_clicks(self, figure: piece.Piece, position: tuple[int, int]) -> None:
-        possible_moves: list[tuple[int, int]] | None = figure.check_possible_moves()
+        possible_moves: list[tuple[int, int]] | None = figure.check_possible_moves(self.current_turn)
         if not possible_moves and self.board[position[0]][position[1]].figure:
             return
         self.clicked_figure = figure if figure else None
@@ -108,6 +108,7 @@ class Board(ctk.CTkFrame):
                 self.board[self.clicked_coords[0]][self.clicked_coords[1]].update()
                 if self.board[position[0]][position[1]].figure.first_move: # type: ignore
                     self.board[position[0]][position[1]].figure.first_move = False # type: ignore
+                self.current_turn = 'b' if self.current_turn == 'w' else 'w'
             self.clicked_figure = None
             self.clicked_coords = None
         self.remove_highlights()
