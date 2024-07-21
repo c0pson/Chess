@@ -5,7 +5,7 @@ class COLOR(str, Enum):
     TILE_1 = '#708871'
     HIGH_TILE_1 = '#94A695'
     TILE_2 = '#BEC6A0'
-    HIGH_TILE_2 = '#CFD5B8'
+    HIGH_TILE_2 = '#CFD7C9'
     TEXT = '#FEF3E2'
     TRANSPARENT = 'transparent'
 

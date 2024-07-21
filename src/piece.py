@@ -21,10 +21,10 @@ class Piece():
         self.first_move = False
         self.image: ctk.CTkImage | None = None
 
-    def check_possible_moves(self, color):
+    def check_possible_moves(self, color: str, checking: bool = False):
         raise NotImplementedError
 
-    def check_turn(self, current_color) -> bool:
+    def check_turn(self, current_color: str) -> bool:
         return False if current_color == self.color else True
 
     def load_image(self, piece = None) -> None | ctk.CTkImage:
@@ -54,8 +54,8 @@ class Pawn(Piece):
         self.load_image()
         self.first_move = True
 
-    def check_possible_moves(self, color) -> list[tuple[int, int]]:
-        if self.check_turn(color):
+    def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
+        if self.check_turn(color) and not checking:
             return []
         move = 1 if self.color == 'b' else -1
         possible_moves: list[tuple[int, int]] = []
@@ -124,8 +124,8 @@ class Knight(Piece):
                     possible_moves.append(new_position)
         return possible_moves
 
-    def check_possible_moves(self, color) -> list[tuple[int, int]]:
-        if self.check_turn(color):
+    def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
+        if self.check_turn(color) and not checking:
             return []
         special_cases = {
             (1, 1): [0, 1, 2, 4],
@@ -157,8 +157,8 @@ class Bishop(Piece):
         self.board = board
         self.load_image()
 
-    def check_possible_moves(self, color) -> list[tuple[int, int]]:
-        if self.check_turn(color):
+    def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
+        if self.check_turn(color) and not checking:
             return []
         possible_moves: list[tuple[int, int]] = []
         moves_vec = [
@@ -190,8 +190,8 @@ class Rook(Piece):
         self.load_image()
         self.first_move = True
 
-    def check_possible_moves(self, color) -> list[tuple[int, int]]:
-        if self.check_turn(color):
+    def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
+        if self.check_turn(color) and not checking:
             return []
         possible_moves: list[tuple[int, int]] = []
         moves_vec = [
@@ -222,8 +222,8 @@ class Queen(Piece):
         self.board = board
         self.load_image()
 
-    def check_possible_moves(self, color) -> list[tuple[int, int]]:
-        if self.check_turn(color):
+    def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
+        if self.check_turn(color) and not checking:
             return []
         possible_moves: list[tuple[int, int]] = []
         moves_vec = [
@@ -257,8 +257,8 @@ class King(Piece):
         self.load_image()
         self.first_move = True
 
-    def check_possible_moves(self, color) -> list[tuple[int, int]]:
-        if self.check_turn(color):
+    def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
+        if self.check_turn(color) and not checking:
             return []
         possible_moves: list[tuple[int, int]] = []
         for i in range(max(0, self.position[0]-1), min(8, self.position[0]+2)):
