@@ -120,6 +120,29 @@ class Bishop(Piece):
         self.board = board
         self.load_image()
 
+    def check_possible_moves(self) -> list[tuple[int, int]]:
+        possible_moves: list[tuple[int, int]] = []
+        moves_vec = [
+            (-1, -1), (-1, 1),
+            ( 1, -1), (1,  1)
+        ]
+        for move in moves_vec:
+            for i in range(1, 8):
+                multiplied_vec = tuple(x * i for x in move)
+                x = self.position[0] + multiplied_vec[0]
+                y = self.position[1] + multiplied_vec[1]
+                if 0 <= x <= 7 and 0 <= y <= 7:
+                    if not self.board.board[x][y].figure:
+                        possible_moves.append((x, y))
+                    elif self.board.board[x][y].figure.color != self.color:
+                        possible_moves.append((x, y))
+                        break
+                    else:
+                        break
+                else:
+                    break
+        return possible_moves
+
 class Rook(Piece):
     def __init__(self, color: str, board, position: tuple[int, int]) -> None:
         super().__init__(color, board, position)
@@ -128,12 +151,60 @@ class Rook(Piece):
         self.load_image()
         self.first_move = True
 
+    def check_possible_moves(self) -> list[tuple[int, int]]:
+        possible_moves: list[tuple[int, int]] = []
+        moves_vec = [
+            (-1, 0), (0,-1),
+            ( 1, 0), (0, 1)
+        ]
+        for move in moves_vec:
+            for i in range(1, 8):
+                multiplied_vec = tuple(x * i for x in move)
+                x = self.position[0] + multiplied_vec[0]
+                y = self.position[1] + multiplied_vec[1]
+                if 0 <= x <= 7 and 0 <= y <= 7:
+                    if not self.board.board[x][y].figure:
+                        possible_moves.append((x, y))
+                    elif self.board.board[x][y].figure.color != self.color:
+                        possible_moves.append((x, y))
+                        break
+                    else:
+                        break
+                else:
+                    break
+        return possible_moves
+
 class Queen(Piece):
     def __init__(self, color: str, board, position: tuple[int, int]) -> None:
         super().__init__(color, board, position)
         self.color: str = color
         self.board = board
         self.load_image()
+
+    def check_possible_moves(self) -> list[tuple[int, int]]:
+        possible_moves: list[tuple[int, int]] = []
+        moves_vec = [
+            (-1, 0), (0,-1),
+            ( 1, 0), (0, 1),
+            (-1, -1), (-1, 1),
+            ( 1, -1), (1,  1)
+        ]
+        for move in moves_vec:
+            for i in range(1, 8):
+                multiplied_vec = tuple(x * i for x in move)
+                x = self.position[0] + multiplied_vec[0]
+                y = self.position[1] + multiplied_vec[1]
+                if 0 <= x <= 7 and 0 <= y <= 7:
+                    if not self.board.board[x][y].figure:
+                        possible_moves.append((x, y))
+                    elif self.board.board[x][y].figure.color != self.color:
+                        possible_moves.append((x, y))
+                        break
+                    else:
+                        break
+                else:
+                    break
+        return possible_moves
 
 class King(Piece):
     def __init__(self, color: str, board, position: tuple[int, int]) -> None:
