@@ -1,5 +1,4 @@
 import customtkinter as ctk
-import pywinstyles
 
 from properties import COLOR
 
