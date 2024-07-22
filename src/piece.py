@@ -264,31 +264,49 @@ class King(Piece):
         self.board = board
         self.load_image()
         self.first_move = True
+        self.can_castle = False
 
     def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
         if self.check_turn(color) and not checking:
             return []
         possible_moves: list[tuple[int, int]] = []
-        for i in range(max(0, self.position[0]-1), min(8, self.position[0]+2)):
-            for j in range(max(0, self.position[1]-1), min(8, self.position[1]+2)):
+        for i in range(max(0, self.position[0] - 1), min(8, self.position[0] + 2)):
+            for j in range(max(0, self.position[1] - 1), min(8, self.position[1] + 2)):
                 if not self.board.board[i][j].figure:
                     possible_moves.append((i, j))
                 if self.board.board[i][j].figure and self.board.board[i][j].figure.color != self.color:
                     possible_moves.append((i, j))
-        if not self.first_move:
-            return possible_moves
-        for direction in [-1, 1]:
-            new_moves: list[tuple[int, int]] = []
-            for j in range(1, 5):
-                if 0 <= self.position[1] + (direction * j) <= 7:
-                    x, y = self.position[0], self.position[1] + (direction * j)
-                else:
-                    continue
-                if isinstance(self.board.board[x][y].figure, Rook) and self.board.board[x][y].figure.first_move:
-                    new_moves.append((x, (self.position[1] + (direction * 2))))
-                    break
-                if self.board.board[x][y].figure:
-                    new_moves.pop() if new_moves else new_moves
-                    break
-            possible_moves.extend(new_moves)
+        if self.first_move and not checking:
+            possible_moves.extend(self.get_castling_moves())
         return possible_moves
+
+    def get_castling_moves(self) -> list[tuple[int, int]]:
+        castling_moves = []
+        row = self.position[0]
+        if self.can_castle_kingside():
+            castling_moves.append((row, 6))
+        if self.can_castle_queenside():
+            castling_moves.append((row, 2))
+        return castling_moves
+
+    def can_castle_kingside(self) -> bool:
+        row, col = self.position
+        if isinstance(self.board.board[row][7].figure, Rook) and self.board.board[row][7].figure.first_move:
+            for i in range(col + 1, 7):
+                if self.board.board[row][i].figure or self.board.is_under_attack((row, i), self.color):
+                    return False
+            if self.board.is_under_attack((row, 6), self.color) or self.board.is_under_attack((row, col), self.color):
+                return False
+            return True
+        return False
+
+    def can_castle_queenside(self) -> bool:
+        row, col = self.position
+        if isinstance(self.board.board[row][0].figure, Rook) and self.board.board[row][0].figure.first_move:
+            for i in range(col - 1, 0, -1):
+                if self.board.board[row][i].figure or self.board.is_under_attack((row, i), self.color):
+                    return False
+            if self.board.is_under_attack((row, 2), self.color) or self.board.is_under_attack((row, col), self.color):
+                return False
+            return True
+        return False
