@@ -1,5 +1,6 @@
 import customtkinter as ctk
 
+from notifications import Notification
 from properties import COLOR, SIZE
 
 import piece
@@ -29,6 +30,7 @@ class Cell(ctk.CTkLabel):
 class Board(ctk.CTkFrame):
     def __init__(self, master) -> None:
         super().__init__(master, fg_color=COLOR.TRANSPARENT)
+        self.master = master
         self.board = self.create_board()
         self.previous_click: tuple[None, None] | tuple[int, int] = (None, None)
         self.highlighted: list[Cell] = []
@@ -80,7 +82,7 @@ class Board(ctk.CTkFrame):
         pass
 
     def display_game_over_message(self, message: str) -> None:
-        print(message)
+        self.notification = Notification(self.master, message=message, duration_sec=5)
 
     def is_game_over(self) -> tuple[bool, bool]:
         in_check = False
@@ -198,9 +200,9 @@ class Board(ctk.CTkFrame):
                     game_over, in_check = self.is_game_over()
                     if game_over:
                         if in_check:
-                            self.display_game_over_message(f'Checkmate! {"White wins!" if self.current_turn == "b" else "Black wins!"}')
+                            self.display_game_over_message(f'Checkmate\n{"White wins!" if self.current_turn == "b" else "Black wins!"}')
                         else:
-                            self.display_game_over_message('Stalemate!')
+                            self.display_game_over_message('Stalemate')
             self.clicked_figure = None
             self.previous_coords = None
         self.remove_highlights()
