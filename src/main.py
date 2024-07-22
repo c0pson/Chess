@@ -2,7 +2,7 @@ import customtkinter as ctk
 import os
 
 from tools import resource_path, get_from_config
-from properties import COLOR, SIZE
+from properties import COLOR
 
 from cell import Board
 

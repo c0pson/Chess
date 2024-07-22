@@ -5,7 +5,7 @@ import sys
 import os
 
 from tools import resource_path, get_from_config
-from properties import SIZE, COLOR
+from properties import COLOR
 
 class Piece():
     def __init__(self, color: str, board, position) -> None:
