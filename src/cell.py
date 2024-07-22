@@ -1,7 +1,7 @@
 import customtkinter as ctk
 
 from notifications import Notification
-from properties import COLOR, SIZE
+from properties import COLOR
 
 from tools import get_from_config
 
@@ -39,6 +39,7 @@ class Board(ctk.CTkFrame):
         self.clicked_figure: piece.Piece | None = None
         self.previous_coords: tuple[int, int] | None = None
         self.current_turn = 'w'
+        self.notification: None | Notification = None
 
     @staticmethod
     def determine_tile_color(pos: tuple[int, int]) -> str:
@@ -80,11 +81,10 @@ class Board(ctk.CTkFrame):
             cell.configure(fg_color=color)
         self.highlighted = []
 
-    def display_check_message(self):
-        pass
-
-    def display_game_over_message(self, message: str) -> None:
-        self.notification = Notification(self.master, message=message, duration_sec=5)
+    def display_message(self, message: str, duration_sec: int) -> None:
+        if self.notification:
+            self.notification.destroy()
+        self.notification = Notification(self.master, message=message, duration_sec=duration_sec)
 
     def is_game_over(self) -> tuple[bool, bool]:
         in_check = False
@@ -199,15 +199,24 @@ class Board(ctk.CTkFrame):
                     if cell.figure.first_move:
                         cell.figure.first_move = False
                     self.current_turn = 'b' if self.current_turn == 'w' else 'w'
+                    if self.is_under_attack(self.get_king_position(self.current_turn), self.current_turn):
+                        self.display_message('Check', 3)
                     game_over, in_check = self.is_game_over()
                     if game_over:
                         if in_check:
-                            self.display_game_over_message(f'Checkmate\n{"White wins!" if self.current_turn == "b" else "Black wins!"}')
+                            self.display_message(f'Checkmate  {"White wins!" if self.current_turn == "b" else "Black wins!"}', 7)
                         else:
-                            self.display_game_over_message('Stalemate')
+                            self.display_message('Stalemate', 7)
             self.clicked_figure = None
             self.previous_coords = None
         self.remove_highlights()
+
+    def get_king_position(self, color: str) -> tuple[int, int]:
+        for row in self.board:
+            for cell in row:
+                if isinstance(cell.figure, piece.King) and cell.figure.color == color:
+                    return cell.figure.position
+        return (-1, -1)
 
     def reset_en_passant_flags(self, current_color):
         for row in self.board:
