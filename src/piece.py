@@ -4,14 +4,8 @@ import pywinstyles
 import sys
 import os
 
+from tools import resource_path, get_theme
 from properties import SIZE, COLOR
-
-def resource_path(relative_path):
-    try:
-        base_path = sys._MEIPASS2
-    except Exception:
-        base_path = os.path.abspath(".")
-    return os.path.join(base_path, relative_path)
 
 class Piece():
     def __init__(self, color: str, board, position) -> None:
@@ -32,12 +26,12 @@ class Piece():
             piece_name = (self.__class__.__name__).lower()
         else:
             piece_name = piece
-        path: str = resource_path(f'assets\\{piece_name}_{self.color}.png')
+        path: str = resource_path(f'assets\\{get_theme()}\\{piece_name}_{self.color}.png')
         try: 
             loaded_image = Image.open(path).convert('RGBA')
             if piece:
-                return ctk.CTkImage(light_image=loaded_image, dark_image=loaded_image, size=(SIZE.IMAGE, SIZE.IMAGE))
-            self.image = ctk.CTkImage(light_image=loaded_image, dark_image=loaded_image, size=(SIZE.IMAGE, SIZE.IMAGE))
+                return ctk.CTkImage(light_image=loaded_image, dark_image=loaded_image, size=(SIZE.IMAGE-1, SIZE.IMAGE-1))
+            self.image = ctk.CTkImage(light_image=loaded_image, dark_image=loaded_image, size=(SIZE.IMAGE-1, SIZE.IMAGE-1))
         except (FileExistsError, FileNotFoundError) as e:
             print(f'Couldn`t load image for due to error: {e}')
         return None
