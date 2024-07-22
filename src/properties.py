@@ -8,6 +8,8 @@ class COLOR(str, Enum):
     HIGH_TILE_2 = '#CFD7C9'
     TEXT = '#FEF3E2'
     TRANSPARENT = 'transparent'
+    NOTIFICATION_BACKGROUND = '#536493'
+    NOTIFICATION_OUTLINE = '#393E46'
 
 class SIZE(int, Enum):
     WIDTH = 620
