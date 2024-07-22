@@ -45,37 +45,29 @@ class Board(ctk.CTkFrame):
 
     def create_board(self) -> list[list[Cell]]:
         board: list[list[Cell]] = [[_ for _ in range(8)] for _ in range(8)]
+        piece_positions = {
+            (0, 0): piece.Rook('b', self, (0, 0)), (0, 7): piece.Rook('b', self, (0, 7)),
+            (7, 0): piece.Rook('w', self, (7, 0)), (7, 7): piece.Rook('w', self, (7, 7)),
+            (0, 1): piece.Knight('b', self, (0, 1)), (0, 6): piece.Knight('b', self, (0, 6)),
+            (7, 1): piece.Knight('w', self, (7, 1)), (7, 6): piece.Knight('w', self, (7, 6)),
+            (0, 2): piece.Bishop('b', self, (0, 2)), (0, 5): piece.Bishop('b', self, (0, 5)),
+            (7, 2): piece.Bishop('w', self, (7, 2)), (7, 5): piece.Bishop('w', self, (7, 5)),
+            (0, 3): piece.Queen('b', self, (0, 3)), (7, 3): piece.Queen('w', self, (7, 3)),
+            (0, 4): piece.King('b', self, (0, 4)), (7, 4): piece.King('w', self, (7, 4))
+        }
         for i in range(8):
             new_frame = ctk.CTkFrame(self, fg_color=COLOR.TRANSPARENT)
             new_frame.pack(padx=0, pady=0)
             for j in range(8):
                 color = self.determine_tile_color((i, j))
-                if (i,j) == (0,0) or (i,j) == (0,7): # im so sorry for this
-                    board[i][j] = Cell(new_frame, piece.Rook('b', self, (i,j)), (i,j), color, self)
-                elif (i,j) == (7,0) or (i,j) == (7,7):
-                    board[i][j] = Cell(new_frame, piece.Rook('w', self, (i,j)), (i,j), color, self)
-                elif (i,j) == (0,1) or (i,j) == (0,6):
-                    board[i][j] = Cell(new_frame, piece.Knight('b', self, (i,j)), (i,j), color, self)
-                elif (i,j) == (7,1) or (i,j) == (7,6):
-                    board[i][j] = Cell(new_frame, piece.Knight('w', self, (i,j)), (i,j), color, self)
-                elif (i,j) == (0,2) or (i,j) == (0,5):
-                    board[i][j] = Cell(new_frame, piece.Bishop('b', self, (i,j)), (i,j), color, self)
-                elif (i,j) == (7,2) or (i,j) == (7,5):
-                    board[i][j] = Cell(new_frame, piece.Bishop('w', self, (i,j)), (i,j), color, self)
-                elif (i,j) == (0,3):
-                    board[i][j] = Cell(new_frame, piece.Queen('b', self, (i,j)), (i,j), color, self)
-                elif (i,j) == (7,3):
-                    board[i][j] = Cell(new_frame, piece.Queen('w', self, (i,j)), (i,j), color, self)
-                elif (i,j) == (0,4):
-                    board[i][j] = Cell(new_frame, piece.King('b', self, (i,j)), (i,j), color, self)
-                elif (i,j) == (7,4):
-                    board[i][j] = Cell(new_frame, piece.King('w', self, (i,j)), (i,j), color, self)
-                elif i == 1:
-                    board[i][j] = Cell(new_frame, piece.Pawn('b', self, (i,j)), (i,j), color, self)
-                elif i == 6:
-                    board[i][j] = Cell(new_frame, piece.Pawn('w', self, (i,j)), (i,j), color, self)
-                else:
-                    board[i][j] = Cell(new_frame, None, (i,j), color, self)
+                match (i, j):
+                    case (0 | 7, _):
+                        figure = piece_positions.get((i, j))
+                    case (1 | 6, _):
+                        figure = piece.Pawn('b' if i == 1 else 'w', self, (i, j))
+                    case _:
+                        figure = None
+                board[i][j] = Cell(new_frame, figure, (i, j), color, self)
         return board
 
     def remove_highlights(self) -> None:
@@ -157,6 +149,14 @@ class Board(ctk.CTkFrame):
         self.board[move_to[0]][move_to[1]].figure = original_to_figure
         return is_in_check
 
+    def is_under_attack(self, position: tuple[int, int], color: str) -> bool:
+        for row in self.board:
+            for cell in row:
+                if cell.figure and cell.figure.color != color:
+                    if position in cell.figure.check_possible_moves(cell.figure.color, checking=True):
+                        return True
+        return False
+
     def handle_move(self, position: tuple[int, int]) -> None:
         if self.clicked_figure and self.previous_coords:
             row, col = position
@@ -166,6 +166,20 @@ class Board(ctk.CTkFrame):
                     if isinstance(self.clicked_figure, piece.Pawn) and self.clicked_figure.can_en_passant and col != self.previous_coords[1] and not cell.figure:
                         self.board[row - self.clicked_figure.move][col].figure = None
                         self.board[row - self.clicked_figure.move][col].update()
+                    if isinstance(self.clicked_figure, piece.King):
+                        if abs(col - self.previous_coords[1]) == 2:
+                            if col == 6:
+                                self.board[row][5].figure = self.board[row][7].figure
+                                self.board[row][7].figure = None
+                                self.board[row][5].figure.position = (row, 5) # type: ignore
+                                self.board[row][5].update()
+                                self.board[row][7].update()
+                            elif col == 2:
+                                self.board[row][3].figure = self.board[row][0].figure
+                                self.board[row][0].figure = None
+                                self.board[row][3].figure.position = (row, 3) # type: ignore
+                                self.board[row][3].update()
+                                self.board[row][0].update()
                     cell.figure = self.clicked_figure
                     cell.figure.position = position
                     cell.update()
@@ -184,9 +198,9 @@ class Board(ctk.CTkFrame):
                     game_over, in_check = self.is_game_over()
                     if game_over:
                         if in_check:
-                            self.display_game_over_message("Checkmate! " + ("White wins!" if self.current_turn == 'b' else "Black wins!"))
+                            self.display_game_over_message(f'Checkmate! {"White wins!" if self.current_turn == "b" else "Black wins!"}')
                         else:
-                            self.display_game_over_message("Stalemate!")
+                            self.display_game_over_message('Stalemate!')
             self.clicked_figure = None
             self.previous_coords = None
         self.remove_highlights()
