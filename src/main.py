@@ -11,7 +11,7 @@ class MainWindow(ctk.CTk):
         super().__init__(fg_color=COLOR.BACKGROUND)
         self.title('Chess')
         self.geometry(self.set_window_size())
-        size = (int(get_from_config('size'))+2) * 8 + 40
+        size = (int(get_from_config('size'))+2) * 9 + 40
         self.minsize(size, size)
         self.load_font()
         self.board = Board(self)
@@ -26,8 +26,8 @@ class MainWindow(ctk.CTk):
 
     def set_window_size(self) -> str:
         size: int = int(get_from_config('size'))
-        size = (size+2) * 8 + 40
-        center_pos: str = f'+{(self.winfo_screenwidth()-SIZE.WIDTH)//2}+150'
+        size = (size+2) * 9 + 40
+        center_pos: str = f'+{(self.winfo_screenwidth()-size)//2}+75'
         return f'{size}x{size}{center_pos}'
 
 if __name__ == "__main__":
