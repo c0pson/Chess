@@ -49,15 +49,18 @@ class Pawn(Piece):
     def __init__(self, color: str, board, position: tuple[int, int]) -> None:
         super().__init__(color, board, position)
         self.color: str = color # b | w
-        self.position = position
+        self.position: tuple[int, int] = position
         self.board = board
         self.load_image()
-        self.first_move = True
+        self.first_move: bool = True
+        self.moved_by_two: bool = False
+        self.can_en_passant: bool = False
+        self.move: int = 1 if self.color == 'b' else -1
 
     def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
         if self.check_turn(color) and not checking:
             return []
-        move = 1 if self.color == 'b' else -1
+        move = self.move
         possible_moves: list[tuple[int, int]] = []
         if self.position[0] in {0, 7}:
             return possible_moves
@@ -73,6 +76,11 @@ class Pawn(Piece):
                 target_square = self.board.board[capture_position[0]][capture_position[1]]
                 if target_square.figure and target_square.figure.color != self.color:
                     possible_moves.append(capture_position)
+                adjacent_pawn_position = (self.position[0], self.position[1] + offset)
+                adjacent_pawn = self.board.board[adjacent_pawn_position[0]][adjacent_pawn_position[1]].figure
+                if isinstance(adjacent_pawn, Pawn) and adjacent_pawn.color != self.color and adjacent_pawn.moved_by_two:
+                    possible_moves.append((self.position[0] + move, self.position[1] + offset))
+                    self.can_en_passant = True
         return possible_moves
 
     def choose_figure(self, event, figure, choose_piece_menu, choose_piece_menu_1):

@@ -87,6 +87,26 @@ class Board(ctk.CTkFrame):
     def display_check_message(self):
         pass
 
+    def display_game_over_message(self, message: str) -> None:
+        print(message)
+
+    def is_game_over(self) -> tuple[bool, bool]:
+        in_check = False
+        for row in self.board:
+            for cell in row:
+                if cell.figure and cell.figure.color == self.current_turn:
+                    possible_moves = cell.figure.check_possible_moves(self.current_turn)
+                    for move in possible_moves:
+                        if not self.check_check(cell.figure.position, move):
+                            return False, False
+        for row in self.board:
+            for cell in row:
+                if isinstance(cell.figure, piece.King) and cell.figure.color == self.current_turn:
+                    if self.check_check(cell.figure.position, cell.figure.position):
+                        in_check = True
+                        break
+        return True, in_check
+
     def handle_clicks(self, figure: piece.Piece, position: tuple[int, int]) -> None:
         possible_moves = figure.check_possible_moves(self.current_turn)
         if not possible_moves and self.board[position[0]][position[1]].figure:
@@ -98,8 +118,8 @@ class Board(ctk.CTkFrame):
         if self.board and possible_moves:
             valid_moves = []
             for coords in possible_moves:
-                if not self.check_check(position, coords):
-                    self.display_check_message()
+                check = self.check_check(position, coords)
+                if not check:
                     valid_moves.append(coords)
             for coords in valid_moves:
                 color = self.board[coords[0]][coords[1]].cget('fg_color')
@@ -143,16 +163,37 @@ class Board(ctk.CTkFrame):
             cell = self.board[row][col]
             if cell in self.highlighted and self.previous_coords != position:
                 if not self.check_check(self.previous_coords, position):
+                    if isinstance(self.clicked_figure, piece.Pawn) and self.clicked_figure.can_en_passant and col != self.previous_coords[1] and not cell.figure:
+                        self.board[row - self.clicked_figure.move][col].figure = None
+                        self.board[row - self.clicked_figure.move][col].update()
                     cell.figure = self.clicked_figure
                     cell.figure.position = position
                     cell.update()
                     self.board[self.previous_coords[0]][self.previous_coords[1]].figure = None
                     self.board[self.previous_coords[0]][self.previous_coords[1]].update()
                     if isinstance(cell.figure, piece.Pawn):
+                        if cell.figure.first_move and abs(self.previous_coords[0] - row) == 2:
+                            cell.figure.moved_by_two = True
+                        else:
+                            cell.figure.moved_by_two = False
                         cell.figure.promote()
+                    self.reset_en_passant_flags(cell.figure.color)
                     if cell.figure.first_move:
                         cell.figure.first_move = False
                     self.current_turn = 'b' if self.current_turn == 'w' else 'w'
+                    game_over, in_check = self.is_game_over()
+                    if game_over:
+                        if in_check:
+                            self.display_game_over_message("Checkmate! " + ("White wins!" if self.current_turn == 'b' else "Black wins!"))
+                        else:
+                            self.display_game_over_message("Stalemate!")
             self.clicked_figure = None
             self.previous_coords = None
         self.remove_highlights()
+
+    def reset_en_passant_flags(self, current_color):
+        for row in self.board:
+            for cell in row:
+                if isinstance(cell.figure, piece.Pawn) and cell.figure.color != current_color:
+                    cell.figure.moved_by_two = False
+                    cell.figure.can_en_passant = False
