@@ -275,4 +275,20 @@ class King(Piece):
                     possible_moves.append((i, j))
                 if self.board.board[i][j].figure and self.board.board[i][j].figure.color != self.color:
                     possible_moves.append((i, j))
+        if not self.first_move:
+            return possible_moves
+        for direction in [-1, 1]:
+            new_moves: list[tuple[int, int]] = []
+            for j in range(1, 5):
+                if 0 <= self.position[1] + (direction * j) <= 7:
+                    x, y = self.position[0], self.position[1] + (direction * j)
+                else:
+                    continue
+                if isinstance(self.board.board[x][y].figure, Rook) and self.board.board[x][y].figure.first_move:
+                    new_moves.append((x, (self.position[1] + (direction * 2))))
+                    break
+                if self.board.board[x][y].figure:
+                    new_moves.pop() if new_moves else new_moves
+                    break
+            possible_moves.extend(new_moves)
         return possible_moves
