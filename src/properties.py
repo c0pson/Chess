@@ -1,5 +1,7 @@
 from enum import Enum
 
+from tools import get_from_config
+
 class COLOR(str, Enum):
     BACKGROUND = '#606676'
     TILE_1 = '#708871'
@@ -14,4 +16,3 @@ class COLOR(str, Enum):
 class SIZE(int, Enum):
     WIDTH = 620
     HEIGHT = 520
-    IMAGE = 60

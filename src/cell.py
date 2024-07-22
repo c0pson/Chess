@@ -3,6 +3,8 @@ import customtkinter as ctk
 from notifications import Notification
 from properties import COLOR, SIZE
 
+from tools import get_from_config
+
 import piece
 
 class Cell(ctk.CTkLabel):
@@ -13,9 +15,9 @@ class Cell(ctk.CTkLabel):
         self.figure: None | piece.Piece = figure
         figure_asset = self.figure.image if self.figure else None
         super().__init__(master=frame, image=figure_asset, text='', fg_color=color,
-                        width=int(SIZE.IMAGE+2), height=int(SIZE.IMAGE+2), bg_color=COLOR.TRANSPARENT)
+                        width=get_from_config('size'), height=get_from_config('size'), bg_color=COLOR.TRANSPARENT)
         self.bind('<Button-1>', self.on_click)
-        self.pack(side=ctk.LEFT, padx=0, pady=0)
+        self.pack(side=ctk.LEFT, padx=2, pady=2)
 
     def on_click(self, e) -> None:
         if self.figure and not self.board.clicked_figure:

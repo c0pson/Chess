@@ -4,7 +4,7 @@ import pywinstyles
 import sys
 import os
 
-from tools import resource_path, get_theme
+from tools import resource_path, get_from_config
 from properties import SIZE, COLOR
 
 class Piece():
@@ -26,12 +26,12 @@ class Piece():
             piece_name = (self.__class__.__name__).lower()
         else:
             piece_name = piece
-        path: str = resource_path(f'assets\\{get_theme()}\\{piece_name}_{self.color}.png')
+        path: str = resource_path(f'assets\\{get_from_config('theme')}\\{piece_name}_{self.color}.png')
         try: 
             loaded_image = Image.open(path).convert('RGBA')
             if piece:
-                return ctk.CTkImage(light_image=loaded_image, dark_image=loaded_image, size=(SIZE.IMAGE-1, SIZE.IMAGE-1))
-            self.image = ctk.CTkImage(light_image=loaded_image, dark_image=loaded_image, size=(SIZE.IMAGE-1, SIZE.IMAGE-1))
+                return ctk.CTkImage(light_image=loaded_image, dark_image=loaded_image, size=(int(get_from_config('size'))-10, int(get_from_config('size'))-10))
+            self.image = ctk.CTkImage(light_image=loaded_image, dark_image=loaded_image, size=(int(get_from_config('size'))-10, int(get_from_config('size'))-10))
         except (FileExistsError, FileNotFoundError) as e:
             print(f'Couldn`t load image for due to error: {e}')
         return None
