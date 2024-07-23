@@ -4,7 +4,7 @@ import os
 from tools import resource_path, get_from_config
 from properties import COLOR
 
-from menus import MovesRecord
+from menus import MovesRecord, Options
 from cell import Board
 
 class MainWindow(ctk.CTk):
@@ -13,26 +13,33 @@ class MainWindow(ctk.CTk):
         self.title('Chess')
         self.geometry(self.set_window_size())
         size = (int(get_from_config('size'))+2) * 9 + 40
-        self.minsize(size, size)
+        self.minsize(size + 400, size)
         self.load_font()
         self.moves_record = MovesRecord(self)
         self.moves_record.pack(side=ctk.RIGHT, padx=10, pady=10, fill=ctk.Y)
         self.board = Board(self, self.moves_record)
         self.board.pack(side=ctk.RIGHT, padx=10, pady=10, expand=True)
-        self.theme: str = 'casual'
+        self.options = Options(self, self.restart_game)
+        self.options.pack(side=ctk.RIGHT, padx=10, pady=10, fill=ctk.Y)
+        self.theme: str = str(get_from_config('theme'))
 
     def load_font(self) -> None:
         if os.name == 'nt':
             ctk.FontManager.windows_load_font(resource_path('fonts\\Tiny5-Regular.ttf'))
         else:
-            ctk.FontManager.windows_load_font(resource_path('fonts/Tiny5-Regular.ttf'))
+            ctk.FontManager.load_font(resource_path('fonts/Tiny5-Regular.ttf'))
 
     def set_window_size(self) -> str:
         size: int = int(get_from_config('size'))
         size = (size+2) * 9 + 40
-        center_pos: str = f'+{(self.winfo_screenwidth()-size)//2}+75'
-        return f'{size}x{size}{center_pos}'
+        center_pos: str = f'+{(self.winfo_screenwidth()-size-400)//2}+75'
+        return f'{size + 400}x{size}{center_pos}'
+
+    def restart_game(self) -> None:
+        self.board.restart_game()
+        self.moves_record.restart()
 
 if __name__ == "__main__":
+    ctk.deactivate_automatic_dpi_awareness()
     app = MainWindow()
     app.mainloop()
