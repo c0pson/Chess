@@ -1,8 +1,6 @@
 import customtkinter as ctk
 from PIL import Image
 import pywinstyles
-import sys
-import os
 
 from tools import resource_path, get_from_config
 from properties import COLOR
@@ -36,11 +34,15 @@ class Piece():
             print(f'Couldn`t load image for due to error: {e}')
         return None
 
+    def update_image(self) -> None:
+        self.load_image()
+        self.board.board[self.position[0]][self.position[1]].configure(image=self.image)
+
     def __str__(self) -> str:
         return f'Piece: {self.__class__.__name__} Color: {'white' if self.color == 'w' else 'black'}'
 
 class Pawn(Piece):
-    def __init__(self, color: str, board, position: tuple[int, int]) -> None:
+    def __init__(self, color: str, board, position: tuple[int, int], notation_func) -> None:
         super().__init__(color, board, position)
         self.color: str = color # b | w
         self.position: tuple[int, int] = position
@@ -50,6 +52,7 @@ class Pawn(Piece):
         self.moved_by_two: bool = False
         self.can_en_passant: bool = False
         self.move: int = 1 if self.color == 'b' else -1
+        self.notation_func = notation_func
 
     def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
         if self.check_turn(color) and not checking:
@@ -80,6 +83,7 @@ class Pawn(Piece):
     def choose_figure(self, event, figure, choose_piece_menu, choose_piece_menu_1):
         self.board.board[self.position[0]][self.position[1]].figure = figure(self.color, self.board, self.position)
         self.board.board[self.position[0]][self.position[1]].update()
+        self.notation_func(self.board.board[self.position[0]][self.position[1]].figure.__class__.__name__)
         choose_piece_menu.destroy()
         choose_piece_menu_1.destroy()
 
@@ -90,18 +94,23 @@ class Pawn(Piece):
         button_figure.pack(side=ctk.LEFT, padx=10, pady=10)
         button_figure.bind('<Button-1>', lambda e: self.choose_figure(e, figure, choose_piece_menu, choose_piece_menu_1))
 
-    def promote(self):
+    def promote(self) -> bool:
         if self.position[0] in {0, 7}:
-            choose_piece_menu_1 = ctk.CTkFrame(self.board.master, corner_radius=0,
+            choose_piece_menu_1 = ctk.CTkFrame(self.board, corner_radius=0,
                                             fg_color=COLOR.BACKGROUND)
             choose_piece_menu_1.place(relx=0, rely=0, relwidth=1, relheight=1)
             pywinstyles.set_opacity(choose_piece_menu_1, value=0.01, color="#000001")
-            choose_piece_menu = ctk.CTkFrame(self.board.master, fg_color=COLOR.BACKGROUND)
+            choose_piece_menu = ctk.CTkFrame(self.board, fg_color=COLOR.BACKGROUND)
             choose_piece_menu.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
             pywinstyles.set_opacity(choose_piece_menu, color="#000001")
             possible_figures = [Knight, Bishop, Rook, Queen]
             for i, figure in enumerate(possible_figures):
                 self.create_button(choose_piece_menu, figure, choose_piece_menu_1)
+            return True
+        return False
+
+    def notate(self, figure_name, moves_record, capture, check, checkmate):
+        moves_record.record_move(figure_name, capture=capture, castle=None, check = check, checkmate = checkmate, promotion=f'{self.board.board[self.position[0]][self.position[1]].figure.__class__.__name__[0]}')
 
 class Knight(Piece):
     def __init__(self, color: str, board, position: tuple[int, int]) -> None:

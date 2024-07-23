@@ -27,7 +27,7 @@ class Cell(ctk.CTkLabel):
 
     def update(self) -> None:
         figure_asset = self.figure.image if self.figure else ''
-        self.configure(image=figure_asset)
+        self.configure(image=figure_asset, require_redraw=True)
 
 class Board(ctk.CTkFrame):
     def __init__(self, master, moves_record) -> None:
@@ -42,6 +42,7 @@ class Board(ctk.CTkFrame):
         self.current_turn = 'w'
         self.notification: None | Notification = None
         self.moves_record = moves_record
+        self.capture = False
 
     @staticmethod
     def determine_tile_color(pos: tuple[int, int]) -> str:
@@ -70,7 +71,7 @@ class Board(ctk.CTkFrame):
                 if self.loading_screen:
                     self.loading_screen.lift()
                 color = self.determine_tile_color((i, j))
-                figure = piece_positions.get((i, j)) if (i, j) in piece_positions else (piece.Pawn('b' if i == 1 else 'w', self, (i, j)) if i in [1, 6] else None)
+                figure = piece_positions.get((i, j)) if (i, j) in piece_positions else (piece.Pawn('b' if i == 1 else 'w', self, (i, j), self.notation_promotion) if i in [1, 6] else None)
                 cell = Cell(new_frame, figure, (i, j), color, self)
                 row.append(cell)
             board.append(row)
@@ -167,6 +168,8 @@ class Board(ctk.CTkFrame):
             row, col = position
             cell = self.board[row][col]
             capture = bool(cell.figure)
+            self.capture = bool(cell.figure)
+            promotion = False
             if cell in self.highlighted and self.previous_coords != position:
                 castle = False
                 if not self.check_check(self.previous_coords, position):
@@ -201,7 +204,8 @@ class Board(ctk.CTkFrame):
                             cell.figure.moved_by_two = True
                         else:
                             cell.figure.moved_by_two = False
-                        cell.figure.promote()
+                        if cell.figure.promote():
+                            promotion = True
                     self.reset_en_passant_flags(cell.figure.color)
                     if cell.figure.first_move:
                         cell.figure.first_move = False
@@ -210,16 +214,35 @@ class Board(ctk.CTkFrame):
                     game_over, in_check = self.is_game_over()
                     if game_over:
                         if in_check:
-                            self.display_message(f'Checkmate  {"White wins!" if self.current_turn == "b" else "Black wins!"}', 7)
-                            self.moves_record.record_move(self.clicked_figure, capture=capture, check=check, checkmate=game_over and in_check)
+                            self.display_message(f'Checkmate  {"White wins!" if self.current_turn == "b" else "Black wins!"}', 9)
+                            if not promotion:
+                                self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check)
                         else:
-                            self.display_message('Stalemate', 7)
-                            self.moves_record.record_move(self.clicked_figure, capture=capture, check=check, checkmate=game_over and in_check)
-                    elif not castle:
-                        self.moves_record.record_move(self.clicked_figure, capture=capture, check=check, checkmate=game_over and in_check)
-            self.clicked_figure = None
-            self.previous_coords = None
+                            self.display_message('Stalemate', 9)
+                            if not promotion:
+                                self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check)
+                    elif not castle and not promotion:
+                        self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check)
+            if not promotion:
+                self.clicked_figure = None
+                self.previous_coords = None
         self.remove_highlights()
+
+    def notation_promotion(self, promotion:str) -> None:
+        capture = self.capture
+        check = self.is_under_attack(self.get_king_position(self.current_turn), self.current_turn)
+        game_over, in_check = self.is_game_over()
+        if game_over:
+            if in_check:
+                self.display_message(f'Checkmate  {"White wins!" if self.current_turn == "b" else "Black wins!"}', 9)
+                self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check, promotion=promotion[0])
+            else:
+                self.display_message('Stalemate', 9)
+                self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check, promotion=promotion[0])
+        else:
+            self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check, promotion=promotion[0])
+        self.clicked_figure = None
+        self.previous_coords = None
 
     def get_king_position(self, color: str) -> tuple[int, int]:
         for row in self.board:
@@ -236,9 +259,9 @@ class Board(ctk.CTkFrame):
                     cell.figure.can_en_passant = False
 
     def restart_game(self) -> None:
-        self.loading_screen = ctk.CTkLabel(self, text='Loading   ', font=ctk.CTkFont('Tiny5', 42),
+        self.loading_screen = ctk.CTkLabel(self.master, text='Loading   ', font=ctk.CTkFont('Tiny5', 42),
                                             text_color=COLOR.TEXT)
-        self.loading_animation(0)
+        self.master.after(270, lambda: self.loading_animation(0))
         self.loading_screen.place(relx=0, rely=0, relwidth=1, relheight=1)
         for child in self.winfo_children():
             if child != self.loading_screen:
@@ -250,7 +273,7 @@ class Board(ctk.CTkFrame):
         self.current_turn = 'w'
         self.notification = None
         self.board = self.create_board()
-        self.master.after(1000, self.destroy_loading_screen)
+        self.master.after(1200, self.destroy_loading_screen)
 
     def destroy_loading_screen(self) -> None:
         self.loading_screen.destroy() # type: ignore
@@ -261,4 +284,4 @@ class Board(ctk.CTkFrame):
             self.loading_screen.configure(text=f'Loading{'.' * i}{' ' * (3 - i)}')
         if i <= 2:
             i += 1
-            self.master.after(300, self.loading_animation, i)
+            self.master.after(270, self.loading_animation, i)

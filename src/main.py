@@ -19,7 +19,7 @@ class MainWindow(ctk.CTk):
         self.moves_record.pack(side=ctk.RIGHT, padx=10, pady=10, fill=ctk.Y)
         self.board = Board(self, self.moves_record)
         self.board.pack(side=ctk.RIGHT, padx=10, pady=10, expand=True)
-        self.options = Options(self, self.restart_game)
+        self.options = Options(self, self.restart_game, self.update_assets)
         self.options.pack(side=ctk.RIGHT, padx=10, pady=10, fill=ctk.Y)
         self.theme: str = str(get_from_config('theme'))
 
@@ -32,12 +32,18 @@ class MainWindow(ctk.CTk):
     def set_window_size(self) -> str:
         size: int = int(get_from_config('size'))
         size = (size+2) * 9 + 40
-        center_pos: str = f'+{(self.winfo_screenwidth()-size-400)//2}+75'
-        return f'{size + 400}x{size}{center_pos}'
+        center_pos: str = f'+{(self.winfo_screenwidth()-size-300)//2}+75'
+        return f'{size + 300}x{size}{center_pos}'
 
     def restart_game(self) -> None:
         self.board.restart_game()
         self.moves_record.restart()
+
+    def update_assets(self) -> None:
+        for row in self.board.board:
+            for cell in row:
+                if cell.figure:
+                    cell.figure.update_image() 
 
 if __name__ == "__main__":
     ctk.deactivate_automatic_dpi_awareness()
