@@ -30,7 +30,7 @@ class Cell(ctk.CTkLabel):
         self.configure(image=figure_asset)
 
 class Board(ctk.CTkFrame):
-    def __init__(self, master) -> None:
+    def __init__(self, master, moves_record) -> None:
         super().__init__(master, fg_color=COLOR.TRANSPARENT)
         self.master = master
         self.board = self.create_board()
@@ -40,6 +40,7 @@ class Board(ctk.CTkFrame):
         self.previous_coords: tuple[int, int] | None = None
         self.current_turn = 'w'
         self.notification: None | Notification = None
+        self.moves_record = moves_record
 
     @staticmethod
     def determine_tile_color(pos: tuple[int, int]) -> str:
@@ -165,6 +166,7 @@ class Board(ctk.CTkFrame):
         if self.clicked_figure and self.previous_coords:
             row, col = position
             cell = self.board[row][col]
+            capture = bool(cell.figure)
             if cell in self.highlighted and self.previous_coords != position:
                 if not self.check_check(self.previous_coords, position):
                     if isinstance(self.clicked_figure, piece.Pawn) and self.clicked_figure.can_en_passant and col != self.previous_coords[1] and not cell.figure:
@@ -178,12 +180,14 @@ class Board(ctk.CTkFrame):
                                 self.board[row][5].figure.position = (row, 5) # type: ignore
                                 self.board[row][5].update()
                                 self.board[row][7].update()
+                                self.moves_record.record_move(self.clicked_figure, castle="kingside")
                             elif col == 2:
                                 self.board[row][3].figure = self.board[row][0].figure
                                 self.board[row][0].figure = None
                                 self.board[row][3].figure.position = (row, 3) # type: ignore
                                 self.board[row][3].update()
                                 self.board[row][0].update()
+                                self.moves_record.record_move(self.clicked_figure, castle="queenside")
                     cell.figure = self.clicked_figure
                     cell.figure.position = position
                     cell.update()
@@ -199,14 +203,17 @@ class Board(ctk.CTkFrame):
                     if cell.figure.first_move:
                         cell.figure.first_move = False
                     self.current_turn = 'b' if self.current_turn == 'w' else 'w'
-                    if self.is_under_attack(self.get_king_position(self.current_turn), self.current_turn):
-                        self.display_message('Check', 3)
+                    check = self.is_under_attack(self.get_king_position(self.current_turn), self.current_turn)
                     game_over, in_check = self.is_game_over()
                     if game_over:
                         if in_check:
                             self.display_message(f'Checkmate  {"White wins!" if self.current_turn == "b" else "Black wins!"}', 7)
+                            self.moves_record.record_move(self.clicked_figure, capture=capture, check=check, checkmate=game_over and in_check)
                         else:
                             self.display_message('Stalemate', 7)
+                            self.moves_record.record_move(self.clicked_figure, capture=capture, check=check, checkmate=game_over and in_check)
+                    else:
+                        self.moves_record.record_move(self.clicked_figure, capture=capture, check=check, checkmate=game_over and in_check)
             self.clicked_figure = None
             self.previous_coords = None
         self.remove_highlights()

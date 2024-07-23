@@ -4,6 +4,7 @@ import os
 from tools import resource_path, get_from_config
 from properties import COLOR
 
+from menus import MovesRecord
 from cell import Board
 
 class MainWindow(ctk.CTk):
@@ -14,8 +15,10 @@ class MainWindow(ctk.CTk):
         size = (int(get_from_config('size'))+2) * 9 + 40
         self.minsize(size, size)
         self.load_font()
-        self.board = Board(self)
-        self.board.pack(padx=10, pady=10, expand=True)
+        self.moves_record = MovesRecord(self)
+        self.moves_record.pack(side=ctk.RIGHT, padx=10, pady=10, fill=ctk.Y)
+        self.board = Board(self, self.moves_record)
+        self.board.pack(side=ctk.RIGHT, padx=10, pady=10, expand=True)
         self.theme: str = 'casual'
 
     def load_font(self) -> None:
