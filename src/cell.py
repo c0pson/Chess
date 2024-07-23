@@ -33,6 +33,7 @@ class Board(ctk.CTkFrame):
     def __init__(self, master, moves_record) -> None:
         super().__init__(master, fg_color=COLOR.TRANSPARENT)
         self.master = master
+        self.loading_screen: ctk.CTkLabel | None = None
         self.board = self.create_board()
         self.previous_click: tuple[None, None] | tuple[int, int] = (None, None)
         self.highlighted: list[Cell] = []
@@ -50,7 +51,7 @@ class Board(ctk.CTkFrame):
             return COLOR.TILE_2
 
     def create_board(self) -> list[list[Cell]]:
-        board: list[list[Cell]] = [[_ for _ in range(8)] for _ in range(8)]
+        board: list[list[Cell]] = []
         piece_positions = {
             (0, 0): piece.Rook('b', self, (0, 0)), (0, 7): piece.Rook('b', self, (0, 7)),
             (7, 0): piece.Rook('w', self, (7, 0)), (7, 7): piece.Rook('w', self, (7, 7)),
@@ -62,18 +63,17 @@ class Board(ctk.CTkFrame):
             (0, 4): piece.King('b', self, (0, 4)), (7, 4): piece.King('w', self, (7, 4))
         }
         for i in range(8):
+            row = []
             new_frame = ctk.CTkFrame(self, fg_color=COLOR.TRANSPARENT)
             new_frame.pack(padx=0, pady=0)
             for j in range(8):
+                if self.loading_screen:
+                    self.loading_screen.lift()
                 color = self.determine_tile_color((i, j))
-                match (i, j):
-                    case (0 | 7, _):
-                        figure = piece_positions.get((i, j))
-                    case (1 | 6, _):
-                        figure = piece.Pawn('b' if i == 1 else 'w', self, (i, j))
-                    case _:
-                        figure = None
-                board[i][j] = Cell(new_frame, figure, (i, j), color, self)
+                figure = piece_positions.get((i, j)) if (i, j) in piece_positions else (piece.Pawn('b' if i == 1 else 'w', self, (i, j)) if i in [1, 6] else None)
+                cell = Cell(new_frame, figure, (i, j), color, self)
+                row.append(cell)
+            board.append(row)
         return board
 
     def remove_highlights(self) -> None:
@@ -85,7 +85,7 @@ class Board(ctk.CTkFrame):
     def display_message(self, message: str, duration_sec: int) -> None:
         if self.notification:
             self.notification.destroy()
-        self.notification = Notification(self.master, message=message, duration_sec=duration_sec)
+        self.notification = Notification(self, message=message, duration_sec=duration_sec)
 
     def is_game_over(self) -> tuple[bool, bool]:
         in_check = False
@@ -168,6 +168,7 @@ class Board(ctk.CTkFrame):
             cell = self.board[row][col]
             capture = bool(cell.figure)
             if cell in self.highlighted and self.previous_coords != position:
+                castle = False
                 if not self.check_check(self.previous_coords, position):
                     if isinstance(self.clicked_figure, piece.Pawn) and self.clicked_figure.can_en_passant and col != self.previous_coords[1] and not cell.figure:
                         self.board[row - self.clicked_figure.move][col].figure = None
@@ -181,6 +182,7 @@ class Board(ctk.CTkFrame):
                                 self.board[row][5].update()
                                 self.board[row][7].update()
                                 self.moves_record.record_move(self.clicked_figure, castle="kingside")
+                                castle = True
                             elif col == 2:
                                 self.board[row][3].figure = self.board[row][0].figure
                                 self.board[row][0].figure = None
@@ -188,6 +190,7 @@ class Board(ctk.CTkFrame):
                                 self.board[row][3].update()
                                 self.board[row][0].update()
                                 self.moves_record.record_move(self.clicked_figure, castle="queenside")
+                                castle =True
                     cell.figure = self.clicked_figure
                     cell.figure.position = position
                     cell.update()
@@ -212,7 +215,7 @@ class Board(ctk.CTkFrame):
                         else:
                             self.display_message('Stalemate', 7)
                             self.moves_record.record_move(self.clicked_figure, capture=capture, check=check, checkmate=game_over and in_check)
-                    else:
+                    elif not castle:
                         self.moves_record.record_move(self.clicked_figure, capture=capture, check=check, checkmate=game_over and in_check)
             self.clicked_figure = None
             self.previous_coords = None
@@ -231,3 +234,31 @@ class Board(ctk.CTkFrame):
                 if isinstance(cell.figure, piece.Pawn) and cell.figure.color != current_color:
                     cell.figure.moved_by_two = False
                     cell.figure.can_en_passant = False
+
+    def restart_game(self) -> None:
+        self.loading_screen = ctk.CTkLabel(self, text='Loading   ', font=ctk.CTkFont('Tiny5', 42),
+                                            text_color=COLOR.TEXT)
+        self.loading_animation(0)
+        self.loading_screen.place(relx=0, rely=0, relwidth=1, relheight=1)
+        for child in self.winfo_children():
+            if child != self.loading_screen:
+                child.destroy()
+        self.previous_click = (None, None)
+        self.highlighted = []
+        self.clicked_figure = None
+        self.previous_coords = None
+        self.current_turn = 'w'
+        self.notification = None
+        self.board = self.create_board()
+        self.master.after(1000, self.destroy_loading_screen)
+
+    def destroy_loading_screen(self) -> None:
+        self.loading_screen.destroy() # type: ignore
+        self.loading_screen = None
+
+    def loading_animation(self, i) -> None:
+        if self.loading_screen:
+            self.loading_screen.configure(text=f'Loading{'.' * i}{' ' * (3 - i)}')
+        if i <= 2:
+            i += 1
+            self.master.after(300, self.loading_animation, i)
