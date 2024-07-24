@@ -30,10 +30,11 @@ class Cell(ctk.CTkLabel):
         self.configure(image=figure_asset, require_redraw=True)
 
 class Board(ctk.CTkFrame):
-    def __init__(self, master, moves_record) -> None:
+    def __init__(self, master, moves_record, size: int) -> None:
         super().__init__(master, fg_color=COLOR.TRANSPARENT)
         self.master = master
         self.loading_screen: ctk.CTkLabel | None = None
+        self.size = size
         self.board = self.create_board()
         self.previous_click: tuple[None, None] | tuple[int, int] = (None, None)
         self.highlighted: list[Cell] = []
@@ -52,7 +53,14 @@ class Board(ctk.CTkFrame):
             return COLOR.TILE_2
 
     def create_board(self) -> list[list[Cell]]:
+        new_frame = ctk.CTkFrame(self, fg_color=COLOR.TRANSPARENT, corner_radius=0)
+        new_frame.pack(side=ctk.LEFT, padx=0, pady=0, fill=ctk.Y)
+        for i in range(8):
+            ctk.CTkLabel(new_frame, text=f'{i+1} ', font=ctk.CTkFont('Tiny5', self.size//3)).pack(side=ctk.TOP, padx=0, pady=0, expand=True)
+        ctk.CTkLabel(new_frame, text='\n', font=ctk.CTkFont('Tiny5', 12)).pack(side=ctk.BOTTOM, padx=0, pady=0)
         board: list[list[Cell]] = []
+        board_frame = ctk.CTkFrame(self, corner_radius=0, fg_color=COLOR.TRANSPARENT)
+        board_frame.pack(side=ctk.TOP, padx=0, pady=0)
         piece_positions = {
             (0, 0): piece.Rook('b', self, (0, 0)), (0, 7): piece.Rook('b', self, (0, 7)),
             (7, 0): piece.Rook('w', self, (7, 0)), (7, 7): piece.Rook('w', self, (7, 7)),
@@ -65,7 +73,7 @@ class Board(ctk.CTkFrame):
         }
         for i in range(8):
             row = []
-            new_frame = ctk.CTkFrame(self, fg_color=COLOR.TRANSPARENT)
+            new_frame = ctk.CTkFrame(board_frame, fg_color=COLOR.TRANSPARENT)
             new_frame.pack(padx=0, pady=0)
             for j in range(8):
                 if self.loading_screen:
@@ -75,6 +83,10 @@ class Board(ctk.CTkFrame):
                 cell = Cell(new_frame, figure, (i, j), color, self)
                 row.append(cell)
             board.append(row)
+        new_frame = ctk.CTkFrame(self, fg_color=COLOR.TRANSPARENT, corner_radius=0)
+        new_frame.pack(padx=0, pady=0, fill=ctk.X)
+        for letter in {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}:
+            ctk.CTkLabel(new_frame, text=letter, font=ctk.CTkFont('Tiny5', self.size//3)).pack(side=ctk.LEFT, padx=0, pady=0, expand=True)
         return board
 
     def remove_highlights(self) -> None:
