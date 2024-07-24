@@ -15,3 +15,6 @@ class COLOR(str, Enum):
     NOTATION_BACKGROUND_W = '#B7B597'
     CLOSE = '#FF6969'
     CLOSE_HOVER = '#C80036'
+
+class STRING(str, Enum):
+    ASSETS_WARNING =  'Make sure the folder under the name of chosen theme have all necessary assets with proper names!\n\n\n'
