@@ -120,18 +120,28 @@ class Settings(ctk.CTkFrame):
         close_button.bind('<Button-1>', self.on_close)
         close_button.pack(side=ctk.TOP, anchor=ctk.NE, padx=10, pady=10)
 
+    def create_theme_button(self, frame, theme: str) -> None:
+        theme_button = ctk.CTkButton(frame, text=theme, command=lambda: self.select_theme(theme),
+                                        font=ctk.CTkFont('Tiny5', 38))
+        theme_button.pack(side=ctk.LEFT, padx=5, pady=5)
+
     def choose_theme(self) -> None:
         self.previous_theme = str(get_from_config('theme'))
         themes = self.list_directories_os('assets')
         if not themes:
             return
-        themes.remove('menu')
-        self.themes = ctk.CTkComboBox(self, values=themes, command=self.change_theme,
-                                    font=ctk.CTkFont('Tiny5', 38))
-        self.themes.set(get_from_config('theme'))
-        self.themes.pack()
+        themes.remove('menu') if 'menu' in themes else themes
+        frame = ctk.CTkFrame(self)
+        frame.pack(side=ctk.TOP, padx=15, pady=5, anchor=ctk.W)
+        text = ctk.CTkLabel(frame, text='Themes: ', font=ctk.CTkFont('Tiny5', 38))
+        text.pack(side=ctk.TOP, anchor=ctk.SW, padx=5, pady=5)
+        for i, theme in enumerate(themes, 1):
+            if not i % 7:
+                frame = ctk.CTkFrame(self)
+                frame.pack(side=ctk.TOP, padx=15, pady=5, anchor=ctk.W)
+            self.create_theme_button(frame, theme)
 
-    def change_theme(self, choice: str) -> None:
+    def select_theme(self, choice: str) -> None:
         self.choice = choice
         change_config('theme', choice)
 
