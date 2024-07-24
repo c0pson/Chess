@@ -31,9 +31,10 @@ class Cell(ctk.CTkLabel):
 
 class Board(ctk.CTkFrame):
     def __init__(self, master, moves_record, size: int) -> None:
-        super().__init__(master, fg_color=COLOR.TRANSPARENT)
+        super().__init__(master, fg_color=COLOR.DARK_TEXT, corner_radius=0)
         self.master = master
         self.loading_screen: ctk.CTkLabel | None = None
+        self.loading_animation(0)
         self.size = size
         self.board = self.create_board()
         self.previous_click: tuple[None, None] | tuple[int, int] = (None, None)
@@ -52,14 +53,23 @@ class Board(ctk.CTkFrame):
         else:
             return COLOR.TILE_2
 
-    def create_board(self) -> list[list[Cell]]:
-        new_frame = ctk.CTkFrame(self, fg_color=COLOR.TRANSPARENT, corner_radius=0)
+    def create_outline_l_r_t(self):
+        new_frame = ctk.CTkFrame(self, fg_color=COLOR.DARK_TEXT, corner_radius=0)
+        new_frame.pack(side=ctk.TOP, padx=0, pady=0, fill=ctk.X)
+        ctk.CTkLabel(new_frame, text=f' ', font=ctk.CTkFont('Tiny5', self.size//3), text_color=COLOR.DARK_TEXT).pack(padx=1, pady=1)
+        new_frame = ctk.CTkFrame(self, fg_color=COLOR.DARK_TEXT, corner_radius=0)
         new_frame.pack(side=ctk.LEFT, padx=0, pady=0, fill=ctk.Y)
         for i in range(8):
-            ctk.CTkLabel(new_frame, text=f'{i+1} ', font=ctk.CTkFont('Tiny5', self.size//3)).pack(side=ctk.TOP, padx=0, pady=0, expand=True)
-        ctk.CTkLabel(new_frame, text='\n', font=ctk.CTkFont('Tiny5', 12)).pack(side=ctk.BOTTOM, padx=0, pady=0)
+            ctk.CTkLabel(new_frame, text=f'   {i+1}  ', font=ctk.CTkFont('Tiny5', self.size//3)).pack(side=ctk.TOP, padx=0, pady=0, expand=True)
+        ctk.CTkLabel(new_frame, text='\n', font=ctk.CTkFont('Tiny5', 22)).pack(side=ctk.BOTTOM, padx=0, pady=0)
+        new_frame = ctk.CTkFrame(self, fg_color=COLOR.DARK_TEXT, corner_radius=0)
+        new_frame.pack(side=ctk.RIGHT, padx=0, pady=0, fill=ctk.Y)
+        ctk.CTkLabel(new_frame, text=f'{' ' * 7}', font=ctk.CTkFont('Tiny5', self.size//3), text_color=COLOR.DARK_TEXT).pack(padx=1, pady=1)
+
+    def create_board(self) -> list[list[Cell]]:
+        self.create_outline_l_r_t()
         board: list[list[Cell]] = []
-        board_frame = ctk.CTkFrame(self, corner_radius=0, fg_color=COLOR.TRANSPARENT)
+        board_frame = ctk.CTkFrame(self, corner_radius=0, fg_color=COLOR.DARK_TEXT)
         board_frame.pack(side=ctk.TOP, padx=0, pady=0)
         piece_positions = {
             (0, 0): piece.Rook('b', self, (0, 0)), (0, 7): piece.Rook('b', self, (0, 7)),
@@ -84,8 +94,8 @@ class Board(ctk.CTkFrame):
                 row.append(cell)
             board.append(row)
         new_frame = ctk.CTkFrame(self, fg_color=COLOR.TRANSPARENT, corner_radius=0)
-        new_frame.pack(padx=0, pady=0, fill=ctk.X)
-        for letter in {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}:
+        new_frame.pack(padx=2, pady=2, fill=ctk.X)
+        for letter in ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']:
             ctk.CTkLabel(new_frame, text=letter, font=ctk.CTkFont('Tiny5', self.size//3)).pack(side=ctk.LEFT, padx=0, pady=0, expand=True)
         return board
 
@@ -271,10 +281,7 @@ class Board(ctk.CTkFrame):
                     cell.figure.can_en_passant = False
 
     def restart_game(self) -> None:
-        self.loading_screen = ctk.CTkLabel(self.master, text='Loading   ', font=ctk.CTkFont('Tiny5', 42),
-                                            text_color=COLOR.TEXT)
-        self.master.after(270, lambda: self.loading_animation(0))
-        self.loading_screen.place(relx=0, rely=0, relwidth=1, relheight=1)
+        self.loading_animation(0)
         for child in self.winfo_children():
             if child != self.loading_screen:
                 child.destroy()
@@ -285,15 +292,23 @@ class Board(ctk.CTkFrame):
         self.current_turn = 'w'
         self.notification = None
         self.board = self.create_board()
-        self.master.after(1200, self.destroy_loading_screen)
 
     def destroy_loading_screen(self) -> None:
         self.loading_screen.destroy() # type: ignore
         self.loading_screen = None
 
     def loading_animation(self, i) -> None:
-        if self.loading_screen:
+        if not self.loading_screen:
+            self.loading_screen = ctk.CTkLabel(self.master, text='Loading   ', font=ctk.CTkFont('Tiny5', 42),
+                                                text_color=COLOR.TEXT)
+            self.loading_screen.place(relx=0, rely=0, relwidth=1, relheight=1)
+            self.loading_screen.lift()
+            self.master.after(270, lambda: self.loading_animation(0))
+        else:
+            self.loading_screen.lift()
             self.loading_screen.configure(text=f'Loading{'.' * i}{' ' * (3 - i)}')
-        if i <= 2:
-            i += 1
-            self.master.after(270, self.loading_animation, i)
+            if i <= 2:
+                i += 1
+                self.master.after(270, self.loading_animation, i)
+            else:
+                self.master.after(270, self.destroy_loading_screen)
