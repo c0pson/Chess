@@ -17,4 +17,4 @@ class COLOR(str, Enum):
     CLOSE_HOVER = '#C80036'
 
 class STRING(str, Enum):
-    ASSETS_WARNING =  'Make sure the folder under the name of chosen theme have all necessary assets with proper names!\n\n\n'
+    ASSETS_WARNING =  'Make sure the folder under the name of chosen theme have all necessary assets with proper names!\n'
