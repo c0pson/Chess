@@ -92,7 +92,7 @@ class Options(ctk.CTkFrame):
         self.master.after(2000, lambda: self.r_icon_label.bind('<Button-1>', self.replay))
 
     def cooldown(self, event) -> None:
-        self.notification = Notification(self.master, 'Not so fast', 0.7, 'top')
+        self.notification = Notification(self.master, 'Not so fast', 1, 'top')
 
 class Settings(ctk.CTkFrame):
     def __init__(self, master, restart_func, update_assets_func) -> None:
@@ -182,9 +182,12 @@ class Settings(ctk.CTkFrame):
         additional_frame.pack(side=ctk.TOP, padx=80, pady=0, fill=ctk.X)
         text_label = ctk.CTkLabel(additional_frame, text='Open assets folder', text_color=COLOR.TEXT,
                                     font=ctk.CTkFont('Tiny5', 32))
-        text_label.pack(side=ctk.LEFT, padx=10, pady=4, anchor=ctk.N)
+        text_label.pack(side=ctk.LEFT, padx=10, pady=4, anchor=ctk.NW)
         open_button = ctk.CTkButton(additional_frame, text='OPEN', font=ctk.CTkFont('Tiny5', 20),
                                     text_color=COLOR.TEXT, command=lambda: self.open_file_explorer('assets'),
                                     fg_color=COLOR.TILE_1, hover_color=COLOR.HIGH_TILE_2,
                                     corner_radius=0)
-        open_button.pack(side=ctk.LEFT, padx=10, pady=4, anchor=ctk.S)
+        open_button.pack(side=ctk.RIGHT, padx=10, pady=4, anchor=ctk.E)
+        path_text = ctk.CTkLabel(additional_frame, text=resource_path('assets'), text_color=COLOR.DARK_TEXT,
+                                font=ctk.CTkFont('Tiny5', 18))
+        path_text.pack(side=ctk.TOP, anchor=ctk.CENTER, padx=100, pady=15)

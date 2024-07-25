@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import pywinstyles
 
 from properties import COLOR
 
@@ -17,10 +18,26 @@ class Notification(ctk.CTkFrame):
                                         font=ctk.CTkFont('Tiny5', size=32), anchor=ctk.N)
         self.text_label.pack(padx=10, pady=10)
         if self.position == 'center':
-            self.place(relx=0.5, rely=0.47, anchor=ctk.CENTER)
+            self.place(relx=0.498, rely=0.47, anchor=ctk.CENTER)
         elif self.position == 'top':
             self.place(relx=0.5, y=20, anchor=ctk.N)
-        self.master.after(self.duration, self.hide_notification)
+        self.show_animation(0)
 
-    def hide_notification(self) -> None:
-        self.destroy()
+    def show_animation(self, i) -> None:
+        if not self.winfo_exists:
+            return
+        if i < 100:
+            i += 1
+            pywinstyles.set_opacity(self, value=(0.01*i), color='#000001')
+            self.master.after(1, lambda: self.show_animation(i))
+        else:
+            self.master.after(self.duration, lambda: self.hide_notification(0))
+
+    def hide_notification(self, i) -> None:
+        if i < 100:
+            i += 1
+            if self.winfo_exists():
+                pywinstyles.set_opacity(self, value=(1 - (0.01*i)), color='#000001')
+                self.master.after(1, lambda: self.hide_notification(i))
+        else:
+            self.destroy()
