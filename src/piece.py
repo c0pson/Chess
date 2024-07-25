@@ -100,7 +100,9 @@ class Pawn(Piece):
                                             fg_color=COLOR.BACKGROUND)
             choose_piece_menu_1.place(relx=0, rely=0, relwidth=1, relheight=1)
             pywinstyles.set_opacity(choose_piece_menu_1, value=0.01, color="#000001")
-            choose_piece_menu = ctk.CTkFrame(self.board, fg_color=COLOR.BACKGROUND)
+            choose_piece_menu = ctk.CTkFrame(self.board, fg_color=COLOR.BACKGROUND,
+                                            corner_radius=0, border_color=COLOR.DARK_TEXT,
+                                            border_width=4)
             choose_piece_menu.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
             pywinstyles.set_opacity(choose_piece_menu, color="#000001")
             possible_figures = [Knight, Bishop, Rook, Queen]
