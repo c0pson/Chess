@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import pywinstyles
 
+from tools import get_from_config
 from properties import COLOR
 
 class Notification(ctk.CTkFrame):
@@ -8,6 +9,7 @@ class Notification(ctk.CTkFrame):
         super().__init__(master, fg_color=COLOR.NOTIFICATION_BACKGROUND,
                         corner_radius=0, border_color=COLOR.NOTIFICATION_OUTLINE,
                         border_width=3, width=1, height=1)
+        self.font_name: str = str(get_from_config('font_name'))
         self.message: str = message
         self.duration: int = int(duration_sec * 1000)
         self.position: str = position
@@ -15,7 +17,7 @@ class Notification(ctk.CTkFrame):
 
     def show_notification(self) -> None:
         self.text_label = ctk.CTkLabel(self, text=self.message, text_color=COLOR.TEXT, 
-                                        font=ctk.CTkFont('Tiny5', size=32), anchor=ctk.N)
+                                        font=ctk.CTkFont(self.font_name, size=32), anchor=ctk.N)
         self.text_label.pack(padx=10, pady=10)
         if self.position == 'center':
             self.place(relx=0.498, rely=0.47, anchor=ctk.CENTER)
