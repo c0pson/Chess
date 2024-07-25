@@ -17,10 +17,10 @@ class MainWindow(ctk.CTk):
         self.load_font()
         self.moves_record = MovesRecord(self)
         self.moves_record.pack(side=ctk.RIGHT, padx=10, pady=10, fill=ctk.Y)
-        self.options = Options(self, self.restart_game, self.update_assets)
+        self.options = Options(self, self.restart_game, self.update_assets, self.update_font)
         self.options.pack(side=ctk.LEFT, padx=10, pady=10, fill=ctk.Y)
         self.board = Board(self, self.moves_record, size)
-        self.board.pack(side=ctk.RIGHT, padx=10, pady=10, expand=True, ipadx=5, ipady=5)
+        self.board.pack(side=ctk.RIGHT, padx=10, pady=10, expand=True, ipadx=5, ipady=5, anchor=ctk.CENTER)
         self.theme: str = str(get_from_config('theme'))
         self.set_icon()
 
@@ -50,6 +50,16 @@ class MainWindow(ctk.CTk):
             for cell in row:
                 if cell.figure:
                     cell.figure.update_image()
+
+    def update_font(self, widget=None):
+        if widget is None:
+            widget = self
+            self.load_font()
+        for child in widget.winfo_children():
+            if isinstance(child, ctk.CTkLabel) or isinstance(child, ctk.CTkButton):
+                size = child.cget('font').cget('size')
+                child.configure(font=ctk.CTkFont(get_from_config('font_name'), size))
+            self.update_font(child)
 
 if __name__ == "__main__":
     ctk.deactivate_automatic_dpi_awareness()
