@@ -15,7 +15,7 @@ class Cell(ctk.CTkLabel):
         self.figure: None | piece.Piece = figure
         figure_asset = self.figure.image if self.figure else None
         super().__init__(master=frame, image=figure_asset, text='', fg_color=color,
-                        width=get_from_config('size'), height=get_from_config('size'), bg_color=COLOR.TRANSPARENT)
+                        width=get_from_config('size'), height=get_from_config('size'), bg_color=COLOR.BACKGROUND)
         self.bind('<Button-1>', self.on_click)
         self.pack(side=ctk.LEFT, padx=2, pady=2)
 
@@ -34,6 +34,7 @@ class Board(ctk.CTkFrame):
         super().__init__(master, fg_color=COLOR.DARK_TEXT, corner_radius=0)
         self.master = master
         self.loading_screen: ctk.CTkLabel | None = None
+        self.font_name: str = str(get_from_config('font_name'))
         self.loading_animation(0)
         self.size = size
         self.board = self.create_board()
@@ -54,17 +55,15 @@ class Board(ctk.CTkFrame):
             return COLOR.TILE_2
 
     def create_outline_l_r_t(self):
-        new_frame = ctk.CTkFrame(self, fg_color=COLOR.DARK_TEXT, corner_radius=0)
-        new_frame.pack(side=ctk.TOP, padx=0, pady=0, fill=ctk.X)
-        ctk.CTkLabel(new_frame, text=f' ', font=ctk.CTkFont('Tiny5', self.size//3), text_color=COLOR.DARK_TEXT).pack(padx=1, pady=1)
+        ctk.CTkLabel(self, text=f' ', font=ctk.CTkFont(self.font_name, self.size//3), text_color=COLOR.DARK_TEXT).pack(padx=10, pady=1)
         new_frame = ctk.CTkFrame(self, fg_color=COLOR.DARK_TEXT, corner_radius=0)
         new_frame.pack(side=ctk.LEFT, padx=0, pady=0, fill=ctk.Y)
         for i in range(8):
-            ctk.CTkLabel(new_frame, text=f'   {i+1}  ', font=ctk.CTkFont('Tiny5', self.size//3)).pack(side=ctk.TOP, padx=0, pady=0, expand=True)
-        ctk.CTkLabel(new_frame, text='\n', font=ctk.CTkFont('Tiny5', 22)).pack(side=ctk.BOTTOM, padx=0, pady=0)
+            ctk.CTkLabel(new_frame, text=f' {i+1}', font=ctk.CTkFont(self.font_name, self.size//3), fg_color=COLOR.DARK_TEXT, anchor=ctk.E).pack(side=ctk.TOP, padx=10, pady=0, expand=True)
+        ctk.CTkLabel(new_frame, text='\n', font=ctk.CTkFont(self.font_name, 22)).pack(side=ctk.BOTTOM, padx=0, pady=0)
         new_frame = ctk.CTkFrame(self, fg_color=COLOR.DARK_TEXT, corner_radius=0)
         new_frame.pack(side=ctk.RIGHT, padx=0, pady=0, fill=ctk.Y)
-        ctk.CTkLabel(new_frame, text=f'{' ' * 7}', font=ctk.CTkFont('Tiny5', self.size//3), text_color=COLOR.DARK_TEXT).pack(padx=1, pady=1)
+        ctk.CTkLabel(new_frame, text='  ', font=ctk.CTkFont(self.font_name, self.size//3), text_color=COLOR.DARK_TEXT, fg_color=COLOR.DARK_TEXT).pack(padx=10, pady=1)
 
     def create_board(self) -> list[list[Cell]]:
         self.create_outline_l_r_t()
@@ -83,7 +82,7 @@ class Board(ctk.CTkFrame):
         }
         for i in range(8):
             row = []
-            new_frame = ctk.CTkFrame(board_frame, fg_color=COLOR.TRANSPARENT)
+            new_frame = ctk.CTkFrame(board_frame, fg_color=COLOR.DARK_TEXT)
             new_frame.pack(padx=0, pady=0)
             for j in range(8):
                 if self.loading_screen:
@@ -93,10 +92,10 @@ class Board(ctk.CTkFrame):
                 cell = Cell(new_frame, figure, (i, j), color, self)
                 row.append(cell)
             board.append(row)
-        new_frame = ctk.CTkFrame(self, fg_color=COLOR.TRANSPARENT, corner_radius=0)
+        new_frame = ctk.CTkFrame(self, fg_color=COLOR.DARK_TEXT, corner_radius=0)
         new_frame.pack(padx=2, pady=2, fill=ctk.X)
         for letter in ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']:
-            ctk.CTkLabel(new_frame, text=letter, font=ctk.CTkFont('Tiny5', self.size//3)).pack(side=ctk.LEFT, padx=0, pady=0, expand=True)
+            ctk.CTkLabel(new_frame, text=letter, font=ctk.CTkFont(self.font_name, self.size//3), fg_color=COLOR.DARK_TEXT).pack(side=ctk.LEFT, padx=0, pady=0, expand=True)
         return board
 
     def remove_highlights(self) -> None:
@@ -299,7 +298,7 @@ class Board(ctk.CTkFrame):
 
     def loading_animation(self, i) -> None:
         if not self.loading_screen:
-            self.loading_screen = ctk.CTkLabel(self.master, text='Loading   ', font=ctk.CTkFont('Tiny5', 42),
+            self.loading_screen = ctk.CTkLabel(self.master, text='Loading   ', font=ctk.CTkFont(self.font_name, 42),
                                                 text_color=COLOR.TEXT)
             self.loading_screen.place(relx=0, rely=0, relwidth=1, relheight=1)
             self.loading_screen.lift()
