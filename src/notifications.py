@@ -20,7 +20,7 @@ class Notification(ctk.CTkFrame):
                                         font=ctk.CTkFont(self.font_name, size=32), anchor=ctk.N)
         self.text_label.pack(padx=10, pady=10)
         if self.position == 'center':
-            self.place(relx=0.498, rely=0.47, anchor=ctk.CENTER)
+            self.place(relx=0.504, rely=0.47, anchor=ctk.CENTER)
         elif self.position == 'top':
             self.place(relx=0.5, y=20, anchor=ctk.N)
         self.show_animation(0)
