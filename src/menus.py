@@ -1,12 +1,13 @@
-from fontTools.ttLib import TTFont # type: ignore
+from fontTools.ttLib import TTFont
 import customtkinter as ctk
 import subprocess
 import platform
 import os
+import re
 
-from tools import get_from_config, change_config, load_menu_image, resource_path
+from tools import get_from_config, change_config, load_menu_image, resource_path, change_color
+from properties import COLOR, STRING, refresh_color_enum
 from notifications import Notification
-from properties import COLOR, STRING
 from piece import Piece, Knight
 
 class MovesRecord(ctk.CTkFrame):
@@ -103,16 +104,21 @@ class Settings(ctk.CTkFrame):
         super().__init__(master, fg_color=COLOR.BACKGROUND, corner_radius=0)
         self.place(relx=0, rely=0, relwidth=1, relheight=1)
         self.close_image = load_menu_image('close')
-        self.font_name: str = str(get_from_config('font_name'))
         self.close_button()
+        self.scrollable_frame = ctk.CTkScrollableFrame(self, corner_radius=0, fg_color=COLOR.BACKGROUND,
+                                                        scrollbar_button_color=COLOR.DARK_TEXT)
+        self.scrollable_frame.pack(side=ctk.TOP, padx=0, pady=0, fill=ctk.BOTH, expand=True)
+        self.font_name: str = str(get_from_config('font_name'))
         self.choose_theme()
         self.choose_font()
         self.open_assets_folder()
+        self.change_colors()
         self.previous_theme: None | str = None
         self.choice: None | str = None
         self.restart_func = restart_func
         self.update_assets_func = update_assets_func
         self.update_font_func = update_font_func
+        ctk.CTkLabel(self, text='', height=18, fg_color=COLOR.BACKGROUND).pack(padx=0, pady=0)
 
     @staticmethod
     def list_directories_os(path) -> list:
@@ -149,16 +155,16 @@ class Settings(ctk.CTkFrame):
         themes = self.list_directories_os('assets')
         if not themes:
             return
-        text = ctk.CTkLabel(self, text='Themes: ', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.TEXT)
+        text = ctk.CTkLabel(self.scrollable_frame, text='Themes: ', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.TEXT)
         text.pack(side=ctk.TOP, anchor=ctk.SW, padx=75, pady=0)
         themes.remove('menu') if 'menu' in themes else themes
-        frame = ctk.CTkScrollableFrame(self, fg_color=COLOR.TILE_2, scrollbar_button_color=COLOR.DARK_TEXT,
-                                        scrollbar_button_hover_color=COLOR.DARK_TEXT, orientation=ctk.HORIZONTAL,
-                                        height=70, corner_radius=0, scrollbar_fg_color=COLOR.DARK_TEXT)
+        frame = ctk.CTkScrollableFrame(self.scrollable_frame, fg_color=COLOR.TILE_2, scrollbar_button_color=COLOR.DARK_TEXT,
+                                        orientation=ctk.HORIZONTAL,
+                                        height=70, corner_radius=0)
         frame.pack(side=ctk.TOP, padx=80, pady=5, anchor=ctk.W, fill=ctk.X)
         for theme in themes:
             self.create_theme_button(frame, theme)
-        warning_text = ctk.CTkLabel(self, text=STRING.ASSETS_WARNING, font=ctk.CTkFont(str(get_from_config('font_name')), 18),
+        warning_text = ctk.CTkLabel(self.scrollable_frame, text=STRING.ASSETS_WARNING, font=ctk.CTkFont(str(get_from_config('font_name')), 18),
                                     text_color=COLOR.CLOSE)
         warning_text.pack(side=ctk.TOP, anchor=ctk.SW, padx=100, pady=0)
 
@@ -213,11 +219,11 @@ class Settings(ctk.CTkFrame):
             return None
 
     def open_assets_folder(self) -> None:
-        additional_frame = ctk.CTkFrame(self, fg_color=COLOR.TILE_2, corner_radius=0)
-        additional_frame.pack(side=ctk.TOP, padx=80, pady=20, fill=ctk.X)
-        text_label = ctk.CTkLabel(additional_frame, text='Open assets folder', text_color=COLOR.TEXT,
+        text_label = ctk.CTkLabel(self.scrollable_frame, text='Open assets folder', text_color=COLOR.TEXT,
                                     font=ctk.CTkFont(str(get_from_config('font_name')), 32))
-        text_label.pack(side=ctk.LEFT, padx=10, pady=4, anchor=ctk.NW)
+        text_label.pack(side=ctk.TOP, padx=75, pady=4, anchor=ctk.NW)
+        additional_frame = ctk.CTkFrame(self.scrollable_frame, fg_color=COLOR.TILE_2, corner_radius=0)
+        additional_frame.pack(side=ctk.TOP, padx=80, pady=0, fill=ctk.X)
         open_button = ctk.CTkButton(additional_frame, text='OPEN', font=ctk.CTkFont(str(get_from_config('font_name')), 20),
                                     text_color=COLOR.TEXT, command=lambda: self.open_file_explorer('assets'),
                                     fg_color=COLOR.TILE_1, hover_color=COLOR.HIGH_TILE_2,
@@ -225,18 +231,18 @@ class Settings(ctk.CTkFrame):
         open_button.pack(side=ctk.RIGHT, padx=10, pady=4, anchor=ctk.E)
         path_text = ctk.CTkLabel(additional_frame, text=resource_path('assets'), text_color=COLOR.DARK_TEXT,
                                 font=ctk.CTkFont(str(get_from_config('font_name')), 18))
-        path_text.pack(side=ctk.TOP, anchor=ctk.CENTER, padx=100, pady=15)
+        path_text.pack(side=ctk.LEFT, padx=15, pady=15)
+        ctk.CTkLabel(self.scrollable_frame, fg_color=COLOR.DARK_TEXT, text='', corner_radius=0, height=16).pack(side=ctk.TOP, padx=80, pady=0, fill=ctk.X)
 
     def choose_font(self) -> None:
         self.previous_font = str(get_from_config('font_file_name'))
         fonts = self.get_all_files('fonts')
         if not fonts:
             return
-        text = ctk.CTkLabel(self, text='Fonts: ', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.TEXT)
+        text = ctk.CTkLabel(self.scrollable_frame, text='Fonts: ', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.TEXT)
         text.pack(side=ctk.TOP, anchor=ctk.SW, padx=75, pady=0)
-        frame = ctk.CTkScrollableFrame(self, fg_color=COLOR.TILE_2, scrollbar_button_color=COLOR.DARK_TEXT,
-                                        scrollbar_button_hover_color=COLOR.DARK_TEXT, orientation=ctk.HORIZONTAL,
-                                        height=70, corner_radius=0, scrollbar_fg_color=COLOR.DARK_TEXT)
+        frame = ctk.CTkScrollableFrame(self.scrollable_frame, fg_color=COLOR.TILE_2, scrollbar_button_color=COLOR.DARK_TEXT,
+                                        orientation=ctk.HORIZONTAL, height=70, corner_radius=0, scrollbar_fg_color=COLOR.DARK_TEXT)
         frame.pack(side=ctk.TOP, padx=80, pady=5, anchor=ctk.W, fill=ctk.X)
         for font in fonts:
             self.create_font_button(frame, font)
@@ -257,3 +263,71 @@ class Settings(ctk.CTkFrame):
             change_config('font_file_name', os.path.basename(font))
             self.update_font_func()
             self.previous_font = str(get_from_config('font_file_name'))
+
+    @staticmethod
+    def is_valid_color(color):
+        hex_color_pattern = re.compile(r'^#[0-9a-fA-F]{6}$')
+        return bool(hex_color_pattern.match(color))
+
+    @staticmethod
+    def validate_length(new_value):
+        return len(new_value) <= 7
+
+    def change_colors(self) -> None:
+        text = ctk.CTkLabel(self.scrollable_frame, text='Colors: ', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.TEXT)
+        text.pack(side=ctk.TOP, anchor=ctk.SW, padx=75, pady=0)
+        warning_text = ctk.CTkLabel(self.scrollable_frame, text=STRING.COLORS_WARNING, font=ctk.CTkFont(str(get_from_config('font_name')), 18),
+                                    text_color=COLOR.CLOSE)
+        warning_text.pack(side=ctk.TOP, anchor=ctk.SW, padx=100, pady=0)
+        frame = ctk.CTkFrame(self.scrollable_frame, corner_radius=0, fg_color=COLOR.TILE_2)
+        frame.pack(side=ctk.TOP, padx=80, pady=0, anchor=ctk.W, fill=ctk.X)
+        ctk.CTkLabel(frame, text='', height=2).pack(padx=0, pady=0)
+        for color in COLOR:
+            self.color_label(frame, color) if color != 'transparent' else ...
+        ctk.CTkLabel(frame, text='', height=2).pack(padx=0, pady=0)
+        ctk.CTkLabel(self.scrollable_frame, fg_color=COLOR.DARK_TEXT, text='', corner_radius=0, height=16).pack(side=ctk.TOP, padx=80, pady=0, fill=ctk.X)
+        ctk.CTkLabel(self.scrollable_frame, fg_color=COLOR.TRANSPARENT, text='', corner_radius=0, height=16).pack(side=ctk.TOP, padx=80, pady=0, fill=ctk.X)
+
+    def color_label(self, frame, color) -> None:
+        for color_name , color_str in COLOR.__members__.items():
+            if color_str == color:
+                name_of_color = color_name
+                break
+        color_frame = ctk.CTkFrame(frame, fg_color=COLOR.NOTATION_BACKGROUND_B, corner_radius=0)
+        color_frame.pack(side=ctk.TOP, padx=10, pady=4, fill=ctk.X)
+        color_label = ctk.CTkLabel(color_frame, fg_color=color, text=color, width=100,
+                                    text_color=COLOR.TEXT if color != COLOR.TEXT else COLOR.DARK_TEXT,
+                                    font=ctk.CTkFont(get_from_config('font_name'), 22))
+        color_label.pack(side=ctk.LEFT, padx=4, pady=4)
+        vcmd = (self.register(self.validate_length), '%P')
+        color_picker_button = ctk.CTkEntry(color_frame, border_width=0, text_color=COLOR.TEXT,
+                                                corner_radius=0, fg_color=COLOR.BACKGROUND,
+                                                font=ctk.CTkFont(get_from_config('font_name'), 20),
+                                                validate='key', validatecommand=vcmd)
+        color_picker_button.insert(0, color)
+        color_picker_button.pack(side=ctk.LEFT, padx=25, pady=4)
+        save_button = ctk.CTkButton(color_frame, text='OK', font=ctk.CTkFont(get_from_config('font_name'), 20),
+                                    command=lambda: self.save_color(color_name, color_picker_button, color_label),width=50,
+                                    corner_radius=0, fg_color=COLOR.TILE_1, hover_color=COLOR.HIGH_TILE_2,
+                                    text_color=COLOR.TEXT)
+        save_button.pack(side=ctk.LEFT, padx=10, pady=4)
+        cancel_button = ctk.CTkButton(color_frame, text='CANCEL', font=ctk.CTkFont(get_from_config('font_name'), 20),
+                                    command=lambda: self.cancel(color_name, color_picker_button, color, color_label), width=50,
+                                    corner_radius=0, fg_color=COLOR.CLOSE, hover_color=COLOR.CLOSE_HOVER,
+                                    text_color=COLOR.TEXT)
+        cancel_button.pack(side=ctk.LEFT, padx=10, pady=4)
+        color_name_label = ctk.CTkLabel(color_frame, text=name_of_color, text_color=COLOR.TEXT,
+                                        font=ctk.CTkFont(get_from_config('font_name'), 22))
+        color_name_label.pack(side=ctk.RIGHT, padx=4, pady=4)
+
+    def save_color(self, color_name: str, entry: ctk.CTkEntry, color_label: ctk.CTkLabel) -> None:
+        new_color = entry.get()
+        if self.is_valid_color(new_color):
+            change_color(color_name, new_color)
+            color_label.configure(fg_color=new_color)
+
+    def cancel(self, color_name: str, entry: ctk.CTkEntry, color: str, color_label: ctk.CTkLabel) -> None:
+        entry.delete(0, ctk.END)
+        entry.insert(0, color)
+        change_color(color_name, color)
+        color_label.configure(fg_color=color)
