@@ -37,3 +37,16 @@ def load_menu_image(option: str) -> ctk.CTkImage | None:
     except (FileNotFoundError, FileExistsError) as e:
         print(f'Couldn`t load image for due to error: {e}')
     return None
+
+def get_colors() -> dict:
+    config = configparser.ConfigParser()
+    config.read(resource_path('assets/config.ini'))
+    colors = dict(config['Colors'])
+    return colors
+
+def change_color(color_name: str, color_value: str) -> None:
+    config = configparser.ConfigParser()
+    config.read(resource_path('assets\\config.ini'))
+    config['Colors'][color_name] = color_value    
+    with open(resource_path('assets\\config.ini'), 'w') as configfile:
+        config.write(configfile)
