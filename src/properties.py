@@ -1,20 +1,21 @@
+from tools import get_colors
 from enum import Enum
 
-class COLOR(str, Enum):
-    BACKGROUND = '#606676'
-    TILE_1 = '#708871'
-    HIGH_TILE_1 = '#94A695'
-    TILE_2 = '#BEC6A0'
-    HIGH_TILE_2 = '#CFD7C9'
-    TEXT = '#FEF3E2'
-    DARK_TEXT = '#222831'
-    TRANSPARENT = 'transparent'
-    NOTIFICATION_BACKGROUND = '#536493'
-    NOTIFICATION_OUTLINE = '#393E46'
-    NOTATION_BACKGROUND_B = '#254336'
-    NOTATION_BACKGROUND_W = '#B7B597'
-    CLOSE = '#FF6969'
-    CLOSE_HOVER = '#C80036'
+class StrEnum(str, Enum):
+    def __str__(self):
+        return str(self.value)
+
+def create_color_enum():
+    colors = get_colors()
+    capitalized_colors = {key.upper(): value for key, value in colors.items()}
+    return StrEnum('COLOR', capitalized_colors)
+
+COLOR = create_color_enum()
+
+def refresh_color_enum():
+    global COLOR
+    COLOR = create_color_enum()
 
 class STRING(str, Enum):
-    ASSETS_WARNING =  'Make sure the folder under the name of chosen theme have all necessary assets with proper names!'
+    ASSETS_WARNING = 'Make sure the folder under the name of chosen theme have all necessary assets with proper names!'
+    COLORS_WARNING = 'Color changes will be visible after restarting app!'
