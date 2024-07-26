@@ -295,24 +295,20 @@ class Settings(ctk.CTkFrame):
                 break
         color_frame = ctk.CTkFrame(frame, fg_color=COLOR.NOTATION_BACKGROUND_B, corner_radius=0)
         color_frame.pack(side=ctk.TOP, padx=10, pady=4, fill=ctk.X)
-        color_label = ctk.CTkLabel(color_frame, fg_color=color, text=color, width=100,
-                                    text_color=COLOR.TEXT if color != COLOR.TEXT else COLOR.DARK_TEXT,
-                                    font=ctk.CTkFont(get_from_config('font_name'), 22))
-        color_label.pack(side=ctk.LEFT, padx=4, pady=4)
         vcmd = (self.register(self.validate_length), '%P')
-        color_picker_button = ctk.CTkEntry(color_frame, border_width=0, text_color=COLOR.TEXT,
-                                                corner_radius=0, fg_color=COLOR.BACKGROUND,
+        color_picker_button = ctk.CTkEntry(color_frame, border_width=0, corner_radius=0, fg_color=color,
                                                 font=ctk.CTkFont(get_from_config('font_name'), 20),
-                                                validate='key', validatecommand=vcmd)
+                                                validate='key', validatecommand=vcmd,
+                                                text_color=COLOR.TEXT if color != COLOR.TEXT else COLOR.DARK_TEXT)
         color_picker_button.insert(0, color)
         color_picker_button.pack(side=ctk.LEFT, padx=25, pady=4)
         save_button = ctk.CTkButton(color_frame, text='OK', font=ctk.CTkFont(get_from_config('font_name'), 20),
-                                    command=lambda: self.save_color(color_name, color_picker_button, color_label),width=50,
+                                    command=lambda: self.save_color(color_name, color_picker_button, color_picker_button),width=50,
                                     corner_radius=0, fg_color=COLOR.TILE_1, hover_color=COLOR.HIGH_TILE_2,
                                     text_color=COLOR.TEXT)
         save_button.pack(side=ctk.LEFT, padx=10, pady=4)
         cancel_button = ctk.CTkButton(color_frame, text='CANCEL', font=ctk.CTkFont(get_from_config('font_name'), 20),
-                                    command=lambda: self.cancel(color_name, color_picker_button, color, color_label), width=50,
+                                    command=lambda: self.cancel(color_name, color_picker_button, color, color_picker_button), width=50,
                                     corner_radius=0, fg_color=COLOR.CLOSE, hover_color=COLOR.CLOSE_HOVER,
                                     text_color=COLOR.TEXT)
         cancel_button.pack(side=ctk.LEFT, padx=10, pady=4)
