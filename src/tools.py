@@ -28,10 +28,10 @@ def change_config(change_variable: str, value: str | int) -> None:
     with open(resource_path('assets\\config.ini'), 'w') as configfile:
         config.write(configfile)
 
-def load_menu_image(option: str) -> ctk.CTkImage | None:
+def load_menu_image(option: str, resize: float = 1.5) -> ctk.CTkImage | None:
     setting_icon_path = resource_path(f'assets\\menu\\{option}.png')
     try:
-        size = int(get_from_config('size')) // 1.5
+        size = int(get_from_config('size')) // resize
         setting_icon = Image.open(setting_icon_path).convert('RGBA')
         return ctk.CTkImage(light_image=setting_icon, dark_image=setting_icon, size=(size, size))
     except (FileNotFoundError, FileExistsError) as e:

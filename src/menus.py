@@ -1,5 +1,6 @@
 from fontTools.ttLib import TTFont
 import customtkinter as ctk
+from color_picker import ColorPicker
 import subprocess
 import platform
 import os
@@ -104,6 +105,7 @@ class Settings(ctk.CTkFrame):
         super().__init__(master, fg_color=COLOR.BACKGROUND, corner_radius=0)
         self.place(relx=0, rely=0, relwidth=1, relheight=1)
         self.close_image = load_menu_image('close')
+        self.color_picker_image = load_menu_image('colorpicker', resize=2)
         self.close_button()
         self.scrollable_frame = ctk.CTkScrollableFrame(self, corner_radius=0, fg_color=COLOR.BACKGROUND,
                                                         scrollbar_button_color=COLOR.DARK_TEXT)
@@ -288,7 +290,7 @@ class Settings(ctk.CTkFrame):
         ctk.CTkLabel(self.scrollable_frame, fg_color=COLOR.DARK_TEXT, text='', corner_radius=0, height=16).pack(side=ctk.TOP, padx=80, pady=0, fill=ctk.X)
         ctk.CTkLabel(self.scrollable_frame, fg_color=COLOR.TRANSPARENT, text='', corner_radius=0, height=16).pack(side=ctk.TOP, padx=80, pady=0, fill=ctk.X)
 
-    def color_label(self, frame, color) -> None:
+    def color_label(self, frame, color: str) -> None:
         for color_name , color_str in COLOR.__members__.items():
             if color_str == color:
                 name_of_color = color_name
@@ -296,19 +298,26 @@ class Settings(ctk.CTkFrame):
         color_frame = ctk.CTkFrame(frame, fg_color=COLOR.NOTATION_BACKGROUND_B, corner_radius=0)
         color_frame.pack(side=ctk.TOP, padx=10, pady=4, fill=ctk.X)
         vcmd = (self.register(self.validate_length), '%P')
-        color_picker_button = ctk.CTkEntry(color_frame, border_width=0, corner_radius=0, fg_color=color,
+        color_entry = ctk.CTkEntry(color_frame, border_width=0, corner_radius=0, fg_color=color,
                                                 font=ctk.CTkFont(get_from_config('font_name'), 20),
                                                 validate='key', validatecommand=vcmd,
                                                 text_color=COLOR.TEXT if color != COLOR.TEXT else COLOR.DARK_TEXT)
-        color_picker_button.insert(0, color)
-        color_picker_button.pack(side=ctk.LEFT, padx=25, pady=4)
-        save_button = ctk.CTkButton(color_frame, text='OK', font=ctk.CTkFont(get_from_config('font_name'), 20),
-                                    command=lambda: self.save_color(color_name, color_picker_button, color_picker_button),width=50,
+        color_entry.insert(0, color)
+        rgb_color = color.lstrip('#')
+        r = int(rgb_color[0:2], 16)
+        g = int(rgb_color[2:4], 16)
+        b = int(rgb_color[4:6], 16)
+        color_picker = ctk.CTkLabel(color_frame, text='', image=self.color_picker_image)
+        color_picker.pack(side=ctk.LEFT, padx=5, pady=4)
+        color_picker.bind('<Button-1>', lambda e: self.ask_for_color(r, g, b, color_entry, color_name))
+        color_entry.pack(side=ctk.LEFT, padx=10, pady=4)
+        ok_button = ctk.CTkButton(color_frame, text='OK', font=ctk.CTkFont(get_from_config('font_name'), 20),
+                                    command=lambda: self.save_color(color_name, color_entry, color_entry),width=50,
                                     corner_radius=0, fg_color=COLOR.TILE_1, hover_color=COLOR.HIGH_TILE_2,
                                     text_color=COLOR.TEXT)
-        save_button.pack(side=ctk.LEFT, padx=10, pady=4)
+        ok_button.pack(side=ctk.LEFT, padx=10, pady=4)
         cancel_button = ctk.CTkButton(color_frame, text='CANCEL', font=ctk.CTkFont(get_from_config('font_name'), 20),
-                                    command=lambda: self.cancel(color_name, color_picker_button, color, color_picker_button), width=50,
+                                    command=lambda: self.cancel(color_name, color_entry, color), width=50,
                                     corner_radius=0, fg_color=COLOR.CLOSE, hover_color=COLOR.CLOSE_HOVER,
                                     text_color=COLOR.TEXT)
         cancel_button.pack(side=ctk.LEFT, padx=10, pady=4)
@@ -322,8 +331,21 @@ class Settings(ctk.CTkFrame):
             change_color(color_name, new_color)
             color_label.configure(fg_color=new_color)
 
-    def cancel(self, color_name: str, entry: ctk.CTkEntry, color: str, color_label: ctk.CTkLabel) -> None:
+    def ask_for_color(self, r, g, b, entry: ctk.CTkEntry, color_name: str) -> None:
+        picker = ColorPicker(fg_color=COLOR.BACKGROUND, r=r, g=g, b=b, font=ctk.CTkFont(self.font_name, 15),
+                            theme_color=COLOR.TILE_1, border_color=COLOR.DARK_TEXT, slider_color=COLOR.NOTIFICATION_OUTLINE,
+                            slider_active_color=COLOR.TEXT, button_color=COLOR.HIGH_TILE_2, corner_radius=0,
+                            text_color=COLOR.DARK_TEXT)
+        # self.master.after(201, lambda: picker.iconbitmap(resource_path('assets\\logo.ico')))
+        color = picker.get_color()
+        if color:
+            entry.delete(0, ctk.END)
+            entry.insert(0, color)
+            change_color(color_name, color)
+            entry.configure(fg_color=color)
+
+    def cancel(self, color_name: str, entry: ctk.CTkEntry, color: str) -> None:
         entry.delete(0, ctk.END)
         entry.insert(0, color)
         change_color(color_name, color)
-        color_label.configure(fg_color=color)
+        entry.configure(fg_color=color)
