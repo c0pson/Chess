@@ -38,7 +38,7 @@ class MainWindow(ctk.CTk):
     def set_window_size(self) -> str:
         size: int = int(get_from_config('size'))
         size = (size+2) * 10 + 40
-        center_pos: str = f'+{(self.winfo_screenwidth()-size-300)//2}+75'
+        center_pos: str = f'+{(self.winfo_screenwidth()-(int(size*1.5)))//2}+75'
         return f'{size + 300}x{size}{center_pos}'
 
     def restart_game(self) -> None:
