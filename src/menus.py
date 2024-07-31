@@ -1,6 +1,5 @@
 from fontTools.ttLib import TTFont
 import customtkinter as ctk
-from color_picker import ColorPicker
 import subprocess
 import platform
 import os
@@ -9,6 +8,7 @@ import re
 from tools import get_from_config, change_config, load_menu_image, resource_path, change_color
 from properties import COLOR, STRING, refresh_color_enum
 from notifications import Notification
+from color_picker import ColorPicker
 from piece import Piece, Knight
 
 class MovesRecord(ctk.CTkFrame):
@@ -332,10 +332,7 @@ class Settings(ctk.CTkFrame):
             color_label.configure(fg_color=new_color)
 
     def ask_for_color(self, r, g, b, entry: ctk.CTkEntry, color_name: str) -> None:
-        picker = ColorPicker(fg_color=COLOR.BACKGROUND, r=r, g=g, b=b, font=ctk.CTkFont(self.font_name, 15),
-                            theme_color=COLOR.TILE_1, border_color=COLOR.DARK_TEXT, slider_color=COLOR.NOTIFICATION_OUTLINE,
-                            slider_active_color=COLOR.TEXT, button_color=COLOR.HIGH_TILE_2, corner_radius=0,
-                            text_color=COLOR.DARK_TEXT)
+        picker = ColorPicker(fg_color=COLOR.BACKGROUND, r=r, g=g, b=b, font=ctk.CTkFont(self.font_name, 15))
         # self.master.after(201, lambda: picker.iconbitmap(resource_path('assets\\logo.ico')))
         color = picker.get_color()
         if color:
