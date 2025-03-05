@@ -6,7 +6,7 @@ import os
 import re
 
 from tools import get_from_config, change_config, load_menu_image, resource_path, change_color
-from properties import COLOR, STRING, refresh_color_enum
+from properties import COLOR, STRING
 from notifications import Notification
 from color_picker import ColorPicker
 from piece import Piece, Knight

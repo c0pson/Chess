@@ -5,7 +5,7 @@ import pywinstyles
 from tools import resource_path, get_from_config
 from properties import COLOR
 
-class Piece():
+class Piece:
     def __init__(self, color: str, board, position) -> None:
         self.color = color
         self.board = board

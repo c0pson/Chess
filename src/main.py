@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import os
+import threading
 
 from tools import resource_path, get_from_config
 from properties import COLOR
@@ -55,11 +56,20 @@ class MainWindow(ctk.CTk):
         if widget is None:
             widget = self
             self.load_font()
-        for child in widget.winfo_children():
-            if isinstance(child, ctk.CTkLabel) or isinstance(child, ctk.CTkButton):
-                size = child.cget('font').cget('size')
-                child.configure(font=ctk.CTkFont(get_from_config('font_name'), size))
-            self.update_font(child)
+
+        def thread_task():
+            children = widget.winfo_children()
+            for child in children:
+                if isinstance(child, ctk.CTkLabel) or isinstance(child, ctk.CTkButton):
+                    size = child.cget('font').cget('size')
+                    self.update_font_on_main_thread(child, size)
+
+                self.update_font(child)
+
+        threading.Thread(target=thread_task).start()
+
+    def update_font_on_main_thread(self, widget, size):
+        self.after(0, lambda: widget.configure(font=ctk.CTkFont(get_from_config('font_name'), size)))
 
 if __name__ == "__main__":
     ctk.deactivate_automatic_dpi_awareness()
