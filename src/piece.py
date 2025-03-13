@@ -27,7 +27,7 @@ class Piece:
             piece_name = (self.__class__.__name__).lower()
         else:
             piece_name = piece
-        path: str = resource_path(os.path.join('assets', f'{get_from_config('theme')}', f'piece_name_{self.color}.png'))
+        path: str = resource_path(os.path.join('assets', f'{get_from_config('theme')}', f'{piece_name}_{self.color}.png'))
         try: 
             loaded_image = Image.open(path).convert('RGBA')
             if piece:
