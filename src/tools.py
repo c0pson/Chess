@@ -13,7 +13,7 @@ def resource_path(relative_path: str) -> str:
 
 def get_from_config(variable: str) -> str | int:
     config = configparser.ConfigParser()
-    config.read(resource_path('assets\\config.ini'))
+    config.read(resource_path(os.path.join('assets', 'config.ini')))
     db_variable = config['database'][variable]
     if variable == 'size':
         return int(db_variable)
@@ -21,15 +21,15 @@ def get_from_config(variable: str) -> str | int:
 
 def change_config(change_variable: str, value: str | int) -> None:
     config = configparser.ConfigParser()
-    config.read(resource_path('assets\\config.ini'))
+    config.read(resource_path(os.path.join('assets', 'config.ini')))
     if isinstance(value, int):
         value = str(value)
     config['database'][change_variable] = value    
-    with open(resource_path('assets\\config.ini'), 'w') as configfile:
+    with open(resource_path(os.path.join('assets', 'config.ini')), 'w') as configfile:
         config.write(configfile)
 
 def load_menu_image(option: str, resize: float = 1.5) -> ctk.CTkImage | None:
-    setting_icon_path = resource_path(f'assets\\menu\\{option}.png')
+    setting_icon_path = resource_path(os.path.join('assets', 'menu', f'{option}.png'))
     try:
         size = int(get_from_config('size')) // resize
         setting_icon = Image.open(setting_icon_path).convert('RGBA')
@@ -40,13 +40,13 @@ def load_menu_image(option: str, resize: float = 1.5) -> ctk.CTkImage | None:
 
 def get_colors() -> dict:
     config = configparser.ConfigParser()
-    config.read(resource_path('assets/config.ini'))
+    config.read(resource_path(os.path.join('assets', 'config.ini')))
     colors = dict(config['Colors'])
     return colors
 
 def change_color(color_name: str, color_value: str) -> None:
     config = configparser.ConfigParser()
-    config.read(resource_path('assets\\config.ini'))
+    config.read(resource_path(os.path.join('assets', 'config.ini')))
     config['Colors'][color_name] = color_value    
-    with open(resource_path('assets\\config.ini'), 'w') as configfile:
+    with open(resource_path(os.path.join('assets', 'config.ini')), 'w') as configfile:
         config.write(configfile)
