@@ -22,7 +22,7 @@ class Piece:
     def check_turn(self, current_color: str) -> bool:
         return False if current_color == self.color else True
 
-    def load_image(self, piece = None) -> None | ctk.CTkImage:
+    def load_image(self, piece=None) -> None | ctk.CTkImage:
         if not piece:
             piece_name = (self.__class__.__name__).lower()
         else:

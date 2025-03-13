@@ -6,6 +6,11 @@ from tools import get_from_config
 from properties import COLOR
 
 class Notification(ctk.CTkFrame):
+    """Class handling showing notifications in the app.
+
+    Args:
+        ctk.CTkFrame : inheritance from customtkinter CTkFrame widget. 
+    """
     def __init__(self, master, message: str, duration_sec: float, position: str = 'center'):
         super().__init__(master, fg_color=COLOR.NOTIFICATION_BACKGROUND,
                         corner_radius=0, border_color=COLOR.NOTIFICATION_OUTLINE,
