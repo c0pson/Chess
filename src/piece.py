@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from PIL import Image
-from sys import platform
-if platform == 'win32':
+import platform
+if platform.system() == 'Windows':
     import pywinstyles
 
 from tools import resource_path, get_from_config
@@ -101,13 +101,13 @@ class Pawn(Piece):
             choose_piece_menu_1 = ctk.CTkFrame(self.board, corner_radius=0,
                                             fg_color=COLOR.BACKGROUND)
             choose_piece_menu_1.place(relx=0, rely=0, relwidth=1, relheight=1)
-            if platform == 'win32':
+            if platform.system() == 'Windows':
                 pywinstyles.set_opacity(choose_piece_menu_1, value=0.01, color="#000001")
             choose_piece_menu = ctk.CTkFrame(self.board, fg_color=COLOR.BACKGROUND,
                                             corner_radius=0, border_color=COLOR.DARK_TEXT,
                                             border_width=4)
             choose_piece_menu.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-            if platform == 'win32':
+            if platform.system() == 'Windows':
                 pywinstyles.set_opacity(choose_piece_menu, color="#000001")
             possible_figures = [Knight, Bishop, Rook, Queen]
             for i, figure in enumerate(possible_figures):
