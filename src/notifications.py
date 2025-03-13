@@ -1,6 +1,7 @@
 import customtkinter as ctk
-import pywinstyles
-
+from sys import platform
+if platform == 'win32':
+    import pywinstyles
 from tools import get_from_config
 from properties import COLOR
 
@@ -30,7 +31,8 @@ class Notification(ctk.CTkFrame):
             return
         if i < 100:
             i += 1
-            pywinstyles.set_opacity(self, value=(0.01*i), color='#000001')
+            if platform == 'win32':
+                pywinstyles.set_opacity(self, value=(0.01*i), color='#000001')
             self.master.after(1, lambda: self.show_animation(i))
         else:
             self.master.after(self.duration, lambda: self.hide_notification(0))
@@ -39,7 +41,8 @@ class Notification(ctk.CTkFrame):
         if i < 100:
             i += 1
             if self.winfo_exists():
-                pywinstyles.set_opacity(self, value=(1 - (0.01*i)), color='#000001')
+                if platform == 'win32':
+                    pywinstyles.set_opacity(self, value=(1 - (0.01*i)), color='#000001')
                 self.master.after(1, lambda: self.hide_notification(i))
         else:
             self.destroy()
