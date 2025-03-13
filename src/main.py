@@ -26,15 +26,15 @@ class MainWindow(ctk.CTk):
         self.set_icon()
 
     def load_font(self) -> None:
-        font = get_from_config('font_file_name')
+        font: str | int = get_from_config('font_file_name')
         if os.name == 'nt':
-            ctk.FontManager.windows_load_font(resource_path(f'fonts\\{font}'))
+            ctk.FontManager.windows_load_font(resource_path(os.path.join('fonts', str(font))))
         else:
-            ctk.FontManager.load_font(resource_path(f'fonts/{font}'))
+            ctk.FontManager.load_font(resource_path(os.path.join('fonts', str(font))))
 
     def set_icon(self) -> None:
         if os.name == 'nt':
-            self.iconbitmap(resource_path('assets\\logo.ico'))
+            self.iconbitmap(resource_path(os.path.join('assets', 'logo.ico')))
 
     def set_window_size(self) -> str:
         size: int = int(get_from_config('size'))
