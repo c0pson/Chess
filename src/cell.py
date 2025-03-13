@@ -1,6 +1,3 @@
-"""Test here
-"""
-
 import customtkinter as ctk
 from typing import Any
 
@@ -20,21 +17,21 @@ class Cell(ctk.CTkLabel):
     """
     def __init__(self, frame: ctk.CTkFrame, figure: piece.Piece | None, position: tuple[int, int], color: str, board) -> None:
         """Constructor:
-            - binds left button to on_click function.
-            - displays itself on the screen.
+            - binds left button to on_click function. <br>
+            - displays itself on the screen. <br>
 
         Args:
-            frame (ctk.CTkFrame): Parent Frame on which cell will be represented.
-            figure (piece.Piece | None): Figure on a cell.
-            position (tuple[int, int]): Position on a board.
-            color (str): Color of the cell white or black.
-            board (Board): Parent class handling cell placement.
+            frame (ctk.CTkFrame): Parent Frame on which cell will be represented. <br>
+            figure (piece.Piece | None): Figure on a cell. <br>
+            position (tuple[int, int]): Position on a board. <br>
+            color (str): Color of the cell white or black. <br>
+            board (Board): Parent class handling cell placement. <br>
         """
         self.frame: ctk.CTkFrame = frame
         self.position: tuple[int, int] = position
-        self.board = board
+        self.board: Board = board
         self.figure: None | piece.Piece = figure
-        figure_asset = self.figure.image if self.figure else None
+        figure_asset: ctk.CTkImage | None = self.figure.image if self.figure else None
         super().__init__(master=frame, image=figure_asset, text='', fg_color=color,
                         width=get_from_config('size'), height=get_from_config('size'), bg_color=COLOR.BACKGROUND)
         self.bind('<Button-1>', self.on_click)
@@ -64,7 +61,7 @@ class Board(ctk.CTkFrame):
         ctk.CTkFrame : Inheritance from customtkinter CTkLabel widget.
     """
     def __init__(self, master, moves_record: MovesRecord, size: int) -> None:
-        """_summary_
+        """Constructor
 
         Args:
             master (Any): Parent widget.
@@ -85,7 +82,7 @@ class Board(ctk.CTkFrame):
         self.current_turn: str = 'w'
         self.notification: None | Notification = None
         self.moves_record: MovesRecord = moves_record
-        self.capture = False
+        self.capture: bool = False
 
     @staticmethod
     def determine_tile_color(pos: tuple[int, int]) -> str:
@@ -165,7 +162,7 @@ class Board(ctk.CTkFrame):
         """Displays message on the screen using Notification class.
 
         Args:
-            message (str): Desired message to display.
+            message (str): Desired message to display. <br>
             duration_sec (int): Amount of seconds before hiding the notification .
         """
         if self.notification:
@@ -386,7 +383,7 @@ class Board(ctk.CTkFrame):
                     return cell.figure.position
         return (-1, -1)
 
-    def reset_en_passant_flags(self, current_color: str):
+    def reset_en_passant_flags(self, current_color: str) -> None:
         """Helper function to reset en passant flag.
 
         Args:

@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from typing import Callable
 from PIL import Image
 import platform
 import os
@@ -8,6 +9,7 @@ if platform.system() == 'Windows':
 from tools import resource_path, get_from_config
 from properties import COLOR
 
+
 class Piece:
     def __init__(self, color: str, board, position) -> None:
         self.color: str = color
@@ -16,7 +18,7 @@ class Piece:
         self.first_move: bool = False
         self.image: ctk.CTkImage | None = None
 
-    def check_possible_moves(self, color: str, checking: bool = False):
+    def check_possible_moves(self, color: str, checking: bool=False):
         raise NotImplementedError
 
     def check_turn(self, current_color: str) -> bool:
@@ -55,9 +57,9 @@ class Pawn(Piece):
         self.moved_by_two: bool = False
         self.can_en_passant: bool = False
         self.move: int = 1 if self.color == 'b' else -1
-        self.notation_func = notation_func
+        self.notation_func: Callable = notation_func
 
-    def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
+    def check_possible_moves(self, color: str, checking: bool=False) -> list[tuple[int, int]]:
         if self.check_turn(color) and not checking:
             return []
         move = self.move
@@ -83,14 +85,14 @@ class Pawn(Piece):
                     self.can_en_passant = True
         return possible_moves
 
-    def choose_figure(self, event, figure, choose_piece_menu, choose_piece_menu_1):
+    def choose_figure(self, event, figure, choose_piece_menu, choose_piece_menu_1) -> None:
         self.board.board[self.position[0]][self.position[1]].figure = figure(self.color, self.board, self.position)
         self.board.board[self.position[0]][self.position[1]].update()
         self.notation_func(self.board.board[self.position[0]][self.position[1]].figure.__class__.__name__)
         choose_piece_menu.destroy()
         choose_piece_menu_1.destroy()
 
-    def create_button(self, choose_piece_menu, figure, choose_piece_menu_1):
+    def create_button(self, choose_piece_menu, figure, choose_piece_menu_1) -> None:
         piece_image = self.load_image(str(figure.__name__))
         button_figure = ctk.CTkLabel(choose_piece_menu, text='', image=piece_image,
                                     corner_radius=0)
@@ -116,7 +118,7 @@ class Pawn(Piece):
             return True
         return False
 
-    def notate(self, figure_name, moves_record, capture, check, checkmate):
+    def notate(self, figure_name, moves_record, capture, check, checkmate) -> None:
         moves_record.record_move(figure_name, capture=capture, castle=None, check = check, checkmate = checkmate, promotion=f'{self.board.board[self.position[0]][self.position[1]].figure.__class__.__name__[0]}')
 
 class Knight(Piece):
@@ -206,7 +208,7 @@ class Rook(Piece):
         self.color: str = color
         self.board = board
         self.load_image()
-        self.first_move = True
+        self.first_move: bool = True
 
     def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
         if self.check_turn(color) and not checking:
@@ -273,8 +275,8 @@ class King(Piece):
         self.color: str = color
         self.board = board
         self.load_image()
-        self.first_move = True
-        self.can_castle = False
+        self.first_move: bool = True
+        self.can_castle: bool = False
 
     def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
         if self.check_turn(color) and not checking:

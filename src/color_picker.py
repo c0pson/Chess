@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from typing import Any
 
 from properties import COLOR
 
@@ -8,19 +9,19 @@ class ColorPicker(ctk.CTkToplevel):
         self.grab_set()
         self.attributes('-topmost', True)
         self.title('Color Picker')
-        self.font = font if font else None
-        self.font_size = font.cget('size') if font else 15
-        self.preview_size = preview_size
+        self.font: ctk.CTkFont | None = font if font else None
+        self.font_size: int = font.cget('size') if font else 15
+        self.preview_size: int = preview_size
         self.r_val: int = r
         self.g_val: int = g
         self.b_val: int = b
         self.hex_val: str | None = self.convert_to_hex()
-        self.main_frame = ctk.CTkFrame(self, corner_radius=0, fg_color=COLOR.BACKGROUND)
+        self.main_frame: ctk.CTkFrame = ctk.CTkFrame(self, corner_radius=0, fg_color=COLOR.BACKGROUND)
         self.main_frame.pack(side=ctk.TOP, expand=True, ipadx=10, ipady=10)
         self.color_preview()
         self.r_g_b_sliders()
         self.update_sliders(None)
-        self.bottom_frame = ctk.CTkFrame(self.main_frame, corner_radius=0, fg_color='transparent')
+        self.bottom_frame: ctk.CTkFrame = ctk.CTkFrame(self.main_frame, corner_radius=0, fg_color='transparent')
         self.bottom_frame.pack(side=ctk.BOTTOM, expand=True, ipadx=10, ipady=10)
         self.hex_color_label()
         self.ok_button()
@@ -30,19 +31,19 @@ class ColorPicker(ctk.CTkToplevel):
         self.center_window()
 
     def center_window(self) -> None:
-        x = self.master.winfo_screenwidth()
-        y = self.master.winfo_screenheight()
-        app_width = self.winfo_width()
-        app_height = self.winfo_height()
+        x: int = self.master.winfo_screenwidth()
+        y: int = self.master.winfo_screenheight()
+        app_width: int = self.winfo_width()
+        app_height: int = self.winfo_height()
         self.geometry(f'+{(x//2)-app_width}+{(y//2)-app_height}')
 
     def color_preview(self) -> None:
-        self.color_prev_box = ctk.CTkFrame(self.main_frame, fg_color=self.convert_to_hex(), border_width=3, width=self.preview_size, 
+        self.color_prev_box: ctk.CTkFrame = ctk.CTkFrame(self.main_frame, fg_color=self.convert_to_hex(), border_width=3, width=self.preview_size, 
                                             height=self.preview_size, corner_radius=0, border_color=COLOR.TILE_2)
         self.color_prev_box.pack(side=ctk.RIGHT, padx=3, pady=3, expand=True)
 
     @staticmethod
-    def validate_hex_color(value_if_allowed):
+    def validate_hex_color(value_if_allowed) -> bool:
         if len(value_if_allowed) == 0 or (value_if_allowed.startswith('#') and len(value_if_allowed) <= 7):
             for char in value_if_allowed[1:]:
                 if char not in '0123456789ABCDEFabcdef':
@@ -50,14 +51,14 @@ class ColorPicker(ctk.CTkToplevel):
             return True
         return False
 
-    def paste_hex_color(self, event):
+    def paste_hex_color(self, event: Any) -> str:
         clipboard = self.master.clipboard_get()
         if self.validate_hex_color(clipboard):
             self.hex_val_label.delete(0, ctk.END)
             self.hex_val_label.insert(0, clipboard)
         return 'break'
 
-    def update_on_hex(self, event) -> None:
+    def update_on_hex(self, event: Any) -> None:
         if len(self.hex_val_label.get()) == 7:
             self.r_val, self.g_val, self.b_val = self.convert_to_r_g_b()
             self.update_sliders(None)
@@ -159,7 +160,7 @@ class ColorPicker(ctk.CTkToplevel):
         self.b_slider.set(b) if 0 < b <= 255 else self.b_slider.set(0)
         self.color_prev_box.configure(fg_color=self.convert_to_hex())
 
-    def slider_on_change(self, event, r: bool = False, g: bool = False, b: bool = False) -> None:
+    def slider_on_change(self, event: Any, r: bool = False, g: bool = False, b: bool = False) -> None:
         if r:
             self.r_val = int(self.r_slider.get())
             self.r_val_label.delete(0, ctk.END)
@@ -199,4 +200,4 @@ class ColorPicker(ctk.CTkToplevel):
         return self.convert_to_hex() if self.hex_val else None
 
 if __name__ == "__main__":
-    ColorPicker()
+    ColorPicker().mainloop()

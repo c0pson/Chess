@@ -60,25 +60,25 @@ class MovesRecord(ctk.CTkFrame):
     def create_frames(self) -> None:
         """Creates frames to reserve space for displaying move notations.
         """
-        black_label = ctk.CTkLabel(self, text='Black', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.DARK_TEXT)
+        black_label: ctk.CTkLabel = ctk.CTkLabel(self, text='Black', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.DARK_TEXT)
         black_label.pack(side=ctk.TOP, padx=1, pady=1)
-        additional_frame = ctk.CTkFrame(self, fg_color=COLOR.TRANSPARENT, corner_radius=0,
+        additional_frame: ctk.CTkFrame = ctk.CTkFrame(self, fg_color=COLOR.TRANSPARENT, corner_radius=0,
                                         border_color=COLOR.DARK_TEXT, border_width=7)
         additional_frame.pack(side=ctk.TOP, padx=15, expand=True, fill=ctk.Y)
-        self.black_scroll_frame = ctk.CTkScrollableFrame(additional_frame, scrollbar_button_color=COLOR.NOTATION_BACKGROUND_B,
+        self.black_scroll_frame: ctk.CTkScrollableFrame = ctk.CTkScrollableFrame(additional_frame, scrollbar_button_color=COLOR.NOTATION_BACKGROUND_B,
                                                         fg_color=COLOR.NOTATION_BACKGROUND_B, corner_radius=0,
                                                         scrollbar_button_hover_color=COLOR.NOTATION_BACKGROUND_B,)
         self.black_scroll_frame.pack(side=ctk.TOP, padx=6, pady=7, fill=ctk.Y, expand=True)
-        white_label = ctk.CTkLabel(self, text='White', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.TEXT)
+        white_label: ctk.CTkLabel = ctk.CTkLabel(self, text='White', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.TEXT)
         white_label.pack(side=ctk.TOP, padx=0, pady=0)
         additional_frame = ctk.CTkFrame(self, fg_color=COLOR.TRANSPARENT, corner_radius=0,
                                         border_color=COLOR.DARK_TEXT, border_width=7)
         additional_frame.pack(side=ctk.TOP, padx=15, expand=True, fill=ctk.Y)
-        self.white_scroll_frame = ctk.CTkScrollableFrame(additional_frame, scrollbar_button_color=COLOR.NOTATION_BACKGROUND_W,
+        self.white_scroll_frame: ctk.CTkScrollableFrame = ctk.CTkScrollableFrame(additional_frame, scrollbar_button_color=COLOR.NOTATION_BACKGROUND_W,
                                                         fg_color=COLOR.NOTATION_BACKGROUND_W, corner_radius=0,
                                                         scrollbar_button_hover_color=COLOR.NOTATION_BACKGROUND_W)
         self.white_scroll_frame.pack(side=ctk.TOP, padx=6, pady=7, fill=ctk.Y, expand=True)
-        space_label = ctk.CTkLabel(self, text='\n')
+        space_label: ctk.CTkLabel = ctk.CTkLabel(self, text='\n')
         space_label.pack()
 
     def restart(self) -> None:
@@ -118,21 +118,21 @@ class Options(ctk.CTkFrame):
     def setting_button(self) -> None:
         """Setup of setting button.
         """
-        self.s_icon_label = ctk.CTkLabel(self, text='', image=self.setting_icon)
+        self.s_icon_label: ctk.CTkLabel = ctk.CTkLabel(self, text='', image=self.setting_icon)
         self.s_icon_label.pack(side=ctk.TOP, padx=10, pady=5)
         self.s_icon_label.bind('<Button-1>', self.open_settings)
 
     def replay_button(self) -> None:
         """Setup of replay button.
         """
-        self.r_icon_label = ctk.CTkLabel(self, text='', image=self.replay_icon)
+        self.r_icon_label: ctk.CTkLabel = ctk.CTkLabel(self, text='', image=self.replay_icon)
         self.r_icon_label.pack(side=ctk.TOP, padx=10, pady=0)
         self.r_icon_label.bind('<Button-1>', self.replay)
 
     def space_label(self) -> None:
         """Space to maintain the desired spacing.
         """
-        space = ctk.CTkLabel(self, text='\n')
+        space: ctk.CTkLabel = ctk.CTkLabel(self, text='\n')
         space.pack(padx=2, pady=2)
 
     def open_settings(self, event: Any) -> None:
@@ -161,7 +161,7 @@ class Options(ctk.CTkFrame):
         Args:
             event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
-        self.notification = Notification(self.master, 'Not so fast', 1, 'top')
+        self.notification: Notification = Notification(self.master, 'Not so fast', 1, 'top')
 
 class Settings(ctk.CTkFrame):
     """Class handling changes in setting such as fonts, assets and colors.
@@ -182,10 +182,10 @@ class Settings(ctk.CTkFrame):
         """
         super().__init__(master, fg_color=COLOR.BACKGROUND, corner_radius=0)
         self.place(relx=0, rely=0, relwidth=1, relheight=1)
-        self.close_image = load_menu_image('close')
-        self.color_picker_image = load_menu_image('colorpicker', resize=2)
+        self.close_image: ctk.CTkImage | None = load_menu_image('close')
+        self.color_picker_image: ctk.CTkImage | None = load_menu_image('colorpicker', resize=2)
         self.close_button()
-        self.scrollable_frame = ctk.CTkScrollableFrame(self, corner_radius=0, fg_color=COLOR.BACKGROUND,
+        self.scrollable_frame: ctk.CTkScrollableFrame = ctk.CTkScrollableFrame(self, corner_radius=0, fg_color=COLOR.BACKGROUND,
                                                         scrollbar_button_color=COLOR.DARK_TEXT)
         self.scrollable_frame.pack(side=ctk.TOP, padx=0, pady=0, fill=ctk.BOTH, expand=True)
         self.font_name: str = str(get_from_config('font_name'))
@@ -193,26 +193,26 @@ class Settings(ctk.CTkFrame):
         self.choose_font()
         self.open_assets_folder()
         self.change_colors()
-        self.previous_theme: None | str = None
-        self.choice: None | str = None
-        self.restart_func = restart_func
-        self.update_assets_func = update_assets_func
-        self.update_font_func = update_font_func
+        self.previous_theme: str | None = None
+        self.choice: str | None = None
+        self.restart_func: Callable = restart_func
+        self.update_assets_func: Callable = update_assets_func
+        self.update_font_func: Callable = update_font_func
         ctk.CTkLabel(self, text='', height=18, fg_color=COLOR.BACKGROUND).pack(padx=0, pady=0)
 
     @staticmethod
-    def list_directories_os(path: str) -> list:
+    def list_directories_os(path: str) -> list[str]:
         """Lists all directories from given path.
 
         Args:
             path (str): Desired path
 
         Returns:
-            list: List of all directories from path
+            list[str]: List of all directories from path
         """
         try:
-            entries = os.listdir(path)
-            directories = [
+            entries: list[str] = os.listdir(path)
+            directories: list[str] = [
                 entry for entry in entries
                 if os.path.isdir(os.path.join(path, entry)) and os.listdir(os.path.join(path, entry))
             ]
@@ -250,10 +250,10 @@ class Settings(ctk.CTkFrame):
         """Setup of theme chooser.
         """
         self.previous_theme = str(get_from_config('theme'))
-        themes = self.list_directories_os('assets')
+        themes: list[str] = self.list_directories_os('assets')
         if not themes:
             return
-        text = ctk.CTkLabel(self.scrollable_frame, text='Themes: ', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.TEXT)
+        text: ctk.CTkLabel = ctk.CTkLabel(self.scrollable_frame, text='Themes: ', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.TEXT)
         text.pack(side=ctk.TOP, anchor=ctk.SW, padx=75, pady=0)
         themes.remove('menu') if 'menu' in themes else themes
         frame = ctk.CTkScrollableFrame(self.scrollable_frame, fg_color=COLOR.TILE_2, scrollbar_button_color=COLOR.DARK_TEXT,
@@ -262,7 +262,7 @@ class Settings(ctk.CTkFrame):
         frame.pack(side=ctk.TOP, padx=80, pady=5, anchor=ctk.W, fill=ctk.X)
         for theme in themes:
             self.create_theme_button(frame, theme)
-        warning_text = ctk.CTkLabel(self.scrollable_frame, text=STRING.ASSETS_WARNING, font=ctk.CTkFont(str(get_from_config('font_name')), 18),
+        warning_text: ctk.CTkLabel = ctk.CTkLabel(self.scrollable_frame, text=STRING.ASSETS_WARNING, font=ctk.CTkFont(str(get_from_config('font_name')), 18),
                                     text_color=COLOR.CLOSE)
         warning_text.pack(side=ctk.TOP, anchor=ctk.SW, padx=100, pady=0)
 
@@ -275,7 +275,7 @@ class Settings(ctk.CTkFrame):
         self.choice = choice
         change_config('theme', choice)
 
-    def on_close(self, event) -> None:
+    def on_close(self, event: Any) -> None:
         """Waits for close action to properly destroy the window
 
         Args:
@@ -296,7 +296,7 @@ class Settings(ctk.CTkFrame):
         Args:
             path (str): Path to open.
         """
-        system = platform.system()
+        system: str = platform.system()
         if system == 'Windows':
             os.startfile(path)
         elif system == 'Darwin':
@@ -336,8 +336,8 @@ class Settings(ctk.CTkFrame):
             str | None: Returns font name on success otherwise None.
         """
         try:
-            font = TTFont(ttf_path)
-            name = ""
+            font: TTFont = TTFont(ttf_path)
+            name: str = ''
             for record in font['name'].names:
                 if record.nameID == 4:
                     if b'\000' in record.string:

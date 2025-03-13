@@ -31,14 +31,14 @@ class MainWindow(ctk.CTk):
         super().__init__(fg_color=COLOR.BACKGROUND)
         self.title('Chess')
         self.geometry(self.set_window_size())
-        size = int(get_from_config('size'))
+        size: int = int(get_from_config('size'))
         self.minsize(((size + 2) * 10 + 40)+ 400, ((size + 2) * 10 + 40))
         self.load_font()
-        self.moves_record = MovesRecord(self)
+        self.moves_record: MovesRecord = MovesRecord(self)
         self.moves_record.pack(side=ctk.RIGHT, padx=10, pady=10, fill=ctk.Y)
-        self.options = Options(self, self.restart_game, self.update_assets, self.update_font)
+        self.options: Options = Options(self, self.restart_game, self.update_assets, self.update_font)
         self.options.pack(side=ctk.LEFT, padx=10, pady=10, fill=ctk.Y)
-        self.board = Board(self, self.moves_record, size)
+        self.board: Board = Board(self, self.moves_record, size)
         self.board.pack(side=ctk.RIGHT, padx=10, pady=10, expand=True, ipadx=5, ipady=5, anchor=ctk.CENTER)
         self.theme: str = str(get_from_config('theme'))
         self.set_icon()
@@ -84,7 +84,7 @@ class MainWindow(ctk.CTk):
                 if cell.figure:
                     cell.figure.update_image()
 
-    def update_font(self, widget=None):
+    def update_font(self, widget=None) -> None:
         """Handle for updating the font during app runtime without freezing the window.
 
         Args:
