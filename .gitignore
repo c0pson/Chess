@@ -1,3 +1,4 @@
 .vscode/
 mypy.ini
 src/__pycache__/
+pdoc
