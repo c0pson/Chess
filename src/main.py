@@ -50,8 +50,6 @@ class MainWindow(ctk.CTk):
         system_name: str = platform.system()
         if system_name == 'Windows':
             ctk.FontManager.windows_load_font(resource_path(os.path.join('fonts', str(font))))
-        elif system_name == 'Linux':
-            ctk.FontManager.linux_font_path(resource_path(os.path.join('fonts', font)))
         else:
             ctk.FontManager.load_font(resource_path(os.path.join('fonts', str(font))))
 
