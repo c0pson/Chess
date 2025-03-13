@@ -14,7 +14,7 @@ class MainWindow(ctk.CTk):
     Size, minimum size, font loading, icon setting, updating font, updating assets and restarting the game all happens here.
 
     Args:
-        ctk.CTk : Main app window
+        ctk.CTk : Main app window of customtkinter library (master).
     """
     def __init__(self) -> None:
         """Constructor for the MainWindow class: 

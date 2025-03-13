@@ -10,10 +10,10 @@ from properties import COLOR
 
 class Piece:
     def __init__(self, color: str, board, position) -> None:
-        self.color = color
+        self.color: str = color
         self.board = board
-        self.position = position
-        self.first_move = False
+        self.position: tuple[int, int] = position
+        self.first_move: bool = False
         self.image: ctk.CTkImage | None = None
 
     def check_possible_moves(self, color: str, checking: bool = False):

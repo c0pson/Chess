@@ -197,3 +197,6 @@ class ColorPicker(ctk.CTkToplevel):
     def get_color(self) -> str | None:
         self.master.wait_window(self)
         return self.convert_to_hex() if self.hex_val else None
+
+if __name__ == "__main__":
+    ColorPicker()
