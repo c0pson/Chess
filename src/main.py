@@ -1,3 +1,21 @@
+"""Main file of Chess game entirely made in python with properly working game engine. Contains a lot of customization option for user.
+App allows using custom assets, fonts and colors. Comes with easy to use menu to change the properties and readable config file.
+
+Libraries used: 
+ - customtkinter
+ - threading
+ - os
+ - sys
+ - platform
+ - configparser
+ - Pillow [PIL]
+ - re [regex]
+ - fontTools
+ - subprocess
+ - pywinstyles
+ - built in libraries
+"""
+
 import customtkinter as ctk
 import os
 import platform
@@ -10,11 +28,12 @@ from menus import MovesRecord, Options
 from cell import Board
 
 class MainWindow(ctk.CTk):
-    """Main class handling the app. 
-    Size, minimum size, font loading, icon setting, updating font, updating assets and restarting the game all happens here.
+    """Main class handling the app. Setting size, minimum size, font loading, icon setting,
+    updating font, updating assets and restarting the game all happens here.
 
     Args:
-        ctk.CTk : Main app window of customtkinter library (master).
+
+     - ctk.CTk : Main app window of customtkinter library (master).
     """
     def __init__(self) -> None:
         """Constructor for the MainWindow class: 
@@ -44,7 +63,7 @@ class MainWindow(ctk.CTk):
         self.set_icon()
 
     def load_font(self) -> None:
-        """Function loads font independently of the operating system.
+        """Function loads font independently on the users operating system.
         """
         font: str | int = get_from_config('font_file_name')
         system_name: str = platform.system()
@@ -54,7 +73,7 @@ class MainWindow(ctk.CTk):
             ctk.FontManager.load_font(resource_path(os.path.join('fonts', str(font))))
 
     def set_icon(self) -> None:
-        """Only for windows machines pawn icon will be set due to lack of implementation for linux and mac.
+        """Only for windows machines logo icon will be set due to lack of implementation for linux and mac.
         """
         if os.name == 'nt':
             self.iconbitmap(resource_path(os.path.join('assets', 'logo.ico')))
@@ -63,7 +82,8 @@ class MainWindow(ctk.CTk):
         """Calculating the size necessary to display all elements of the app on the screen.
 
         Returns:
-            str: return f'{width}x{height]}' because customtkinter uses f'{width}x{height]}' to set the size of the window.
+
+         - str: f'{width}x{height]}' because customtkinter uses f'{width}x{height]}' to set the size of the window.
         """
         size: int = int(get_from_config('size'))
         size = (size+2) * 10 + 40
@@ -88,7 +108,8 @@ class MainWindow(ctk.CTk):
         """Handle for updating the font during app runtime without freezing the window.
 
         Args:
-            widget (Any, optional): Child of the widget. Defaults to None - master widget doesn't have any parents.
+
+         - widget (Any, optional): Child of the widget. Defaults to None as master widget doesn't have any parents.
         """
         if widget is None:
             widget = self
@@ -102,13 +123,7 @@ class MainWindow(ctk.CTk):
                 self.update_font(child)
         threading.Thread(target=thread_task).start()
 
-    def __update_font_on_main_thread(self, widget, size: int):
-        """Updates the font on main thread.
-
-        Args:
-            widget (Any): widget that have parameter with font
-            size (int): desired size of the font
-        """
+    def __update_font_on_main_thread(self, widget, size: int) -> None:
         self.after(0, lambda: widget.configure(font=ctk.CTkFont(get_from_config('font_name'), size)))
 
 if __name__ == "__main__":

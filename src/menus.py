@@ -1,3 +1,6 @@
+"""File with implementation for all menus: MoveRecord, Options and Settings.
+"""
+
 from fontTools.ttLib import TTFont
 from typing import Callable, Any
 import customtkinter as ctk
@@ -16,15 +19,18 @@ class MovesRecord(ctk.CTkFrame):
     """Class handling recording the moves during playtime.
 
     Args:
-        ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget. 
+
+     - ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget. 
     """
     def __init__(self, master) -> None:
         """Constructor:
-            - calls function create_frames
-            - creates 2D vector to record moves
+
+         - calls function create_frames
+         - creates 2D vector to record moves
 
         Args:
-            master (Any): Parent widget
+
+         - master (Any): Parent widget
         """
         super().__init__(master, fg_color=COLOR.BACKGROUND)
         self.create_frames()
@@ -34,13 +40,14 @@ class MovesRecord(ctk.CTkFrame):
         """Displays the chess notation of the move on the frame for specific player color.
 
         Args:
-            moved_piece (Piece): Figure which was moved
-            previous_coords (tuple[int, int] | None, optional): Coordinates of position before moving the figure. Defaults to None.
-            capture (bool, optional): Flag to check if figure captured another figure. Defaults to False.
-            castle (str | None, optional): Flag to check if castle occurred. Defaults to None.
-            check (bool, optional): Checks if move caused the check. Defaults to False.
-            checkmate (bool, optional): Checks if move caused the checkmate. Defaults to False.
-            promotion (str, optional): Checks if pawn was promoted. Defaults to '' which means the promotion didn't occurred.
+
+         - moved_piece (Piece): Figure which was moved
+         - previous_coords (tuple[int, int] | None, optional): Coordinates of position before moving the figure. Defaults to None.
+         - capture (bool, optional): Flag to check if figure captured another figure. Defaults to False.
+         - castle (str | None, optional): Flag to check if castle occurred. Defaults to None.
+         - check (bool, optional): Checks if move caused the check. Defaults to False.
+         - checkmate (bool, optional): Checks if move caused the checkmate. Defaults to False.
+         - promotion (str, optional): Checks if pawn was promoted. Defaults to '' which means the promotion didn't occurred.
         """
         y_axis: list[str] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
         x, y = 8 - moved_piece.position[0], y_axis[moved_piece.position[1]]
@@ -93,17 +100,19 @@ class Options(ctk.CTkFrame):
     """Class handling user interface of available options on main window frame:
 
     Args:
-        ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget.
+
+     - ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget.
     """
     def __init__(self, master, restart_func: Callable, update_assets_func: Callable, update_font_func: Callable):
         """Constructor:
             - places setting and replay buttons
 
         Args:
-            master (Any): Parent widget
-            restart_func (Callable): Master function to restart the game
-            update_assets_func (Callable): Master function to update assets
-            update_font_func (Callable): Master function to update font
+
+         - master (Any): Parent widget
+         - restart_func (Callable): Master function to restart the game
+         - update_assets_func (Callable): Master function to update assets
+         - update_font_func (Callable): Master function to update font
         """
         super().__init__(master, fg_color=COLOR.BACKGROUND)
         self.restart_func: Callable = restart_func
@@ -139,7 +148,8 @@ class Options(ctk.CTkFrame):
         """Function opening settings.
 
         Args:
-            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+
+         - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
         self.settings = Settings(self.master, self.restart_func, self.update_assets_func, self.update_font_func)
 
@@ -147,7 +157,8 @@ class Options(ctk.CTkFrame):
         """Function restarting the game.
 
         Args:
-            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+
+         - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
         self.r_icon_label.unbind('<Button-1>')
         self.restart_func()
@@ -159,7 +170,8 @@ class Options(ctk.CTkFrame):
         """Cooldown for restarting the game too quickly.
 
         Args:
-            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+
+         - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
         self.notification: Notification = Notification(self.master, 'Not so fast', 1, 'top')
 
@@ -167,7 +179,8 @@ class Settings(ctk.CTkFrame):
     """Class handling changes in setting such as fonts, assets and colors.
 
     Args:
-        ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget.
+
+     - ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget.
     """
     def __init__(self, master, restart_func: Callable, update_assets_func: Callable, update_font_func: Callable) -> None:
         """Constructor
@@ -175,10 +188,11 @@ class Settings(ctk.CTkFrame):
             - calls all functions creating frames containing content
 
         Args:
-            master (Any): Parent widget
-            restart_func (Callable): Master function to restart the game
-            update_assets_func (Callable): Master function to update assets
-            update_font_func (Callable): Master function to update font
+
+         - master (Any): Parent widget
+         - restart_func (Callable): Master function to restart the game
+         - update_assets_func (Callable): Master function to update assets
+         - update_font_func (Callable): Master function to update font
         """
         super().__init__(master, fg_color=COLOR.BACKGROUND, corner_radius=0)
         self.place(relx=0, rely=0, relwidth=1, relheight=1)
@@ -205,10 +219,12 @@ class Settings(ctk.CTkFrame):
         """Lists all directories from given path.
 
         Args:
-            path (str): Desired path
+
+         - path (str): Desired path
 
         Returns:
-            list[str]: List of all directories from path
+
+         - list[str]: List of all directories from path
         """
         try:
             entries: list[str] = os.listdir(path)
@@ -237,8 +253,9 @@ class Settings(ctk.CTkFrame):
         """Setup of theme button.
 
         Args:
-            frame (ctk.CTkFrame): Frame in which button will be placed.
-            theme (str): Style of Figures to choose.
+
+         - frame (ctk.CTkFrame): Frame in which button will be placed.
+         - theme (str): Style of Figures to choose.
         """
         theme_button = ctk.CTkButton(frame, text=theme, command=lambda: self.select_theme(theme),
                                         font=ctk.CTkFont(str(get_from_config('font_name')), 30), corner_radius=0,
@@ -270,7 +287,8 @@ class Settings(ctk.CTkFrame):
         """Helper function to save theme changes to config file.
 
         Args:
-            choice (str): Name of theme to save.
+
+         - choice (str): Name of theme to save.
         """
         self.choice = choice
         change_config('theme', choice)
@@ -279,7 +297,8 @@ class Settings(ctk.CTkFrame):
         """Waits for close action to properly destroy the window
 
         Args:
-            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+
+         - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
         if not self.previous_theme and not self.choice:
             self.destroy()
@@ -294,7 +313,8 @@ class Settings(ctk.CTkFrame):
         """Opens file explorer with function specific to operating system.
 
         Args:
-            path (str): Path to open.
+
+         - path (str): Path to open.
         """
         system: str = platform.system()
         if system == 'Windows':
@@ -309,10 +329,12 @@ class Settings(ctk.CTkFrame):
         """Gathers all files from directory.
 
         Args:
-            path (str): Path of the desired directory.
+
+         - path (str): Path of the desired directory.
 
         Returns:
-            list[str]: List of all file names from path directory.
+
+         - list[str]: List of all file names from path directory.
         """
         path = resource_path(path)
         try:
@@ -330,10 +352,12 @@ class Settings(ctk.CTkFrame):
         """Gets name of the font from file name.
 
         Args:
-            ttf_path (str): Path to .ttf font file name.
+
+         - ttf_path (str): Path to .ttf font file name.
 
         Returns:
-            str | None: Returns font name on success otherwise None.
+
+         - str | None: Returns font name on success otherwise None.
         """
         try:
             font: TTFont = TTFont(ttf_path)
@@ -387,8 +411,8 @@ class Settings(ctk.CTkFrame):
         """Setup of font button.
 
         Args:
-            frame (ctk.CTkFrame): Frame in which button will be placed.
-            font (str): Font name.
+         - frame (ctk.CTkFrame): Frame in which button will be placed.
+         - font (str): Font name.
         """
         font_button = ctk.CTkButton(frame, text=self.get_font_name(font),
                                         command=lambda: self.select_font(font),
@@ -401,7 +425,8 @@ class Settings(ctk.CTkFrame):
         """Helper function to save change of font to config file.
 
         Args:
-            font (str): Font name.
+
+         - font (str): Font name.
         """
         if os.path.basename(font) == self.previous_font:
             return
@@ -416,10 +441,12 @@ class Settings(ctk.CTkFrame):
         """Checks if user passed string is valid with hex color.
 
         Args:
-            color (str): User defined color.
+
+         - color (str): User defined color.
 
         Returns:
-            bool: True if color passes regex pattern for hex color, False otherwise.
+
+         - bool: True if color passes regex pattern for hex color, False otherwise.
         """
         hex_color_pattern = re.compile(r'^#[0-9a-fA-F]{6}$')
         return bool(hex_color_pattern.match(color))
@@ -429,10 +456,12 @@ class Settings(ctk.CTkFrame):
         """Validation function for color input.
 
         Args:
-            new_value (str): User input from color entry.
+
+         - new_value (str): User input from color entry.
 
         Returns:
-            bool: True if length of the string is not longer than 7, False otherwise.
+
+         - bool: True if length of the string is not longer than 7, False otherwise.
         """
         return len(new_value) <= 7
 
@@ -457,8 +486,9 @@ class Settings(ctk.CTkFrame):
         """Function creating color preview frame.
 
         Args:
-            frame (ctk.CTkFrame): Parent frame.
-            color (str): New hex color string.
+
+         - frame (ctk.CTkFrame): Parent frame.
+         - color (str): New hex color string.
         """
         for color_name , color_str in COLOR.__members__.items():
             if color_str == color:
@@ -498,9 +528,10 @@ class Settings(ctk.CTkFrame):
         """Saves new color into config file.
 
         Args:
-            color_name (str): Name of the color to change.
-            entry (ctk.CTkEntry): User input with color hex code.
-            color_label (ctk.CTkLabel): Parent frame to update.
+
+         - color_name (str): Name of the color to change.
+         - entry (ctk.CTkEntry): User input with color hex code.
+         - color_label (ctk.CTkLabel): Parent frame to update.
         """
         new_color = entry.get()
         if self.is_valid_color(new_color):
@@ -511,11 +542,11 @@ class Settings(ctk.CTkFrame):
         """Input dialog with custom color picker for easy use.
 
         Args:
-            r (int): Red color intensity.
-            g (int): Green color intensity.
-            b (int): Blue color intensity.
-            entry (ctk.CTkEntry): Entry frame for user input.
-            color_name (str): Color name from config file.
+         - r (int): Red color intensity.
+         - g (int): Green color intensity.
+         - b (int): Blue color intensity.
+         - entry (ctk.CTkEntry): Entry frame for user input.
+         - color_name (str): Color name from config file.
         """
         picker = ColorPicker(fg_color=COLOR.BACKGROUND, r=r, g=g, b=b, font=ctk.CTkFont(self.font_name, 15))
         # self.master.after(201, lambda: picker.iconbitmap(resource_path('assets\\logo.ico')))
@@ -530,9 +561,10 @@ class Settings(ctk.CTkFrame):
         """Helper function to close input dialog without changing any properties in config file.
 
         Args:
-            color_name (str): Color name from config file.
-            entry (ctk.CTkEntry): Entry frame for user input.
-            color (str): Color to keep.
+
+        - color_name (str): Color name from config file.
+        - entry (ctk.CTkEntry): Entry frame for user input.
+        - color (str): Color to keep.
         """
         entry.delete(0, ctk.END)
         entry.insert(0, color)

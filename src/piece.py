@@ -1,3 +1,6 @@
+"""File containing implementation for each figure in the game. Code structure allows to easily add new Figures for more game variants.
+"""
+
 import customtkinter as ctk
 from typing import Callable
 from PIL import Image
@@ -9,9 +12,20 @@ if platform.system() == 'Windows':
 from tools import resource_path, get_from_config
 from properties import COLOR
 
-
 class Piece:
     def __init__(self, color: str, board, position) -> None:
+        """Main class used to implement all figures. Contains all essential methods for every figure such as:
+         - loading assets
+         - virtual function for checking possible moves
+         - checking turns
+         - updating assets
+         - representation of the class for easier debugging
+
+        Args:
+            color (str): _description_
+            board (_type_): _description_
+            position (_type_): _description_
+        """
         self.color: str = color
         self.board = board
         self.position: tuple[int, int] = position
@@ -19,12 +33,48 @@ class Piece:
         self.image: ctk.CTkImage | None = None
 
     def check_possible_moves(self, color: str, checking: bool=False):
+        """Virtual function.
+
+        Args:
+
+         - color (str): Color of the figure to move.
+         - checking (bool, optional): Flag indicating search. Defaults to False.
+
+        Raises:
+
+         - NotImplementedError: All Figures have to have this function implemented.
+        """
         raise NotImplementedError
 
     def check_turn(self, current_color: str) -> bool:
+        """Checks which player has its right to move.
+
+        Args:
+
+         - current_color (str): Color of the clicked figure.
+
+        Returns:
+
+         - bool: True if its given color turn, False otherwise.
+        """
         return False if current_color == self.color else True
 
-    def load_image(self, piece=None) -> None | ctk.CTkImage:
+    def load_image(self, piece: str | None=None) -> None | ctk.CTkImage:
+        """Loads asset for the piece.
+
+        Args:
+
+         - piece (str | None, optional): Piece string representation. Defaults to None.
+
+        Returns:
+
+         - None | ctk.CTkImage: If piece representation passed function will try to load asset. None otherwise.
+
+        Raises:
+
+         - FileExistsError: If file doesn't exist game will crash and give feedback in the console.
+         - FileNotFoundError: If file couldn't be found game will crash and give feedback in the console.
+        """
         if not piece:
             piece_name = (self.__class__.__name__).lower()
         else:
@@ -40,10 +90,18 @@ class Piece:
         return None
 
     def update_image(self) -> None:
+        """Function updating cell asset.
+        """
         self.load_image()
         self.board.board[self.position[0]][self.position[1]].configure(image=self.image)
 
     def __str__(self) -> str:
+        """Overriding string representation of the class used in print() for example.
+
+        Returns:
+
+         - str: Representation of the class Piece: {piece name} Color:{piece color}
+        """
         return f'Piece: {self.__class__.__name__} Color: {'white' if self.color == 'w' else 'black'}'
 
 class Pawn(Piece):

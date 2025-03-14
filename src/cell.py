@@ -1,3 +1,6 @@
+"""File containing implementation for Board and Cells on the board. Code structure allows custom sizes of the board but is limited to square boards.
+"""
+
 import customtkinter as ctk
 from typing import Any
 
@@ -13,19 +16,22 @@ class Cell(ctk.CTkLabel):
     """Class handling actions in specific cells.
 
     Args:
-        ctk.CTkLabel : Inheritance from customtkinter CTkLabel widget.
+
+     - ctk.CTkLabel : Inheritance from customtkinter CTkLabel widget.
     """
     def __init__(self, frame: ctk.CTkFrame, figure: piece.Piece | None, position: tuple[int, int], color: str, board) -> None:
         """Constructor:
-            - binds left button to on_click function. <br>
-            - displays itself on the screen. <br>
+
+         - binds left button to on_click function.
+         - displays itself on the screen.
 
         Args:
-            frame (ctk.CTkFrame): Parent Frame on which cell will be represented. <br>
-            figure (piece.Piece | None): Figure on a cell. <br>
-            position (tuple[int, int]): Position on a board. <br>
-            color (str): Color of the cell white or black. <br>
-            board (Board): Parent class handling cell placement. <br>
+
+         - frame (ctk.CTkFrame): Parent Frame on which cell will be represented.
+         - figure (piece.Piece | None): Figure on a cell.
+         - position (tuple[int, int]): Position on a board.
+         - color (str): Color of the cell white or black.
+         - board (Board): Parent class handling cell placement.
         """
         self.frame: ctk.CTkFrame = frame
         self.position: tuple[int, int] = position
@@ -41,7 +47,8 @@ class Cell(ctk.CTkLabel):
         """Handles clicks by calling board functions handling game logic.
 
         Args:
-            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+
+         - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
         if self.figure and not self.board.clicked_figure:
             self.board.handle_clicks(self.figure, self.position)
@@ -58,15 +65,19 @@ class Board(ctk.CTkFrame):
     """Class handling all cells and move related logic.
 
     Args:
-        ctk.CTkFrame : Inheritance from customtkinter CTkLabel widget.
+
+     - ctk.CTkFrame : Inheritance from customtkinter CTkLabel widget.
     """
     def __init__(self, master, moves_record: MovesRecord, size: int) -> None:
-        """Constructor
+        """Constructor:
+
+         -Setups all important variables
+         -calls loading_animation(0)
 
         Args:
-            master (Any): Parent widget.
-            moves_record (MovesRecord): class handling move records.
-            size (int): Size n of the n x n board.
+         - master (Any): Parent widget.
+         - moves_record (MovesRecord): class handling move records.
+         - size (int): Size n of the n x n board.
         """
         super().__init__(master, fg_color=COLOR.DARK_TEXT, corner_radius=0)
         self.master: Any = master
@@ -89,10 +100,12 @@ class Board(ctk.CTkFrame):
         """Static method to determine color of the piece.
 
         Args:
-            pos (tuple[int, int]): Position of the cell on the board.
+
+         - pos (tuple[int, int]): Position of the cell on the board.
 
         Returns:
-            str: Color of the cell.
+
+         - str: Color of the cell.
         """
         if (pos[0]%2 and pos[1]%2) or (not pos[0]%2 and not pos[1]%2):
             return COLOR.TILE_1
@@ -116,7 +129,8 @@ class Board(ctk.CTkFrame):
         """Creates a board filled with colored cells. Uses prepared dictionary of the correct figures placement to place the Figures.
 
         Returns:
-            list[list[Cell]]: 2D representation of the board.
+
+         - list[list[Cell]]: 2D representation of the board.
         """
         self.create_outline_l_r_t()
         board: list[list[Cell]] = []
@@ -162,8 +176,9 @@ class Board(ctk.CTkFrame):
         """Displays message on the screen using Notification class.
 
         Args:
-            message (str): Desired message to display. <br>
-            duration_sec (int): Amount of seconds before hiding the notification .
+
+         - message (str): Desired message to display. <br>
+         - duration_sec (int): Amount of seconds before hiding the notification .
         """
         if self.notification:
             self.notification.destroy()
@@ -173,7 +188,8 @@ class Board(ctk.CTkFrame):
         """Checks if checkmate occurred.
 
         Returns:
-            tuple[bool, bool]: 1st tuple element is game_over and 2nd is in check both True or False.
+
+         - tuple[bool, bool]: 1st tuple element is game_over and 2nd is in check both True or False.
         """
         in_check = False
         for row in self.board:
@@ -195,8 +211,9 @@ class Board(ctk.CTkFrame):
         """Handles actions after clicking on a specific cell.
 
         Args:
-            figure (piece.Piece): Chosen figure.
-            position (tuple[int, int]): Position of that figure.
+
+         - figure (piece.Piece): Chosen figure.
+         - position (tuple[int, int]): Position of that figure.
         """
         possible_moves = figure.check_possible_moves(self.current_turn)
         if not possible_moves and self.board[position[0]][position[1]].figure:
@@ -221,11 +238,13 @@ class Board(ctk.CTkFrame):
         """Checks if King is in a check.
 
         Args:
-            move_from (tuple[int, int]): Starting position.
-            move_to (tuple[int, int]): Desired position.
+
+         - move_from (tuple[int, int]): Starting position.
+         - move_to (tuple[int, int]): Desired position.
 
         Returns:
-            bool: _description_
+
+         - bool: _description_
         """
         original_from_figure: piece.Piece | None = self.board[move_from[0]][move_from[1]].figure
         original_to_figure: piece.Piece | None = self.board[move_to[0]][move_to[1]].figure
@@ -260,11 +279,12 @@ class Board(ctk.CTkFrame):
         """Checks if path to castle isn't under the attack.
 
         Args:
-            position (tuple[int, int]): Position of the king.
-            color (str): Color of the king.
+         - position (tuple[int, int]): Position of the king.
+         - color (str): Color of the king.
 
         Returns:
-            bool: Returns True if is under attack, False otherwise.
+
+         - bool: Returns True if is under attack, False otherwise.
         """
         for row in self.board:
             for cell in row:
@@ -277,7 +297,8 @@ class Board(ctk.CTkFrame):
         """Function handles moving pieces on the board.
 
         Args:
-            position (tuple[int, int]): Position of the figure.
+
+         - position (tuple[int, int]): Position of the figure.
         """
         if self.clicked_figure and self.previous_coords:
             row, col = position
@@ -347,7 +368,8 @@ class Board(ctk.CTkFrame):
         """Helper function to note the promotion of the pawn.
 
         Args:
-            promotion (str): Figure representation to which pawn was promoted.
+
+         - promotion (str): Figure representation to which pawn was promoted.
         """
         capture = self.capture
         check = self.is_under_attack(self.get_king_position(self.current_turn), self.current_turn)
@@ -371,10 +393,12 @@ class Board(ctk.CTkFrame):
         """Function returning king position on the board.
 
         Args:
-            color (str): Color of the king.
+
+         - color (str): Color of the king.
 
         Returns:
-            tuple[int, int]: Position of the king.
+
+         - tuple[int, int]: Position of the king.
         """
         # TODO: make it faster
         for row in self.board:
@@ -387,7 +411,8 @@ class Board(ctk.CTkFrame):
         """Helper function to reset en passant flag.
 
         Args:
-            current_color (str): Color of the current player.
+
+         - current_color (str): Color of the current player.
         """
         for row in self.board:
             for cell in row:
@@ -421,7 +446,8 @@ class Board(ctk.CTkFrame):
         """Function to animate loading screen.
 
         Args:
-            i (int): 
+
+         - i (int): Iteration value passed by recursive formula.
         """
         if not self.loading_screen:
             self.loading_screen = ctk.CTkLabel(self.master, text='Loading   ', font=ctk.CTkFont(self.font_name, 42),
