@@ -26,8 +26,8 @@ class Notification(ctk.CTkFrame):
 
         Args:
 
-         - master (Any): Parent widget
-         - message (str): Desired message to show on screen
+         - master (Any): Parent widget.
+         - message (str): Desired message to show on screen.
          - duration_sec (float): Amount of seconds before hiding the notification.
          - position (str, optional): Position of the notification 'center' or 'top'. Defaults to 'center'.
         """

@@ -2,7 +2,7 @@
 """
 
 import customtkinter as ctk
-from typing import Callable
+from typing import Callable, Any
 from PIL import Image
 import platform
 import os
@@ -13,7 +13,7 @@ from tools import resource_path, get_from_config
 from properties import COLOR
 
 class Piece:
-    def __init__(self, color: str, board, position) -> None:
+    def __init__(self, color: str, board, position: tuple[int, int]) -> None:
         """Main class used to implement all figures. Contains all essential methods for every figure such as:
          - loading assets
          - virtual function for checking possible moves
@@ -22,9 +22,9 @@ class Piece:
          - representation of the class for easier debugging
 
         Args:
-            color (str): _description_
-            board (_type_): _description_
-            position (_type_): _description_
+            color (str): Color of the figure.
+            board : Board object on which figures will be placed.
+            position (tuple[int, int]): Position on the board.
         """
         self.color: str = color
         self.board = board
@@ -105,7 +105,25 @@ class Piece:
         return f'Piece: {self.__class__.__name__} Color: {'white' if self.color == 'w' else 'black'}'
 
 class Pawn(Piece):
-    def __init__(self, color: str, board, position: tuple[int, int], notation_func) -> None:
+    """Implementation of the pawn. Supports en passant, promotions, moving and capturing.
+
+    Args:
+
+     - Piece (Piece): Inheritance from the master class Piece to access general functions of the figures.
+    """
+    def __init__(self, color: str, board, position: tuple[int, int], notation_func: Callable) -> None:
+        """Constructor:
+
+         - basic setup of master class Piece
+         - loads additional flags necessary for correct pawn implementation
+
+        Args:
+
+         - color (str): Color of the pawn.
+         - board : Board object on which the pawn will be placed. 
+         - position (tuple[int, int]): Position of the pawn on the board.
+         - notation_func (Callable): Callable function from notation module used to note the move.
+        """
         super().__init__(color, board, position)
         self.color: str = color # b | w
         self.position: tuple[int, int] = position
@@ -118,6 +136,16 @@ class Pawn(Piece):
         self.notation_func: Callable = notation_func
 
     def check_possible_moves(self, color: str, checking: bool=False) -> list[tuple[int, int]]:
+        """_summary_
+
+        Args:
+         - color (str): Color of the pawn.
+         - checking (bool, optional): Flag to know when player makes move and when algorithm checks possible moves. Defaults to False.
+
+        Returns:
+
+         - list[tuple[int, int]]: Returns list of all legal positions to which pawn can move.
+        """
         if self.check_turn(color) and not checking:
             return []
         move = self.move
@@ -143,14 +171,31 @@ class Pawn(Piece):
                     self.can_en_passant = True
         return possible_moves
 
-    def choose_figure(self, event, figure, choose_piece_menu, choose_piece_menu_1) -> None:
+    def choose_figure(self, event: Any, figure, choose_piece_menu: ctk.CTkLabel, choose_piece_menu_1: ctk.CTkFrame) -> None:
+        """Function responsible of promoting the pawn to other figure.
+
+        Args:
+
+         - event (Any): _description_
+         - figure : Figure chosen by the player.
+         - choose_piece_menu (ctk.CTkLabel): Label widget.
+         - choose_piece_menu_1 (ctk.CTkFrame): Frame widget.
+        """
         self.board.board[self.position[0]][self.position[1]].figure = figure(self.color, self.board, self.position)
         self.board.board[self.position[0]][self.position[1]].update()
         self.notation_func(self.board.board[self.position[0]][self.position[1]].figure.__class__.__name__)
         choose_piece_menu.destroy()
         choose_piece_menu_1.destroy()
 
-    def create_button(self, choose_piece_menu, figure, choose_piece_menu_1) -> None:
+    def create_button(self, choose_piece_menu: ctk.CTkLabel, figure, choose_piece_menu_1: ctk.CTkFrame) -> None:
+        """Function creating the button for one of the figure possible to choose from the menu.
+
+        Args:
+
+         - choose_piece_menu (ctk.CTkLabel): _description_
+         - figure : Figure that will be possible to choose by clicking the button.
+         - choose_piece_menu_1 (ctk.CTkFrame): Frame widget.
+        """
         piece_image = self.load_image(str(figure.__name__))
         button_figure = ctk.CTkLabel(choose_piece_menu, text='', image=piece_image,
                                     corner_radius=0)
@@ -158,6 +203,12 @@ class Pawn(Piece):
         button_figure.bind('<Button-1>', lambda e: self.choose_figure(e, figure, choose_piece_menu, choose_piece_menu_1))
 
     def promote(self) -> bool:
+        """Function checking if pawn is ont the end of the board. If so it force the player to choose the figure they want to promote to.
+
+        Returns:
+
+             - bool: True if pawn was promoted. False otherwise.
+        """
         if self.position[0] in {0, 7}:
             choose_piece_menu_1 = ctk.CTkFrame(self.board, corner_radius=0,
                                             fg_color=COLOR.BACKGROUND)
@@ -176,22 +227,58 @@ class Pawn(Piece):
             return True
         return False
 
-    def notate(self, figure_name, moves_record, capture, check, checkmate) -> None:
-        moves_record.record_move(figure_name, capture=capture, castle=None, check = check, checkmate = checkmate, promotion=f'{self.board.board[self.position[0]][self.position[1]].figure.__class__.__name__[0]}')
+    def notate(self, figure_name: Piece, moves_record, capture: bool, check: bool, checkmate: bool) -> None:
+        """Helper function to note the move of the pawn.
+
+        Args:
+
+         - figure_name (Piece): Name of the figure.
+         - moves_record : Object of MovesRecord. Cannot specify type due to circular imports.
+         - capture (bool): Flag to check if capture occurred.
+         - check (bool): Flag to check if after pawn move check occurred.
+         - checkmate (bool): Flag to check if after pawn move checkmate occurred.
+        """
+        moves_record.record_move(figure_name, capture=capture, castle=None, check=check, checkmate=checkmate, promotion=f'{self.board.board[self.position[0]][self.position[1]].figure.__class__.__name__[0]}')
 
 class Knight(Piece):
+    """Implementation of the Knight.
+
+    Args:
+
+     - Piece : Inheritance from the master class Piece to access general functions of the figures.
+    """
     def __init__(self, color: str, board, position: tuple[int, int]) -> None:
+        """Constructor is really basic. Setups master class and setups board, color and loads asset. 
+
+        Args:
+
+         - color (str): Color of the Knight.
+         - board : Board object on which figures will be placed.
+         - position (tuple[int, int]): Position on the board.
+        """
         super().__init__(color, board, position)
         self.color: str = color
         self.board = board
         self.load_image()
 
     def check_moves(self, exceptions: list[int]) -> list[tuple[int, int]]:
+        """Function checking possible moves for the Knight.
+
+        Args:
+
+         - exceptions (list[int]): List of position that are not legal.
+
+        Returns:
+
+         - list[tuple[int, int]]: List of all legal moves.
+        """
         possible_moves: list[tuple[int, int]] = []
-        moves = [   (-2,-1), (-2, 1),
-                    (-1,-2), (-1, 2),
-                    ( 1,-2), ( 1, 2),
-                    ( 2,-1), ( 2, 1)   ] 
+        moves: list[tuple[int, int]] = [   
+            (-2,-1), (-2, 1),
+            (-1,-2), (-1, 2),
+            ( 1,-2), ( 1, 2),
+            ( 2,-1), ( 2, 1)   
+        ]
         for i, move in enumerate(moves):
             if i in exceptions:
                 continue
@@ -203,6 +290,17 @@ class Knight(Piece):
         return possible_moves
 
     def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
+        """Function checking all possible moves for the Knight.
+
+        Args:
+
+         - color (str): Color of the Knight.
+         - checking (bool, optional): Flag to recognize between human making a move and algorithm checking if after move check doesn't occurs. Defaults to False.
+
+        Returns:
+
+         - list[tuple[int, int]]: List of all legal position to which Knight can move.
+        """
         if self.check_turn(color) and not checking:
             return []
         special_cases = {
@@ -229,13 +327,38 @@ class Knight(Piece):
         return self.check_moves([])
 
 class Bishop(Piece):
+    """Implementation of the Bishop.
+
+    Args:
+
+     - Piece : Inheritance from the master class Piece to access general functions of the figures.
+    """
     def __init__(self, color: str, board, position: tuple[int, int]) -> None:
+        """Constructor is really basic. Setups master class and setups board, color and loads asset. 
+
+        Args:
+
+         - color (str): Color of the Bishop.
+         - board : Board object on which figures will be placed.
+         - position (tuple[int, int]): Position on the board.
+        """
         super().__init__(color, board, position)
         self.color: str = color
         self.board = board
         self.load_image()
 
     def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
+        """Function checking all possible moves of the Bishop.
+
+        Args:
+
+         - color (str): Color of the Bishop.
+         - checking (bool, optional): Flag to recognize between human making a move and algorithm checking if after move check doesn't occurs. Defaults to False.
+
+        Returns:
+
+         - list[tuple[int, int]]: List of all legal position to which Bishop can move.
+        """
         if self.check_turn(color) and not checking:
             return []
         possible_moves: list[tuple[int, int]] = []
@@ -261,7 +384,20 @@ class Bishop(Piece):
         return possible_moves
 
 class Rook(Piece):
+    """Implementation of the Rook.
+
+    Args:
+     - Piece : Inheritance from the master class Piece to access general functions of the figures.
+    """
     def __init__(self, color: str, board, position: tuple[int, int]) -> None:
+        """Constructor is really basic. Setups master class and setups board, color and loads asset. 
+
+        Args:
+
+         - color (str): Color of the Rook.
+         - board : Board object on which figures will be placed.
+         - position (tuple[int, int]): Position on the board.
+        """
         super().__init__(color, board, position)
         self.color: str = color
         self.board = board
@@ -269,6 +405,17 @@ class Rook(Piece):
         self.first_move: bool = True
 
     def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
+        """Function checking all possible moves of the Rook.
+
+        Args:
+
+         - color (str): Color of the Rook.
+         - checking (bool, optional): Flag to recognize between human making a move and algorithm checking if after move check doesn't occurs. Defaults to False.
+
+        Returns:
+
+         - list[tuple[int, int]]: List of all legal position to which Rook can move.
+        """
         if self.check_turn(color) and not checking:
             return []
         possible_moves: list[tuple[int, int]] = []
@@ -294,13 +441,38 @@ class Rook(Piece):
         return possible_moves
 
 class Queen(Piece):
+    """Implementation of the Queen.
+
+    Args:
+
+     - Piece : Inheritance from the master class Piece to access general functions of the figures.
+    """
     def __init__(self, color: str, board, position: tuple[int, int]) -> None:
+        """Constructor is really basic. Setups master class and setups board, color and loads asset. 
+
+        Args:
+
+         - color (str): Color of the Queen.
+         - board : Board object on which figures will be placed.
+         - position (tuple[int, int]): Position on the board.
+        """
         super().__init__(color, board, position)
         self.color: str = color
         self.board = board
         self.load_image()
 
     def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
+        """Function checking all possible moves of the Queen.
+
+        Args:
+
+         - color (str): Color of the Queen.
+         - checking (bool, optional): Flag to recognize between human making a move and algorithm checking if after move check doesn't occurs. Defaults to False.
+
+        Returns:
+
+         - list[tuple[int, int]]: List of all legal position to which Queen can move.
+        """
         if self.check_turn(color) and not checking:
             return []
         possible_moves: list[tuple[int, int]] = []
@@ -328,7 +500,21 @@ class Queen(Piece):
         return possible_moves
 
 class King(Piece):
+    """Implementation of the King.
+
+    Args:
+
+     - Piece : Inheritance from the master class Piece to access general functions of the figures.
+    """
     def __init__(self, color: str, board, position: tuple[int, int]) -> None:
+        """Constructor is really basic. Setups master class and setups board, color and loads asset. 
+
+        Args:
+
+         - color (str): Color of the King.
+         - board : Board object on which figures will be placed.
+         - position (tuple[int, int]): Position on the board.
+        """
         super().__init__(color, board, position)
         self.color: str = color
         self.board = board
@@ -337,6 +523,17 @@ class King(Piece):
         self.can_castle: bool = False
 
     def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
+        """Function checking all possible moves of the King.
+
+        Args:
+
+         - color (str): Color of the King.
+         - checking (bool, optional): Flag to recognize between human making a move and algorithm checking if after move check doesn't occurs. Defaults to False.
+
+        Returns:
+
+         - list[tuple[int, int]]: List of all legal position to which King can move.
+        """
         if self.check_turn(color) and not checking:
             return []
         possible_moves: list[tuple[int, int]] = []
@@ -351,6 +548,11 @@ class King(Piece):
         return possible_moves
 
     def get_castling_moves(self) -> list[tuple[int, int]]:
+        """Function checking moves for castle.
+
+        Returns:
+            list[tuple[int, int]]: List of legal positions.
+        """
         castling_moves = []
         row = self.position[0]
         if self.can_castle_kingside():
@@ -360,6 +562,12 @@ class King(Piece):
         return castling_moves
 
     def can_castle_kingside(self) -> bool:
+        """Function checking if King can perform castle from King side.
+
+        Returns:
+
+         - bool: True if King can castle. False otherwise.
+        """
         row, col = self.position
         if isinstance(self.board.board[row][7].figure, Rook) and self.board.board[row][7].figure.first_move:
             for i in range(col + 1, 7):
@@ -371,6 +579,12 @@ class King(Piece):
         return False
 
     def can_castle_queenside(self) -> bool:
+        """Function checking if King can perform castle from Queen side.
+
+        Returns:
+
+         - bool: True if King can castle. False otherwise.
+        """
         row, col = self.position
         if isinstance(self.board.board[row][0].figure, Rook) and self.board.board[row][0].figure.first_move:
             for i in range(col - 1, 0, -1):
