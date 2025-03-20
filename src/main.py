@@ -18,6 +18,7 @@ Libraries used:
 
 import customtkinter as ctk
 import os
+import warnings
 import platform
 import threading
 
@@ -127,6 +128,7 @@ class MainWindow(ctk.CTk):
         self.after(0, lambda: widget.configure(font=ctk.CTkFont(get_from_config('font_name'), size)))
 
 if __name__ == "__main__":
+    warnings.filterwarnings('ignore', category=UserWarning, module='customtkinter') # raises type error but ensures correct image removing
     ctk.deactivate_automatic_dpi_awareness()
     app = MainWindow()
     app.mainloop()

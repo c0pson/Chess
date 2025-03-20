@@ -62,30 +62,64 @@ class MovesRecord(ctk.CTkFrame):
         else:
             notation = f' {'+' if check and not checkmate else''}{'#' if checkmate else ''}{'0-0-0' if castle == 'queenside' else '0-0'}'
         current_frame = self.white_scroll_frame if moved_piece.color == 'w' else self.black_scroll_frame
-        ctk.CTkLabel(current_frame, text=notation, font=ctk.CTkFont(str(get_from_config('font_name')), 32)).pack(side=ctk.BOTTOM)
+        ctk.CTkLabel(
+            master = current_frame,
+            text   = notation,
+            font   = ctk.CTkFont(str(get_from_config('font_name')), 32)
+        ).pack(side=ctk.BOTTOM)
 
     def create_frames(self) -> None:
         """Creates frames to reserve space for displaying move notations.
         """
-        black_label: ctk.CTkLabel = ctk.CTkLabel(self, text='Black', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.DARK_TEXT)
+        black_label: ctk.CTkLabel = ctk.CTkLabel(
+            master     =  self,
+            text       = 'Black',
+            font       = ctk.CTkFont(str(get_from_config('font_name')), 32),
+            text_color = COLOR.DARK_TEXT
+        )
         black_label.pack(side=ctk.TOP, padx=1, pady=1)
-        additional_frame: ctk.CTkFrame = ctk.CTkFrame(self, fg_color=COLOR.TRANSPARENT, corner_radius=0,
-                                        border_color=COLOR.DARK_TEXT, border_width=7)
+        additional_frame: ctk.CTkFrame = ctk.CTkFrame(
+            master        = self, 
+            fg_color      = COLOR.TRANSPARENT, 
+            corner_radius = 0,
+            border_color  = COLOR.DARK_TEXT, 
+            border_width  = 7
+        )
         additional_frame.pack(side=ctk.TOP, padx=15, expand=True, fill=ctk.Y)
-        self.black_scroll_frame: ctk.CTkScrollableFrame = ctk.CTkScrollableFrame(additional_frame, scrollbar_button_color=COLOR.NOTATION_BACKGROUND_B,
-                                                        fg_color=COLOR.NOTATION_BACKGROUND_B, corner_radius=0,
-                                                        scrollbar_button_hover_color=COLOR.NOTATION_BACKGROUND_B,)
+        self.black_scroll_frame: ctk.CTkScrollableFrame = ctk.CTkScrollableFrame(
+            master                       = additional_frame, 
+            scrollbar_button_color       = COLOR.NOTATION_BACKGROUND_B,
+            fg_color                     = COLOR.NOTATION_BACKGROUND_B, 
+            corner_radius                = 0,
+            scrollbar_button_hover_color = COLOR.NOTATION_BACKGROUND_B
+        )
         self.black_scroll_frame.pack(side=ctk.TOP, padx=6, pady=7, fill=ctk.Y, expand=True)
-        white_label: ctk.CTkLabel = ctk.CTkLabel(self, text='White', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.TEXT)
+        white_label: ctk.CTkLabel = ctk.CTkLabel(
+            master     = self, 
+            text       = 'White', 
+            font       = ctk.CTkFont(str(get_from_config('font_name')), 32), 
+            text_color = COLOR.TEXT
+        )
         white_label.pack(side=ctk.TOP, padx=0, pady=0)
-        additional_frame = ctk.CTkFrame(self, fg_color=COLOR.TRANSPARENT, corner_radius=0,
-                                        border_color=COLOR.DARK_TEXT, border_width=7)
+        additional_frame = ctk.CTkFrame(
+            master = self,
+            fg_color=COLOR.TRANSPARENT,
+            corner_radius=0,
+            border_color=COLOR.DARK_TEXT,
+            border_width=7
+        )
         additional_frame.pack(side=ctk.TOP, padx=15, expand=True, fill=ctk.Y)
-        self.white_scroll_frame: ctk.CTkScrollableFrame = ctk.CTkScrollableFrame(additional_frame, scrollbar_button_color=COLOR.NOTATION_BACKGROUND_W,
-                                                        fg_color=COLOR.NOTATION_BACKGROUND_W, corner_radius=0,
-                                                        scrollbar_button_hover_color=COLOR.NOTATION_BACKGROUND_W)
+        self.white_scroll_frame: ctk.CTkScrollableFrame = ctk.CTkScrollableFrame(
+            master                       = additional_frame,
+            scrollbar_button_color       = COLOR.NOTATION_BACKGROUND_W,
+            fg_color                     = COLOR.NOTATION_BACKGROUND_W,
+            corner_radius                = 0,
+            scrollbar_button_hover_color = COLOR.NOTATION_BACKGROUND_W)
         self.white_scroll_frame.pack(side=ctk.TOP, padx=6, pady=7, fill=ctk.Y, expand=True)
-        space_label: ctk.CTkLabel = ctk.CTkLabel(self, text='\n')
+        space_label: ctk.CTkLabel = ctk.CTkLabel(
+            master =self,
+            text='\n'
+        )
         space_label.pack()
 
     def restart(self) -> None:
@@ -134,14 +168,19 @@ class Options(ctk.CTkFrame):
     def replay_button(self) -> None:
         """Setup of replay button.
         """
-        self.r_icon_label: ctk.CTkLabel = ctk.CTkLabel(self, text='', image=self.replay_icon)
+        self.r_icon_label: ctk.CTkLabel = ctk.CTkLabel(
+            master =  self,
+            text   = '',
+            image  = self.replay_icon)
         self.r_icon_label.pack(side=ctk.TOP, padx=10, pady=0)
         self.r_icon_label.bind('<Button-1>', self.replay)
 
     def space_label(self) -> None:
         """Space to maintain the desired spacing.
         """
-        space: ctk.CTkLabel = ctk.CTkLabel(self, text='\n')
+        space: ctk.CTkLabel = ctk.CTkLabel(
+            master = self,
+            text   = '\n')
         space.pack(padx=2, pady=2)
 
     def open_settings(self, event: Any) -> None:
@@ -212,7 +251,12 @@ class Settings(ctk.CTkFrame):
         self.restart_func: Callable = restart_func
         self.update_assets_func: Callable = update_assets_func
         self.update_font_func: Callable = update_font_func
-        ctk.CTkLabel(self, text='', height=18, fg_color=COLOR.BACKGROUND).pack(padx=0, pady=0)
+        ctk.CTkLabel(
+            master   = self,
+            text     = '',
+            height   = 18,
+            fg_color = COLOR.BACKGROUND
+        ).pack(padx=0, pady=0)
 
     @staticmethod
     def list_directories_os(path: str) -> list[str]:
@@ -239,13 +283,26 @@ class Settings(ctk.CTkFrame):
     def close_button(self) -> None:
         """Setup of close button
         """
-        top_frame = ctk.CTkFrame(self, fg_color=COLOR.TRANSPARENT)
+        top_frame = ctk.CTkFrame(
+            master   = self,
+            fg_color = COLOR.TRANSPARENT
+        )
         top_frame.pack(side=ctk.TOP, padx=0, pady=0, fill=ctk.X)
-        settings_text = ctk.CTkLabel(top_frame, text='Settings', font=ctk.CTkFont(str(get_from_config('font_name')), 38),
-                                    text_color=COLOR.DARK_TEXT, anchor=ctk.N)
+        settings_text = ctk.CTkLabel(
+            master     = top_frame,
+            text       = 'Settings',
+            font       = ctk.CTkFont(str(get_from_config('font_name')), 38),
+            text_color = COLOR.DARK_TEXT,
+            anchor     = ctk.N
+        )
         settings_text.pack(side=ctk.LEFT, padx=20, anchor=ctk.NW)
-        close_button = ctk.CTkLabel(top_frame, text='', font=ctk.CTkFont(str(get_from_config('font_name')), 24),
-                                    image=self.close_image, anchor=ctk.S)
+        close_button = ctk.CTkLabel(
+            master = top_frame,
+            text   = '',
+            font   = ctk.CTkFont(str(get_from_config('font_name')), 24),
+            image  = self.close_image,
+            anchor = ctk.S
+        )
         close_button.bind('<Button-1>', self.on_close)
         close_button.pack(side=ctk.RIGHT, anchor=ctk.NE, padx=10, pady=10)
 
@@ -257,10 +314,16 @@ class Settings(ctk.CTkFrame):
          - frame (ctk.CTkFrame): Frame in which button will be placed.
          - theme (str): Style of Figures to choose.
         """
-        theme_button = ctk.CTkButton(frame, text=theme, command=lambda: self.select_theme(theme),
-                                        font=ctk.CTkFont(str(get_from_config('font_name')), 30), corner_radius=0,
-                                        fg_color=COLOR.TILE_1, hover_color=COLOR.HIGH_TILE_1,
-                                        text_color=COLOR.TEXT)
+        theme_button = ctk.CTkButton(
+            master        = frame,
+            text          = theme,
+            command       = lambda: self.select_theme(theme),
+            font          = ctk.CTkFont(str(get_from_config('font_name')), 30),
+            corner_radius = 0,
+            fg_color      = COLOR.TILE_1,
+            hover_color   = COLOR.HIGH_TILE_1,
+            text_color    = COLOR.TEXT
+        )
         theme_button.pack(side=ctk.LEFT, padx=4, pady=4, expand=True)
 
     def choose_theme(self) -> None:
@@ -270,17 +333,32 @@ class Settings(ctk.CTkFrame):
         themes: list[str] = self.list_directories_os('assets')
         if not themes:
             return
-        text: ctk.CTkLabel = ctk.CTkLabel(self.scrollable_frame, text='Themes: ', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.TEXT)
+        text: ctk.CTkLabel = ctk.CTkLabel(
+            master     = self.scrollable_frame,
+            text       = 'Themes: ',
+            font       = ctk.CTkFont(str(get_from_config('font_name')), 32),
+            text_color = COLOR.TEXT
+        )
         text.pack(side=ctk.TOP, anchor=ctk.SW, padx=75, pady=0)
         themes.remove('menu') if 'menu' in themes else themes
-        frame = ctk.CTkScrollableFrame(self.scrollable_frame, fg_color=COLOR.TILE_2, scrollbar_button_color=COLOR.DARK_TEXT,
-                                        orientation=ctk.HORIZONTAL,
-                                        height=70, corner_radius=0)
+        frame = ctk.CTkScrollableFrame(
+            master                 = self.scrollable_frame,
+            fg_color               = COLOR.TILE_2,
+            scrollbar_button_color = COLOR.DARK_TEXT,
+            orientation            = ctk.HORIZONTAL,
+            scrollbar_fg_color     = COLOR.DARK_TEXT,
+            height                 = 70,
+            corner_radius          = 0
+        )
         frame.pack(side=ctk.TOP, padx=80, pady=5, anchor=ctk.W, fill=ctk.X)
         for theme in themes:
             self.create_theme_button(frame, theme)
-        warning_text: ctk.CTkLabel = ctk.CTkLabel(self.scrollable_frame, text=STRING.ASSETS_WARNING, font=ctk.CTkFont(str(get_from_config('font_name')), 18),
-                                    text_color=COLOR.CLOSE)
+        warning_text: ctk.CTkLabel = ctk.CTkLabel(
+            master     = self.scrollable_frame,
+            text       = STRING.ASSETS_WARNING,
+            font       = ctk.CTkFont(str(get_from_config('font_name')), 18),
+            text_color = COLOR.CLOSE
+        )
         warning_text.pack(side=ctk.TOP, anchor=ctk.SW, padx=100, pady=0)
 
     def select_theme(self, choice: str) -> None:
@@ -377,20 +455,44 @@ class Settings(ctk.CTkFrame):
     def open_assets_folder(self) -> None:
         """Setup of open assets button.
         """
-        text_label = ctk.CTkLabel(self.scrollable_frame, text='Open assets folder', text_color=COLOR.TEXT,
-                                    font=ctk.CTkFont(str(get_from_config('font_name')), 32))
+        text_label = ctk.CTkLabel(
+            master     = self.scrollable_frame,
+            text       = 'Open assets folder',
+            text_color = COLOR.TEXT,
+            font       = ctk.CTkFont(str(get_from_config('font_name')), 32)
+        )
         text_label.pack(side=ctk.TOP, padx=75, pady=4, anchor=ctk.NW)
-        additional_frame = ctk.CTkFrame(self.scrollable_frame, fg_color=COLOR.TILE_2, corner_radius=0)
+        additional_frame = ctk.CTkFrame(
+            master        = self.scrollable_frame,
+            fg_color      = COLOR.TILE_2,
+            corner_radius = 0
+        )
         additional_frame.pack(side=ctk.TOP, padx=80, pady=0, fill=ctk.X)
-        open_button = ctk.CTkButton(additional_frame, text='OPEN', font=ctk.CTkFont(str(get_from_config('font_name')), 20),
-                                    text_color=COLOR.TEXT, command=lambda: self.open_file_explorer('assets'),
-                                    fg_color=COLOR.TILE_1, hover_color=COLOR.HIGH_TILE_2,
-                                    corner_radius=0)
+        open_button = ctk.CTkButton(
+            master        = additional_frame,
+            text          = 'OPEN',
+            font          = ctk.CTkFont(str(get_from_config('font_name')), 20),
+            text_color    = COLOR.TEXT,
+            command       = lambda: self.open_file_explorer('assets'),
+            fg_color      = COLOR.TILE_1,
+            hover_color   = COLOR.HIGH_TILE_2,
+            corner_radius = 0
+        )
         open_button.pack(side=ctk.RIGHT, padx=10, pady=4, anchor=ctk.E)
-        path_text = ctk.CTkLabel(additional_frame, text=resource_path('assets'), text_color=COLOR.DARK_TEXT,
-                                font=ctk.CTkFont(str(get_from_config('font_name')), 18))
+        path_text = ctk.CTkLabel(
+            master     = additional_frame, 
+            text       = resource_path('assets'), 
+            text_color = COLOR.DARK_TEXT,
+            font       = ctk.CTkFont(str(get_from_config('font_name')), 18)
+        )
         path_text.pack(side=ctk.LEFT, padx=15, pady=15)
-        ctk.CTkLabel(self.scrollable_frame, fg_color=COLOR.DARK_TEXT, text='', corner_radius=0, height=16).pack(side=ctk.TOP, padx=80, pady=0, fill=ctk.X)
+        ctk.CTkLabel(
+            master        = self.scrollable_frame,
+            fg_color      = COLOR.DARK_TEXT,
+            text          = '',
+            corner_radius = 0,
+            height        = 16
+        ).pack(side=ctk.TOP, padx=80, pady=0, fill=ctk.X)
 
     def choose_font(self) -> None:
         """setup of choose option dialog.
@@ -399,10 +501,22 @@ class Settings(ctk.CTkFrame):
         fonts = self.get_all_files('fonts')
         if not fonts:
             return
-        text = ctk.CTkLabel(self.scrollable_frame, text='Fonts: ', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.TEXT)
+        text = ctk.CTkLabel(
+            master     = self.scrollable_frame,
+            text       = 'Fonts: ',
+            font       = ctk.CTkFont(str(get_from_config('font_name')), 32),
+            text_color = COLOR.TEXT
+        )
         text.pack(side=ctk.TOP, anchor=ctk.SW, padx=75, pady=0)
-        frame = ctk.CTkScrollableFrame(self.scrollable_frame, fg_color=COLOR.TILE_2, scrollbar_button_color=COLOR.DARK_TEXT,
-                                        orientation=ctk.HORIZONTAL, height=70, corner_radius=0, scrollbar_fg_color=COLOR.DARK_TEXT)
+        frame = ctk.CTkScrollableFrame(
+            master                 = self.scrollable_frame,
+            fg_color               = COLOR.TILE_2,
+            scrollbar_button_color = COLOR.DARK_TEXT,
+            orientation            = ctk.HORIZONTAL,
+            height                 = 70,
+            corner_radius          = 0,
+            scrollbar_fg_color     = COLOR.DARK_TEXT
+        )
         frame.pack(side=ctk.TOP, padx=80, pady=5, anchor=ctk.W, fill=ctk.X)
         for font in fonts:
             self.create_font_button(frame, font)
@@ -414,11 +528,16 @@ class Settings(ctk.CTkFrame):
          - frame (ctk.CTkFrame): Frame in which button will be placed.
          - font (str): Font name.
         """
-        font_button = ctk.CTkButton(frame, text=self.get_font_name(font),
-                                        command=lambda: self.select_font(font),
-                                        font=ctk.CTkFont(str(get_from_config('font_name')), 30), corner_radius=0,
-                                        fg_color=COLOR.TILE_1, hover_color=COLOR.HIGH_TILE_1,
-                                        text_color=COLOR.TEXT)
+        font_button = ctk.CTkButton(
+            master        = frame,
+            text          = self.get_font_name(font),
+            command       = lambda: self.select_font(font),
+            font          = ctk.CTkFont(str(get_from_config('font_name')), 30),
+            corner_radius = 0,
+            fg_color      = COLOR.TILE_1,
+            hover_color   = COLOR.HIGH_TILE_1,
+            text_color    = COLOR.TEXT
+        )
         font_button.pack(side=ctk.LEFT, padx=4, pady=4, expand=True)
 
     def select_font(self, font: str) -> None:
@@ -468,19 +587,52 @@ class Settings(ctk.CTkFrame):
     def change_colors(self) -> None:
         """Function updating color preview.
         """
-        text = ctk.CTkLabel(self.scrollable_frame, text='Colors: ', font=ctk.CTkFont(str(get_from_config('font_name')), 32), text_color=COLOR.TEXT)
+        text = ctk.CTkLabel(
+            master     = self.scrollable_frame, 
+            text       = 'Colors: ', 
+            font       = ctk.CTkFont(str(get_from_config('font_name')), 32), 
+            text_color = COLOR.TEXT
+        )
         text.pack(side=ctk.TOP, anchor=ctk.SW, padx=75, pady=0)
-        warning_text = ctk.CTkLabel(self.scrollable_frame, text=STRING.COLORS_WARNING, font=ctk.CTkFont(str(get_from_config('font_name')), 18),
-                                    text_color=COLOR.CLOSE)
+        warning_text = ctk.CTkLabel(
+            master     = self.scrollable_frame, 
+            text       = STRING.COLORS_WARNING, 
+            font       = ctk.CTkFont(str(get_from_config('font_name')), 18),
+            text_color = COLOR.CLOSE
+        )
         warning_text.pack(side=ctk.TOP, anchor=ctk.SW, padx=100, pady=0)
-        frame = ctk.CTkFrame(self.scrollable_frame, corner_radius=0, fg_color=COLOR.TILE_2)
+        frame = ctk.CTkFrame(
+            master        = self.scrollable_frame,
+            corner_radius = 0,
+            fg_color      = COLOR.TILE_2
+        )
         frame.pack(side=ctk.TOP, padx=80, pady=0, anchor=ctk.W, fill=ctk.X)
-        ctk.CTkLabel(frame, text='', height=2).pack(padx=0, pady=0)
+        ctk.CTkLabel(
+            master = frame,
+            text   = '',
+            height = 2
+        ).pack(padx=0, pady=0)
         for color in COLOR:
             self.color_label(frame, color) if color != 'transparent' else ...
-        ctk.CTkLabel(frame, text='', height=2).pack(padx=0, pady=0)
-        ctk.CTkLabel(self.scrollable_frame, fg_color=COLOR.DARK_TEXT, text='', corner_radius=0, height=16).pack(side=ctk.TOP, padx=80, pady=0, fill=ctk.X)
-        ctk.CTkLabel(self.scrollable_frame, fg_color=COLOR.TRANSPARENT, text='', corner_radius=0, height=16).pack(side=ctk.TOP, padx=80, pady=0, fill=ctk.X)
+        ctk.CTkLabel(
+            master = frame,
+            text   = '',
+            height = 2
+        ).pack(padx=0, pady=0)
+        ctk.CTkLabel(
+            master        = self.scrollable_frame, 
+            fg_color      = COLOR.DARK_TEXT, 
+            text          = '', 
+            corner_radius = 0, 
+            height        = 16
+        ).pack(side=ctk.TOP, padx=80, pady=0, fill=ctk.X)
+        ctk.CTkLabel(
+            master        = self.scrollable_frame, 
+            fg_color      = COLOR.TRANSPARENT, 
+            text          = '', 
+            corner_radius = 0, 
+            height        = 16
+        ).pack(side=ctk.TOP, padx=80, pady=0, fill=ctk.X)
 
     def color_label(self, frame: ctk.CTkFrame, color: str) -> None:
         """Function creating color preview frame.
@@ -494,34 +646,66 @@ class Settings(ctk.CTkFrame):
             if color_str == color:
                 name_of_color = color_name
                 break
-        color_frame = ctk.CTkFrame(frame, fg_color=COLOR.NOTATION_BACKGROUND_B, corner_radius=0)
+        color_frame = ctk.CTkFrame(
+            master = frame,
+            fg_color=COLOR.NOTATION_BACKGROUND_B,
+            corner_radius=0
+        )
         color_frame.pack(side=ctk.TOP, padx=10, pady=4, fill=ctk.X)
         vcmd = (self.register(self.validate_length), '%P')
-        color_entry = ctk.CTkEntry(color_frame, border_width=0, corner_radius=0, fg_color=color,
-                                                font=ctk.CTkFont(get_from_config('font_name'), 20),
-                                                validate='key', validatecommand=vcmd,
-                                                text_color=COLOR.TEXT if color != COLOR.TEXT else COLOR.DARK_TEXT)
+        color_entry = ctk.CTkEntry(
+            master          = color_frame, 
+            border_width    = 0, 
+            corner_radius   = 0, 
+            fg_color        = color,
+            font            = ctk.CTkFont(get_from_config('font_name'), 20),
+            validate        = 'key',
+            validatecommand = vcmd,
+            text_color      = COLOR.TEXT if color != COLOR.TEXT else COLOR.DARK_TEXT
+        )
         color_entry.insert(0, color)
         rgb_color = color.lstrip('#')
         r = int(rgb_color[0:2], 16)
         g = int(rgb_color[2:4], 16)
         b = int(rgb_color[4:6], 16)
-        color_picker = ctk.CTkLabel(color_frame, text='', image=self.color_picker_image)
+        color_picker = ctk.CTkLabel(
+            master = color_frame,
+            text   = '',
+            image  = self.color_picker_image
+        )
         color_picker.pack(side=ctk.LEFT, padx=5, pady=4)
         color_picker.bind('<Button-1>', lambda e: self.ask_for_color(r, g, b, color_entry, color_name))
         color_entry.pack(side=ctk.LEFT, padx=10, pady=4)
-        ok_button = ctk.CTkButton(color_frame, text='OK', font=ctk.CTkFont(get_from_config('font_name'), 20),
-                                    command=lambda: self.save_color(color_name, color_entry, color_entry),width=50,
-                                    corner_radius=0, fg_color=COLOR.TILE_1, hover_color=COLOR.HIGH_TILE_2,
-                                    text_color=COLOR.TEXT)
+        ok_button = ctk.CTkButton(
+            master        = color_frame, 
+            text          = 'OK', 
+            font          = ctk.CTkFont(get_from_config('font_name'), 20),
+            command       = lambda: self.save_color(color_name, color_entry, color_entry),
+            width         = 50,
+            corner_radius = 0,
+            fg_color      = COLOR.TILE_1,
+            hover_color   = COLOR.HIGH_TILE_2,
+            text_color    = COLOR.TEXT
+        )
         ok_button.pack(side=ctk.LEFT, padx=10, pady=4)
-        cancel_button = ctk.CTkButton(color_frame, text='CANCEL', font=ctk.CTkFont(get_from_config('font_name'), 20),
-                                    command=lambda: self.cancel(color_name, color_entry, color), width=50,
-                                    corner_radius=0, fg_color=COLOR.CLOSE, hover_color=COLOR.CLOSE_HOVER,
-                                    text_color=COLOR.TEXT)
+        cancel_button = ctk.CTkButton(
+            master        = color_frame,
+            text          = 'CANCEL',
+            font          = ctk.CTkFont(get_from_config('font_name'), 20),
+            command       = lambda: self.cancel(color_name, color_entry, color),
+            width         = 50,
+            corner_radius = 0,
+            fg_color      = COLOR.CLOSE,
+            hover_color   = COLOR.CLOSE_HOVER,
+            text_color    = COLOR.TEXT
+        )
         cancel_button.pack(side=ctk.LEFT, padx=10, pady=4)
-        color_name_label = ctk.CTkLabel(color_frame, text=name_of_color, text_color=COLOR.TEXT,
-                                        font=ctk.CTkFont(get_from_config('font_name'), 22))
+        color_name_label = ctk.CTkLabel(
+            master     = color_frame,
+            text       = name_of_color,
+            text_color = COLOR.TEXT,
+            font       = ctk.CTkFont(get_from_config('font_name'), 22)
+        )
         color_name_label.pack(side=ctk.RIGHT, padx=4, pady=4)
 
     def save_color(self, color_name: str, entry: ctk.CTkEntry, color_label: ctk.CTkLabel) -> None:

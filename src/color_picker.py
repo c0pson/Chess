@@ -4,7 +4,7 @@
 import customtkinter as ctk
 from typing import Any
 
-from properties import COLOR
+from properties import COLOR  
 
 class ColorPicker(ctk.CTkToplevel):
     """Class used to pick custom theme color. Is also a module that can be reused with apps using customtkinter.
@@ -36,12 +36,20 @@ class ColorPicker(ctk.CTkToplevel):
         self.g_val: int = g
         self.b_val: int = b
         self.hex_val: str | None = self.convert_to_hex()
-        self.main_frame: ctk.CTkFrame = ctk.CTkFrame(self, corner_radius=0, fg_color=COLOR.BACKGROUND)
+        self.main_frame: ctk.CTkFrame = ctk.CTkFrame(
+            master        = self,
+            corner_radius = 0,
+            fg_color      = COLOR.BACKGROUND # TODO: replace colors with passing to function color
+        )
         self.main_frame.pack(side=ctk.TOP, expand=True, ipadx=10, ipady=10)
         self.color_preview()
         self.r_g_b_sliders()
         self.update_sliders(None)
-        self.bottom_frame: ctk.CTkFrame = ctk.CTkFrame(self.main_frame, corner_radius=0, fg_color='transparent')
+        self.bottom_frame: ctk.CTkFrame = ctk.CTkFrame(
+            master        = self.main_frame,
+            corner_radius = 0,
+            fg_color      = 'transparent'
+        )
         self.bottom_frame.pack(side=ctk.BOTTOM, expand=True, ipadx=10, ipady=10)
         self.hex_color_label()
         self.ok_button()
@@ -62,8 +70,15 @@ class ColorPicker(ctk.CTkToplevel):
     def color_preview(self) -> None:
         """Function creating frame for color preview.
         """
-        self.color_prev_box: ctk.CTkFrame = ctk.CTkFrame(self.main_frame, fg_color=self.convert_to_hex(), border_width=3, width=self.preview_size, 
-                                            height=self.preview_size, corner_radius=0, border_color=COLOR.TILE_2)
+        self.color_prev_box: ctk.CTkFrame = ctk.CTkFrame(
+            master        = self.main_frame,
+            fg_color      = self.convert_to_hex(),
+            border_width  = 3,
+            width         = self.preview_size, 
+            height        = self.preview_size,
+            corner_radius = 0,
+            border_color  = COLOR.TILE_2
+        )
         self.color_prev_box.pack(side=ctk.RIGHT, padx=3, pady=3, expand=True)
 
     @staticmethod
@@ -120,9 +135,15 @@ class ColorPicker(ctk.CTkToplevel):
         """
         vcmd = (self.register(self.validate_hex_color), '%P')
         ctk.CTkLabel(self.bottom_frame, text='Hex: ', font=self.font if self.font else ctk.CTkFont('', self.font_size)).pack(side=ctk.LEFT, padx=3, pady=3)
-        self.hex_val_label = ctk.CTkEntry(self.bottom_frame, validate='key', validatecommand=vcmd, corner_radius=0,
-                                        font=self.font if self.font else ctk.CTkFont('', self.font_size),
-                                        width=(self.font_size*8), border_color=COLOR.TILE_2)
+        self.hex_val_label = ctk.CTkEntry(
+            master          = self.bottom_frame,
+            validate        = 'key',
+            validatecommand = vcmd,
+            corner_radius   = 0,
+            font            = self.font if self.font else ctk.CTkFont('', self.font_size),
+            width           = (self.font_size*8),
+            border_color    = COLOR.TILE_2
+        )
         self.hex_val_label.pack(side=ctk.LEFT, padx=3, pady=3)
         self.hex_val_label.insert(0, f'{self.hex_val}')
         self.hex_val_label.bind('<Control-v>', self.paste_hex_color)
@@ -131,10 +152,19 @@ class ColorPicker(ctk.CTkToplevel):
     def ok_button(self) -> None:
         """Function creating 'OK' button. After clicking the button if color is selected properly the value will be returned in master script.
         """
-        ok = ctk.CTkButton(self.bottom_frame, text='Ok', command=self.on_ok_button, font=self.font if self.font else ctk.CTkFont('', self.font_size),
-                            width=(self.font_size*3), corner_radius=0, border_width=2, border_color=COLOR.TILE_2,
-                            fg_color=COLOR.NOTATION_BACKGROUND_B, hover_color=COLOR.NOTATION_BACKGROUND_W)
-        ok.pack(side=ctk.RIGHT, padx=3, pady=3)
+        ok_button: ctk.CTkButton = ctk.CTkButton(
+            master = self.bottom_frame,
+            text          = 'Ok',
+            command       = self.on_ok_button,
+            font          = self.font if self.font else ctk.CTkFont('', self.font_size),
+            width         = (self.font_size*3),
+            corner_radius = 0,
+            border_width  = 2,
+            border_color  = COLOR.TILE_2,
+            fg_color      = COLOR.NOTATION_BACKGROUND_B,
+            hover_color   = COLOR.NOTATION_BACKGROUND_W
+        )
+        ok_button.pack(side=ctk.RIGHT, padx=3, pady=3)
 
     @staticmethod
     def new_slider_frame(frame: ctk.CTkFrame) -> ctk.CTkFrame:
@@ -148,7 +178,11 @@ class ColorPicker(ctk.CTkToplevel):
 
          - ctk.CTkFrame: Ready packed frame.
         """
-        slider_frame = ctk.CTkFrame(frame, fg_color='transparent', corner_radius=0)
+        slider_frame = ctk.CTkFrame(
+            master        = frame,
+            fg_color      = 'transparent',
+            corner_radius = 0
+        )
         slider_frame.pack(side=ctk.TOP, padx=3, pady=3)
         return slider_frame
 
@@ -178,39 +212,96 @@ class ColorPicker(ctk.CTkToplevel):
         """
     # sliders frame
         vcmd = (self.register(self.validate_input), '%P')
-        frame = ctk.CTkFrame(self.main_frame, fg_color='transparent')
+        frame = ctk.CTkFrame(
+            master   = self.main_frame,
+            fg_color = 'transparent'
+        )
         frame.pack(side=ctk.TOP)
     # R value slider
         slider_frame = self.new_slider_frame(frame)
-        ctk.CTkLabel(slider_frame, text='R: ', font=self.font if self.font else ctk.CTkFont('', self.font_size)).pack(side=ctk.LEFT, padx=3, pady=3)
-        self.r_val_label = ctk.CTkEntry(slider_frame, validate='key', validatecommand=vcmd, corner_radius=0,
-                                        font=self.font if self.font else ctk.CTkFont('', self.font_size),
-                                        width=(self.font_size*3), border_color=COLOR.TILE_2)
+        ctk.CTkLabel(
+            master = slider_frame,
+            text   = 'R: ',
+            font   = self.font if self.font else ctk.CTkFont('', self.font_size)
+        ).pack(side=ctk.LEFT, padx=3, pady=3)
+        self.r_val_label = ctk.CTkEntry(
+            master          = slider_frame,
+            validate        = 'key',
+            validatecommand = vcmd,
+            corner_radius   = 0,
+            font            = self.font if self.font else ctk.CTkFont('', self.font_size),
+            width           = (self.font_size*3),
+            border_color    = COLOR.TILE_2
+        )
         self.r_val_label.pack(side=ctk.LEFT, padx=3, pady=3)
-        self.r_slider = ctk.CTkSlider(slider_frame, from_=0, to=255, number_of_steps=255, command=lambda e: self.slider_on_change(e, r=True),
-                                    button_corner_radius=1, button_length=12, corner_radius=1, button_color=COLOR.TILE_2,
-                                    hover=False, progress_color=COLOR.TEXT, fg_color=COLOR.DARK_TEXT)
+        self.r_slider = ctk.CTkSlider(
+            master               = slider_frame,
+            from_                = 0,
+            to                   = 255,
+            number_of_steps      = 255,
+            command              = lambda e: self.slider_on_change(e, r=True),
+            button_corner_radius = 1,
+            button_length        = 12,
+            corner_radius        = 1,
+            button_color         = COLOR.TILE_2,
+            hover                = False,
+            progress_color       = COLOR.TEXT,
+            fg_color             = COLOR.DARK_TEXT
+        )
     # G value slider
         slider_frame = self.new_slider_frame(frame)
         ctk.CTkLabel(slider_frame, text='G: ', font=self.font if self.font else ctk.CTkFont('', self.font_size)).pack(side=ctk.LEFT, padx=3, pady=3)
-        self.g_val_label = ctk.CTkEntry(slider_frame,
-                                        validate='key', validatecommand=vcmd, corner_radius=0,
-                                        font=self.font if self.font else ctk.CTkFont('', self.font_size),
-                                        width=(self.font_size*3), border_color=COLOR.TILE_2)
+        self.g_val_label = ctk.CTkEntry(
+            master          = slider_frame,
+            validate        = 'key',
+            validatecommand = vcmd,
+            corner_radius   = 0,
+            font            = self.font if self.font else ctk.CTkFont('', self.font_size),
+            width           = (self.font_size*3),
+            border_color    = COLOR.TILE_2
+        )
         self.g_val_label.pack(side=ctk.LEFT, padx=3, pady=3)
-        self.g_slider = ctk.CTkSlider(slider_frame, from_=0, to=255, number_of_steps=255, command=lambda e: self.slider_on_change(e, g=True),
-                                    button_corner_radius=1, button_length=12, corner_radius=1, button_color=COLOR.TILE_2,
-                                    hover=False, progress_color=COLOR.TEXT, fg_color=COLOR.DARK_TEXT)
+        self.g_slider = ctk.CTkSlider(
+            master               = slider_frame, 
+            from_                = 0,
+            to                   = 255,
+            number_of_steps      = 255,
+            command              = lambda e: self.slider_on_change(e, g=True),
+            button_corner_radius = 1,
+            button_length        = 12,
+            corner_radius        = 1,
+            button_color         = COLOR.TILE_2,
+            hover                = False,
+            progress_color       = COLOR.TEXT,
+            fg_color             = COLOR.DARK_TEXT
+        )
     # B value slider
         slider_frame = self.new_slider_frame(frame)
         ctk.CTkLabel(slider_frame, text='B: ', font=self.font if self.font else ctk.CTkFont('', self.font_size)).pack(side=ctk.LEFT, padx=3, pady=3)
-        self.b_val_label = ctk.CTkEntry(slider_frame, validate='key', validatecommand=vcmd, corner_radius=0,
-                                        font=self.font if self.font else ctk.CTkFont('', self.font_size), 
-                                        width=(self.font_size*3), border_color=COLOR.TILE_2)
+        self.b_val_label = ctk.CTkEntry(
+            master          = slider_frame,
+            validate        = 'key',
+            validatecommand = vcmd,
+            corner_radius   = 0,
+            font            = self.font if self.font else ctk.CTkFont('', self.font_size), 
+            width           = (self.font_size*3),
+            border_color    = COLOR.TILE_2
+        )
         self.b_val_label.pack(side=ctk.LEFT, padx=3, pady=3)
-        self.b_slider = ctk.CTkSlider(slider_frame, from_=0, to=255, number_of_steps=255, command=lambda e: self.slider_on_change(e, b=True),
-                                    button_corner_radius=1, button_length=12, corner_radius=1, button_color=COLOR.TILE_2,
-                                    hover=False, progress_color=COLOR.TEXT, fg_color=COLOR.DARK_TEXT)
+        self.b_slider = ctk.CTkSlider(
+            master               = slider_frame,
+            from_                = 0,
+            to                   = 255,
+            number_of_steps      = 255,
+            command              = lambda e: self.slider_on_change(e, b=True),
+            button_corner_radius = 1,
+            button_length        = 12,
+            corner_radius        = 1,
+            button_color         = COLOR.TILE_2,
+            hover                = False,
+            progress_color       = COLOR.TEXT,
+            fg_color             = COLOR.DARK_TEXT
+        )
     # initial setup of all labels
         self.r_val_label.insert(0, self.r_val)
         self.g_val_label.insert(0, self.g_val)

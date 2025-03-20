@@ -38,8 +38,15 @@ class Cell(ctk.CTkLabel):
         self.board: Board = board
         self.figure: None | piece.Piece = figure
         figure_asset: ctk.CTkImage | None = self.figure.image if self.figure else None
-        super().__init__(master=frame, image=figure_asset, text='', fg_color=color,
-                        width=get_from_config('size'), height=get_from_config('size'), bg_color=COLOR.BACKGROUND)
+        super().__init__(
+            master   = frame,
+            image    = figure_asset,
+            text     = '',
+            fg_color = color,
+            width    = get_from_config('size'),
+            height   = get_from_config('size'),
+            bg_color = COLOR.BACKGROUND
+        )
         self.bind('<Button-1>', self.on_click)
         self.pack(side=ctk.LEFT, padx=2, pady=2)
 
@@ -59,7 +66,7 @@ class Cell(ctk.CTkLabel):
         """Updates the asset shown on a cell.
         """
         figure_asset = self.figure.image if self.figure else ''
-        self.configure(image=figure_asset, require_redraw=True)
+        self.configure(image=figure_asset, require_redraw=True) # raises type error but ensures correct image removing
 
 class Board(ctk.CTkFrame):
     """Class handling all cells and move related logic.
@@ -115,15 +122,44 @@ class Board(ctk.CTkFrame):
     def create_outline_l_r_t(self) -> None:
         """Creates outline of the board.
         """
-        ctk.CTkLabel(self, text=f' ', font=ctk.CTkFont(self.font_name, self.size//3), text_color=COLOR.DARK_TEXT).pack(padx=10, pady=1)
-        new_frame = ctk.CTkFrame(self, fg_color=COLOR.DARK_TEXT, corner_radius=0)
+        ctk.CTkLabel(
+            master = self,
+            text=f' ',
+            font=ctk.CTkFont(self.font_name, self.size//3),
+            text_color=COLOR.DARK_TEXT
+        ).pack(padx=10, pady=1)
+        new_frame = ctk.CTkFrame(
+            master        = self,
+            fg_color      = COLOR.DARK_TEXT,
+            corner_radius = 0
+        )
         new_frame.pack(side=ctk.LEFT, padx=0, pady=0, fill=ctk.Y)
         for i in range(8):
-            ctk.CTkLabel(new_frame, text=f' {i+1}', font=ctk.CTkFont(self.font_name, self.size//3), fg_color=COLOR.DARK_TEXT, anchor=ctk.E).pack(side=ctk.TOP, padx=10, pady=0, expand=True)
-        ctk.CTkLabel(new_frame, text='\n', font=ctk.CTkFont(self.font_name, 22)).pack(side=ctk.BOTTOM, padx=0, pady=0)
-        new_frame = ctk.CTkFrame(self, fg_color=COLOR.DARK_TEXT, corner_radius=0)
+            ctk.CTkLabel(
+                master   = new_frame,
+                text     = f' {i+1}',
+                font     = ctk.CTkFont(self.font_name, self.size//3),
+                fg_color = COLOR.DARK_TEXT,
+                anchor   = ctk.E
+            ).pack(side=ctk.TOP, padx=10, pady=0, expand=True)
+        ctk.CTkLabel(
+            master = new_frame,
+            text   = '\n',
+            font   = ctk.CTkFont(self.font_name, 22)
+        ).pack(side=ctk.BOTTOM, padx=0, pady=0)
+        new_frame = ctk.CTkFrame(
+            master   = self,
+            fg_color = COLOR.DARK_TEXT,
+            corner_radius=0
+        )
         new_frame.pack(side=ctk.RIGHT, padx=0, pady=0, fill=ctk.Y)
-        ctk.CTkLabel(new_frame, text='  ', font=ctk.CTkFont(self.font_name, self.size//3), text_color=COLOR.DARK_TEXT, fg_color=COLOR.DARK_TEXT).pack(padx=10, pady=1)
+        ctk.CTkLabel(
+            master     = new_frame, 
+            text       = '  ',
+            font       = ctk.CTkFont(self.font_name, self.size//3), 
+            text_color = COLOR.DARK_TEXT, 
+            fg_color   = COLOR.DARK_TEXT
+        ).pack(padx=10, pady=1)
 
     def create_board(self) -> list[list[Cell]]:
         """Creates a board filled with colored cells. Uses prepared dictionary of the correct figures placement to place the Figures.
@@ -134,34 +170,58 @@ class Board(ctk.CTkFrame):
         """
         self.create_outline_l_r_t()
         board: list[list[Cell]] = []
-        board_frame = ctk.CTkFrame(self, corner_radius=0, fg_color=COLOR.DARK_TEXT)
+        board_frame = ctk.CTkFrame(
+            master        = self,
+            corner_radius = 0,
+            fg_color      = COLOR.DARK_TEXT
+        )
         board_frame.pack(side=ctk.TOP, padx=0, pady=0)
         piece_positions = {
-            (0, 0): piece.Rook('b', self, (0, 0)), (0, 7): piece.Rook('b', self, (0, 7)),
-            (7, 0): piece.Rook('w', self, (7, 0)), (7, 7): piece.Rook('w', self, (7, 7)),
-            (0, 1): piece.Knight('b', self, (0, 1)), (0, 6): piece.Knight('b', self, (0, 6)),
-            (7, 1): piece.Knight('w', self, (7, 1)), (7, 6): piece.Knight('w', self, (7, 6)),
-            (0, 2): piece.Bishop('b', self, (0, 2)), (0, 5): piece.Bishop('b', self, (0, 5)),
-            (7, 2): piece.Bishop('w', self, (7, 2)), (7, 5): piece.Bishop('w', self, (7, 5)),
-            (0, 3): piece.Queen('b', self, (0, 3)), (7, 3): piece.Queen('w', self, (7, 3)),
-            (0, 4): piece.King('b', self, (0, 4)), (7, 4): piece.King('w', self, (7, 4))
+            (0, 0): piece.Rook('b', self, (0, 0)),   # Black rook
+            (0, 7): piece.Rook('b', self, (0, 7)),   # Black rook
+            (7, 0): piece.Rook('w', self, (7, 0)),   # White rook
+            (7, 7): piece.Rook('w', self, (7, 7)),   # White rook
+            (0, 1): piece.Knight('b', self, (0, 1)), # Black knight 
+            (0, 6): piece.Knight('b', self, (0, 6)), # Black knight 
+            (7, 1): piece.Knight('w', self, (7, 1)), # White knight
+            (7, 6): piece.Knight('w', self, (7, 6)), # White knight
+            (0, 2): piece.Bishop('b', self, (0, 2)), # Black bishop
+            (0, 5): piece.Bishop('b', self, (0, 5)), # Black bishop
+            (7, 2): piece.Bishop('w', self, (7, 2)), # White bishop
+            (7, 5): piece.Bishop('w', self, (7, 5)), # White bishop
+            (0, 3): piece.Queen('b', self, (0, 3)),  # Black Queen
+            (7, 3): piece.Queen('w', self, (7, 3)),  # White Queen
+            (0, 4): piece.King('b', self, (0, 4)),   # Black King
+            (7, 4): piece.King('w', self, (7, 4))    # White King
         }
         for i in range(8):
             row = []
-            new_frame = ctk.CTkFrame(board_frame, fg_color=COLOR.DARK_TEXT)
+            new_frame = ctk.CTkFrame(
+                master   = board_frame,
+                fg_color = COLOR.DARK_TEXT
+            )
             new_frame.pack(padx=0, pady=0)
             for j in range(8):
                 if self.loading_screen:
                     self.loading_screen.lift()
-                color = self.determine_tile_color((i, j))
-                figure = piece_positions.get((i, j)) if (i, j) in piece_positions else (piece.Pawn('b' if i == 1 else 'w', self, (i, j), self.notation_promotion) if i in [1, 6] else None)
+                color: str = self.determine_tile_color((i, j))
+                figure: piece.Piece | None= piece_positions.get((i, j)) if (i, j) in piece_positions else (piece.Pawn('b' if i == 1 else 'w', self, (i, j), self.notation_promotion) if i in [1, 6] else None)
                 cell = Cell(new_frame, figure, (i, j), color, self)
                 row.append(cell)
             board.append(row)
-        new_frame = ctk.CTkFrame(self, fg_color=COLOR.DARK_TEXT, corner_radius=0)
+        new_frame = ctk.CTkFrame(
+            master        = self,
+            fg_color      = COLOR.DARK_TEXT,
+            corner_radius = 0
+        )
         new_frame.pack(padx=2, pady=2, fill=ctk.X)
         for letter in ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']:
-            ctk.CTkLabel(new_frame, text=letter, font=ctk.CTkFont(self.font_name, self.size//3), fg_color=COLOR.DARK_TEXT).pack(side=ctk.LEFT, padx=0, pady=0, expand=True)
+            ctk.CTkLabel(
+                master   = new_frame,
+                text     = letter,
+                font     = ctk.CTkFont(self.font_name, self.size//3),
+                fg_color = COLOR.DARK_TEXT
+            ).pack(side=ctk.LEFT, padx=0, pady=0, expand=True)
         return board
 
     def remove_highlights(self) -> None:
@@ -317,7 +377,7 @@ class Board(ctk.CTkFrame):
                             if col == 6:
                                 self.board[row][5].figure = self.board[row][7].figure
                                 self.board[row][7].figure = None
-                                self.board[row][5].figure.position = (row, 5) # type: ignore
+                                self.board[row][5].figure.position = (row, 5) # type: ignore # isinstance already checks it but mypy don't understand it
                                 self.board[row][5].update()
                                 self.board[row][7].update()
                                 self.moves_record.record_move(self.clicked_figure, castle="kingside")
@@ -325,7 +385,7 @@ class Board(ctk.CTkFrame):
                             elif col == 2:
                                 self.board[row][3].figure = self.board[row][0].figure
                                 self.board[row][0].figure = None
-                                self.board[row][3].figure.position = (row, 3) # type: ignore
+                                self.board[row][3].figure.position = (row, 3) # type: ignore # isinstance already checks it but mypy don't understand it
                                 self.board[row][3].update()
                                 self.board[row][0].update()
                                 self.moves_record.record_move(self.clicked_figure, castle="queenside")
@@ -402,6 +462,8 @@ class Board(ctk.CTkFrame):
         """
         # TODO: make it faster
         for row in self.board:
+            if not piece.King in row:
+                continue
             for cell in row:
                 if isinstance(cell.figure, piece.King) and cell.figure.color == color:
                     return cell.figure.position

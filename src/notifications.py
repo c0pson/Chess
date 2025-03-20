@@ -31,9 +31,15 @@ class Notification(ctk.CTkFrame):
          - duration_sec (float): Amount of seconds before hiding the notification.
          - position (str, optional): Position of the notification 'center' or 'top'. Defaults to 'center'.
         """
-        super().__init__(master, fg_color=COLOR.NOTIFICATION_BACKGROUND,
-                        corner_radius=0, border_color=COLOR.NOTIFICATION_OUTLINE,
-                        border_width=3, width=1, height=1)
+        super().__init__(
+            master        = master,
+            fg_color      = COLOR.NOTIFICATION_BACKGROUND,
+            corner_radius = 0,
+            border_color  = COLOR.NOTIFICATION_OUTLINE,
+            border_width  = 3,
+            width         = 1,
+            height        = 1
+        )
         self.font_name: str = str(get_from_config('font_name'))
         self.message: str = message
         self.duration: int = int(duration_sec * 1000)
@@ -43,8 +49,13 @@ class Notification(ctk.CTkFrame):
     def show_notification(self) -> None:
         """Places the notification on top of all widgets relatively to the window size.
         """
-        self.text_label = ctk.CTkLabel(self, text=self.message, text_color=COLOR.TEXT, 
-                                        font=ctk.CTkFont(self.font_name, size=32), anchor=ctk.N)
+        self.text_label = ctk.CTkLabel(
+            master     = self,
+            text       = self.message,
+            text_color = COLOR.TEXT, 
+            font       = ctk.CTkFont(self.font_name, size=32),
+            anchor     = ctk.N
+        )
         self.text_label.pack(padx=10, pady=10)
         if self.position == 'center':
             self.place(relx=0.504, rely=0.47, anchor=ctk.CENTER)

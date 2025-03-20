@@ -83,8 +83,14 @@ class Piece:
         try: 
             loaded_image = Image.open(path).convert('RGBA')
             if piece:
-                return ctk.CTkImage(light_image=loaded_image, dark_image=loaded_image, size=(int(get_from_config('size'))-10, int(get_from_config('size'))-10))
-            self.image = ctk.CTkImage(light_image=loaded_image, dark_image=loaded_image, size=(int(get_from_config('size'))-10, int(get_from_config('size'))-10))
+                return ctk.CTkImage(
+                    light_image=loaded_image,
+                    dark_image=loaded_image,
+                    size=(int(get_from_config('size'))-10, int(get_from_config('size'))-10))
+            self.image = ctk.CTkImage(
+                light_image=loaded_image,
+                dark_image=loaded_image,
+                size=(int(get_from_config('size'))-10, int(get_from_config('size'))-10))
         except (FileExistsError, FileNotFoundError) as e:
             print(f'Couldn`t load image for due to error: {e}')
         return None
@@ -197,8 +203,12 @@ class Pawn(Piece):
          - choose_piece_menu_1 (ctk.CTkFrame): Frame widget.
         """
         piece_image = self.load_image(str(figure.__name__))
-        button_figure = ctk.CTkLabel(choose_piece_menu, text='', image=piece_image,
-                                    corner_radius=0)
+        button_figure = ctk.CTkLabel(
+            master        = choose_piece_menu,
+            text          = '',
+            image         = piece_image,
+            corner_radius = 0
+        )
         button_figure.pack(side=ctk.LEFT, padx=10, pady=10)
         button_figure.bind('<Button-1>', lambda e: self.choose_figure(e, figure, choose_piece_menu, choose_piece_menu_1))
 
@@ -210,14 +220,20 @@ class Pawn(Piece):
              - bool: True if pawn was promoted. False otherwise.
         """
         if self.position[0] in {0, 7}:
-            choose_piece_menu_1 = ctk.CTkFrame(self.board, corner_radius=0,
-                                            fg_color=COLOR.BACKGROUND)
+            choose_piece_menu_1 = ctk.CTkFrame(
+                master   = self.board, corner_radius=0,
+                fg_color = COLOR.BACKGROUND
+            )
             choose_piece_menu_1.place(relx=0, rely=0, relwidth=1, relheight=1)
             if platform.system() == 'Windows':
                 pywinstyles.set_opacity(choose_piece_menu_1, value=0.01, color="#000001")
-            choose_piece_menu = ctk.CTkFrame(self.board, fg_color=COLOR.BACKGROUND,
-                                            corner_radius=0, border_color=COLOR.DARK_TEXT,
-                                            border_width=4)
+            choose_piece_menu = ctk.CTkFrame(
+                master        = self.board,
+                fg_color      = COLOR.BACKGROUND,
+                corner_radius = 0,
+                border_color  = COLOR.DARK_TEXT,
+                border_width  = 4
+            )
             choose_piece_menu.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
             if platform.system() == 'Windows':
                 pywinstyles.set_opacity(choose_piece_menu, color="#000001")
@@ -238,7 +254,10 @@ class Pawn(Piece):
          - check (bool): Flag to check if after pawn move check occurred.
          - checkmate (bool): Flag to check if after pawn move checkmate occurred.
         """
-        moves_record.record_move(figure_name, capture=capture, castle=None, check=check, checkmate=checkmate, promotion=f'{self.board.board[self.position[0]][self.position[1]].figure.__class__.__name__[0]}')
+        moves_record.record_move(figure_name,
+            capture=capture, castle=None, check=check, checkmate=checkmate,
+            promotion=f'{self.board.board[self.position[0]][self.position[1]].figure.__class__.__name__[0]}'
+        )
 
 class Knight(Piece):
     """Implementation of the Knight.
