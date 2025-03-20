@@ -26,7 +26,7 @@ from tools import resource_path, get_from_config
 from properties import COLOR
 
 from menus import MovesRecord, Options
-from cell import Board
+from board import Board
 
 class MainWindow(ctk.CTk):
     """Main class handling the app. Setting size, minimum size, font loading, icon setting,
