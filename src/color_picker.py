@@ -135,7 +135,7 @@ class ColorPicker(ctk.CTkToplevel):
         """
         vcmd = (self.register(self.validate_hex_color), '%P')
         ctk.CTkLabel(self.bottom_frame, text='Hex: ', font=self.font if self.font else ctk.CTkFont('', self.font_size)).pack(side=ctk.LEFT, padx=3, pady=3)
-        self.hex_val_label = ctk.CTkEntry(
+        self.hex_val_label: ctk.CTkEntry = ctk.CTkEntry(
             master          = self.bottom_frame,
             validate        = 'key',
             validatecommand = vcmd,
@@ -178,7 +178,7 @@ class ColorPicker(ctk.CTkToplevel):
 
          - ctk.CTkFrame: Ready packed frame.
         """
-        slider_frame = ctk.CTkFrame(
+        slider_frame: ctk.CTkFrame = ctk.CTkFrame(
             master        = frame,
             fg_color      = 'transparent',
             corner_radius = 0
@@ -212,19 +212,19 @@ class ColorPicker(ctk.CTkToplevel):
         """
     # sliders frame
         vcmd = (self.register(self.validate_input), '%P')
-        frame = ctk.CTkFrame(
+        frame: ctk.CTkFrame = ctk.CTkFrame(
             master   = self.main_frame,
             fg_color = 'transparent'
         )
         frame.pack(side=ctk.TOP)
     # R value slider
-        slider_frame = self.new_slider_frame(frame)
+        slider_frame: ctk.CTkFrame = self.new_slider_frame(frame)
         ctk.CTkLabel(
             master = slider_frame,
             text   = 'R: ',
             font   = self.font if self.font else ctk.CTkFont('', self.font_size)
         ).pack(side=ctk.LEFT, padx=3, pady=3)
-        self.r_val_label = ctk.CTkEntry(
+        self.r_val_label: ctk.CTkEntry = ctk.CTkEntry(
             master          = slider_frame,
             validate        = 'key',
             validatecommand = vcmd,
@@ -234,7 +234,7 @@ class ColorPicker(ctk.CTkToplevel):
             border_color    = COLOR.TILE_2
         )
         self.r_val_label.pack(side=ctk.LEFT, padx=3, pady=3)
-        self.r_slider = ctk.CTkSlider(
+        self.r_slider: ctk.CTkSlider = ctk.CTkSlider(
             master               = slider_frame,
             from_                = 0,
             to                   = 255,
@@ -261,7 +261,7 @@ class ColorPicker(ctk.CTkToplevel):
             border_color    = COLOR.TILE_2
         )
         self.g_val_label.pack(side=ctk.LEFT, padx=3, pady=3)
-        self.g_slider = ctk.CTkSlider(
+        self.g_slider: ctk.CTkSlider = ctk.CTkSlider(
             master               = slider_frame, 
             from_                = 0,
             to                   = 255,
@@ -278,7 +278,7 @@ class ColorPicker(ctk.CTkToplevel):
     # B value slider
         slider_frame = self.new_slider_frame(frame)
         ctk.CTkLabel(slider_frame, text='B: ', font=self.font if self.font else ctk.CTkFont('', self.font_size)).pack(side=ctk.LEFT, padx=3, pady=3)
-        self.b_val_label = ctk.CTkEntry(
+        self.b_val_label: ctk.CTkEntry = ctk.CTkEntry(
             master          = slider_frame,
             validate        = 'key',
             validatecommand = vcmd,
@@ -288,7 +288,7 @@ class ColorPicker(ctk.CTkToplevel):
             border_color    = COLOR.TILE_2
         )
         self.b_val_label.pack(side=ctk.LEFT, padx=3, pady=3)
-        self.b_slider = ctk.CTkSlider(
+        self.b_slider: ctk.CTkSlider = ctk.CTkSlider(
             master               = slider_frame,
             from_                = 0,
             to                   = 255,
@@ -384,7 +384,7 @@ class ColorPicker(ctk.CTkToplevel):
          - tuple[int, int , int]: Tuple of R, G and B values.
         """
         self.hex_val = self.hex_val_label.get()
-        hex_code = self.hex_val.lstrip('#') if self.hex_val else '000000'
+        hex_code: str = self.hex_val.lstrip('#') if self.hex_val else '000000'
         r = int(hex_code[0:2], 16)
         g = int(hex_code[2:4], 16)
         b = int(hex_code[4:6], 16)

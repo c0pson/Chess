@@ -6,6 +6,7 @@ from PIL import Image
 import configparser
 import sys
 import os
+from datetime import datetime
 
 def resource_path(relative_path: str) -> str:
     """Function obtaining the absolute path to desired relative path.
@@ -104,3 +105,10 @@ def change_color(color_name: str, color_value: str) -> None:
     config['Colors'][color_name] = color_value    
     with open(resource_path(os.path.join('assets', 'config.ini')), 'w') as configfile:
         config.write(configfile)
+
+from datetime import datetime
+
+def update_error_log(error: Exception) -> None:
+    now: str = str(datetime.now())
+    with open(resource_path('error.log'), 'a') as file:
+        file.write(f'[{now}]: Error occurred: {error} in {getattr(error, 'filename')}')

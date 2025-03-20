@@ -9,7 +9,7 @@ import platform
 import os
 import re
 
-from tools import get_from_config, change_config, load_menu_image, resource_path, change_color
+from tools import get_from_config, change_config, load_menu_image, resource_path, change_color, update_error_log
 from properties import COLOR, STRING
 from notifications import Notification
 from color_picker import ColorPicker
@@ -277,13 +277,14 @@ class Settings(ctk.CTkFrame):
                 if os.path.isdir(os.path.join(path, entry)) and os.listdir(os.path.join(path, entry))
             ]
             return directories
-        except FileNotFoundError:
+        except FileNotFoundError as e:
+            update_error_log(e)
             return []
 
     def close_button(self) -> None:
         """Setup of close button
         """
-        top_frame = ctk.CTkFrame(
+        top_frame: ctk.CTkFrame = ctk.CTkFrame(
             master   = self,
             fg_color = COLOR.TRANSPARENT
         )
@@ -314,7 +315,7 @@ class Settings(ctk.CTkFrame):
          - frame (ctk.CTkFrame): Frame in which button will be placed.
          - theme (str): Style of Figures to choose.
         """
-        theme_button = ctk.CTkButton(
+        theme_button: ctk.CTkButton = ctk.CTkButton(
             master        = frame,
             text          = theme,
             command       = lambda: self.select_theme(theme),
@@ -341,7 +342,7 @@ class Settings(ctk.CTkFrame):
         )
         text.pack(side=ctk.TOP, anchor=ctk.SW, padx=75, pady=0)
         themes.remove('menu') if 'menu' in themes else themes
-        frame = ctk.CTkScrollableFrame(
+        frame: ctk.CTkScrollableFrame = ctk.CTkScrollableFrame(
             master                 = self.scrollable_frame,
             fg_color               = COLOR.TILE_2,
             scrollbar_button_color = COLOR.DARK_TEXT,
@@ -396,15 +397,15 @@ class Settings(ctk.CTkFrame):
         """
         system: str = platform.system()
         if system == 'Windows':
-            os.startfile(path)
+            os.startfile(resource_path(path))
         elif system == 'Darwin':
-            subprocess.run(['open', path])
+            subprocess.run(['open', resource_path(path)])
         elif system == 'Linux':
-            subprocess.run(['xdg-open', path])
+            subprocess.run(['xdg-open', resource_path(path)])
 
     @staticmethod
     def get_all_files(path: str) -> list[str]:
-        """Gathers all files from directory.
+        """Gathers all files from directory. If error occurs after catching the exception empty list is returned.
 
         Args:
 
@@ -413,16 +414,19 @@ class Settings(ctk.CTkFrame):
         Returns:
 
          - list[str]: List of all file names from path directory.
+
+        Exceptions:
+
+         - FileNotFoundError: If the directory does not exist.
+         - PermissionError: If access to the directory is denied.
+         - OSError: If an OS-related error occurs.
         """
         path = resource_path(path)
         try:
             all_files = [os.path.join((path), f) for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
             return all_files
-        except FileNotFoundError:
-            return []
-        except PermissionError:
-            return []
-        except OSError:
+        except (FileNotFoundError, PermissionError, OSError) as e:
+            update_error_log(e)
             return []
 
     @staticmethod
@@ -438,7 +442,7 @@ class Settings(ctk.CTkFrame):
          - str | None: Returns font name on success otherwise None.
         """
         try:
-            font: TTFont = TTFont(ttf_path)
+            font: TTFont = TTFont(resource_path(ttf_path))
             name: str = ''
             for record in font['name'].names:
                 if record.nameID == 4:
@@ -449,7 +453,7 @@ class Settings(ctk.CTkFrame):
                     break
             return name
         except Exception as e: # dont really know what kind of error might occur here
-            print(f"An error occurred: {e}")
+            update_error_log(e)
             return None
 
     def open_assets_folder(self) -> None:

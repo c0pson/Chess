@@ -57,7 +57,11 @@ class Cell(ctk.CTkLabel):
 
          - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
-        if self.figure and not self.board.clicked_figure:
+        if self.figure == self.board.clicked_figure:
+            self.board.remove_highlights()
+            self.board.clicked_figure = None
+        elif self.figure:
+            self.board.remove_highlights()
             self.board.handle_clicks(self.figure, self.position)
         else:
             self.board.handle_move(self.position)
@@ -65,8 +69,8 @@ class Cell(ctk.CTkLabel):
     def update(self) -> None:
         """Updates the asset shown on a cell.
         """
-        figure_asset = self.figure.image if self.figure else ''
-        self.configure(image=figure_asset, require_redraw=True) # raises type error but ensures correct image removing
+        figure_asset = self.figure.image if self.figure else b''
+        self.configure(image=figure_asset, require_redraw=True)
 
 class Board(ctk.CTkFrame):
     """Class handling all cells and move related logic.
@@ -93,7 +97,6 @@ class Board(ctk.CTkFrame):
         self.loading_animation(0)
         self.size: int = size
         self.board: list[list[Cell]] = self.create_board()
-        self.previous_click: tuple[None, None] | tuple[int, int] = (None, None)
         self.highlighted: list[Cell] = []
         self.clicked_figure: piece.Piece | None = None
         self.previous_coords: tuple[int, int] | None = None
@@ -196,7 +199,7 @@ class Board(ctk.CTkFrame):
         }
         for i in range(8):
             row = []
-            new_frame = ctk.CTkFrame(
+            new_frame: ctk.CTkFrame = ctk.CTkFrame(
                 master   = board_frame,
                 fg_color = COLOR.DARK_TEXT
             )
@@ -205,7 +208,7 @@ class Board(ctk.CTkFrame):
                 if self.loading_screen:
                     self.loading_screen.lift()
                 color: str = self.determine_tile_color((i, j))
-                figure: piece.Piece | None= piece_positions.get((i, j)) if (i, j) in piece_positions else (piece.Pawn('b' if i == 1 else 'w', self, (i, j), self.notation_promotion) if i in [1, 6] else None)
+                figure: piece.Piece | None = piece_positions.get((i, j)) if (i, j) in piece_positions else (piece.Pawn('b' if i == 1 else 'w', self, (i, j), self.notation_promotion) if i in [1, 6] else None)
                 cell = Cell(new_frame, figure, (i, j), color, self)
                 row.append(cell)
             board.append(row)
@@ -462,8 +465,6 @@ class Board(ctk.CTkFrame):
         """
         # TODO: make it faster
         for row in self.board:
-            if not piece.King in row:
-                continue
             for cell in row:
                 if isinstance(cell.figure, piece.King) and cell.figure.color == color:
                     return cell.figure.position
@@ -489,7 +490,6 @@ class Board(ctk.CTkFrame):
         for child in self.winfo_children():
             if child != self.loading_screen:
                 child.destroy()
-        self.previous_click = (None, None)
         self.highlighted = []
         self.clicked_figure = None
         self.previous_coords = None

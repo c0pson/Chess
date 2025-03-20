@@ -9,7 +9,7 @@ import os
 if platform.system() == 'Windows':
     import pywinstyles
 
-from tools import resource_path, get_from_config
+from tools import resource_path, get_from_config, update_error_log
 from properties import COLOR
 
 class Piece:
@@ -92,7 +92,7 @@ class Piece:
                 dark_image=loaded_image,
                 size=(int(get_from_config('size'))-10, int(get_from_config('size'))-10))
         except (FileExistsError, FileNotFoundError) as e:
-            print(f'Couldn`t load image for due to error: {e}')
+            update_error_log(e)
         return None
 
     def update_image(self) -> None:
@@ -133,7 +133,7 @@ class Pawn(Piece):
         super().__init__(color, board, position)
         self.color: str = color # b | w
         self.position: tuple[int, int] = position
-        self.board = board
+        self.board = board # Board object (import loop occurs if imported for type annotation)
         self.load_image()
         self.first_move: bool = True
         self.moved_by_two: bool = False
@@ -152,28 +152,29 @@ class Pawn(Piece):
 
          - list[tuple[int, int]]: Returns list of all legal positions to which pawn can move.
         """
-        if self.check_turn(color) and not checking:
-            return []
-        move = self.move
         possible_moves: list[tuple[int, int]] = []
-        if self.position[0] in {0, 7}:
+        if self.check_turn(color) and not checking:
             return possible_moves
-        forward_one = (self.position[0] + move, self.position[1])
-        forward_two = (self.position[0] + move * 2, self.position[1])
+        move = self.move
+        x, y = self.position[0], self.position[1]
+        if x in {0, 7}:
+            return possible_moves
+        forward_one = (x + move, y)
+        forward_two = (x + move * 2, y)
         if not self.board.board[forward_one[0]][forward_one[1]].figure:
             possible_moves.append(forward_one)
             if self.first_move and not self.board.board[forward_two[0]][forward_two[1]].figure:
                 possible_moves.append(forward_two)
         for offset in [-1, 1]:
-            if 0 <= self.position[1] + offset < 8:
-                capture_position = (self.position[0] + move, self.position[1] + offset)
+            if 0 <= y + offset < 8:
+                capture_position = (x + move, y + offset)
                 target_square = self.board.board[capture_position[0]][capture_position[1]]
                 if target_square.figure and target_square.figure.color != self.color:
                     possible_moves.append(capture_position)
-                adjacent_pawn_position = (self.position[0], self.position[1] + offset)
+                adjacent_pawn_position = (x, y + offset)
                 adjacent_pawn = self.board.board[adjacent_pawn_position[0]][adjacent_pawn_position[1]].figure
                 if isinstance(adjacent_pawn, Pawn) and adjacent_pawn.color != self.color and adjacent_pawn.moved_by_two:
-                    possible_moves.append((self.position[0] + move, self.position[1] + offset))
+                    possible_moves.append((x + move, y + offset))
                     self.can_en_passant = True
         return possible_moves
 
@@ -187,9 +188,10 @@ class Pawn(Piece):
          - choose_piece_menu (ctk.CTkLabel): Label widget.
          - choose_piece_menu_1 (ctk.CTkFrame): Frame widget.
         """
-        self.board.board[self.position[0]][self.position[1]].figure = figure(self.color, self.board, self.position)
-        self.board.board[self.position[0]][self.position[1]].update()
-        self.notation_func(self.board.board[self.position[0]][self.position[1]].figure.__class__.__name__)
+        x, y = self.position[0], self.position[1]
+        self.board.board[x][y].figure = figure(self.color, self.board, self.position)
+        self.board.board[x][y].update()
+        self.notation_func(self.board.board[x][y].figure.__class__.__name__)
         choose_piece_menu.destroy()
         choose_piece_menu_1.destroy()
 
@@ -202,8 +204,8 @@ class Pawn(Piece):
          - figure : Figure that will be possible to choose by clicking the button.
          - choose_piece_menu_1 (ctk.CTkFrame): Frame widget.
         """
-        piece_image = self.load_image(str(figure.__name__))
-        button_figure = ctk.CTkLabel(
+        piece_image: ctk.CTkImage | None = self.load_image(str(figure.__name__))
+        button_figure: ctk.CTkLabel = ctk.CTkLabel(
             master        = choose_piece_menu,
             text          = '',
             image         = piece_image,
@@ -220,14 +222,14 @@ class Pawn(Piece):
              - bool: True if pawn was promoted. False otherwise.
         """
         if self.position[0] in {0, 7}:
-            choose_piece_menu_1 = ctk.CTkFrame(
+            choose_piece_menu_1: ctk.CTkFrame = ctk.CTkFrame(
                 master   = self.board, corner_radius=0,
                 fg_color = COLOR.BACKGROUND
             )
             choose_piece_menu_1.place(relx=0, rely=0, relwidth=1, relheight=1)
             if platform.system() == 'Windows':
                 pywinstyles.set_opacity(choose_piece_menu_1, value=0.01, color="#000001")
-            choose_piece_menu = ctk.CTkFrame(
+            choose_piece_menu: ctk.CTkFrame = ctk.CTkFrame(
                 master        = self.board,
                 fg_color      = COLOR.BACKGROUND,
                 corner_radius = 0,
@@ -279,6 +281,21 @@ class Knight(Piece):
         self.color: str = color
         self.board = board
         self.load_image()
+        self.moves: list[tuple[int, int]] = [   
+            (-2,-1), (-2, 1),
+            (-1,-2), (-1, 2),
+            ( 1,-2), ( 1, 2),
+            ( 2,-1), ( 2, 1)   
+        ]
+        self.special_cases: dict[tuple[int, int], list[int]] = {
+            (1, 1): [0, 1, 2, 4],
+            (1, 6): [0, 1, 3, 5],
+            (6, 6): [3, 5, 6, 7],
+            (6, 1): [2, 4, 3, 5],
+            (0, 0): [0, 1, 2, 3, 4, 6],
+            (0, 1): [0, 1, 2, 3, 4],
+            (1, 0): [0, 1, 2, 4, 7]
+        }
 
     def check_moves(self, exceptions: list[int]) -> list[tuple[int, int]]:
         """Function checking possible moves for the Knight.
@@ -292,13 +309,7 @@ class Knight(Piece):
          - list[tuple[int, int]]: List of all legal moves.
         """
         possible_moves: list[tuple[int, int]] = []
-        moves: list[tuple[int, int]] = [   
-            (-2,-1), (-2, 1),
-            (-1,-2), (-1, 2),
-            ( 1,-2), ( 1, 2),
-            ( 2,-1), ( 2, 1)   
-        ]
-        for i, move in enumerate(moves):
+        for i, move in enumerate(self.moves):
             if i in exceptions:
                 continue
             new_position = (self.position[0] + move[0], self.position[1] + move[1])
@@ -322,27 +333,18 @@ class Knight(Piece):
         """
         if self.check_turn(color) and not checking:
             return []
-        special_cases = {
-            (1, 1): [0, 1, 2, 4],
-            (1, 6): [0, 1, 3, 5],
-            (6, 6): [3, 5, 6, 7],
-            (6, 1): [2, 4, 3, 5],
-            (0, 0): [0, 1, 2, 3, 4, 6],
-            (0, 1): [0, 1, 2, 3, 4],
-            (1, 0): [0, 1, 2, 4, 7]
-        }
-        if 2 <= self.position[0] <= 5 and self.position[1] in {1, 6} and self.position not in special_cases:
+        if 2 <= self.position[0] <= 5 and self.position[1] in {1, 6} and self.position not in self.special_cases:
             if self.position[1] == 1:
                 return self.check_moves([2, 4])
             if self.position[1] == 6:
                 return self.check_moves([3, 5])
-        if 2 <= self.position[1] <= 5 and self.position[0] in {1, 6} and self.position not in special_cases:
+        if 2 <= self.position[1] <= 5 and self.position[0] in {1, 6} and self.position not in self.special_cases:
             if self.position[0] == 1:
                 return self.check_moves([0, 1])
             if self.position[0] == 6:
                 return self.check_moves([6, 7])
-        if self.position in special_cases:
-            return self.check_moves(special_cases[self.position])
+        if self.position in self.special_cases:
+            return self.check_moves(self.special_cases[self.position])
         return self.check_moves([])
 
 class Bishop(Piece):
@@ -365,6 +367,10 @@ class Bishop(Piece):
         self.color: str = color
         self.board = board
         self.load_image()
+        self.moves_vec = [
+            (-1, -1), (-1, 1),
+            ( 1, -1), (1,  1)
+        ]
 
     def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
         """Function checking all possible moves of the Bishop.
@@ -378,14 +384,10 @@ class Bishop(Piece):
 
          - list[tuple[int, int]]: List of all legal position to which Bishop can move.
         """
-        if self.check_turn(color) and not checking:
-            return []
         possible_moves: list[tuple[int, int]] = []
-        moves_vec = [
-            (-1, -1), (-1, 1),
-            ( 1, -1), (1,  1)
-        ]
-        for move in moves_vec:
+        if self.check_turn(color) and not checking:
+            return possible_moves
+        for move in self.moves_vec:
             for i in range(1, 8):
                 multiplied_vec = tuple(x * i for x in move)
                 x = self.position[0] + multiplied_vec[0]
@@ -422,6 +424,10 @@ class Rook(Piece):
         self.board = board
         self.load_image()
         self.first_move: bool = True
+        self.moves_vec = [
+            (-1, 0), (0,-1),
+            ( 1, 0), (0, 1)
+        ]
 
     def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
         """Function checking all possible moves of the Rook.
@@ -435,14 +441,10 @@ class Rook(Piece):
 
          - list[tuple[int, int]]: List of all legal position to which Rook can move.
         """
-        if self.check_turn(color) and not checking:
-            return []
         possible_moves: list[tuple[int, int]] = []
-        moves_vec = [
-            (-1, 0), (0,-1),
-            ( 1, 0), (0, 1)
-        ]
-        for move in moves_vec:
+        if self.check_turn(color) and not checking:
+            return possible_moves
+        for move in self.moves_vec:
             for i in range(1, 8):
                 multiplied_vec = tuple(x * i for x in move)
                 x = self.position[0] + multiplied_vec[0]
@@ -479,6 +481,12 @@ class Queen(Piece):
         self.color: str = color
         self.board = board
         self.load_image()
+        self.moves_vec = [
+            (-1, 0), (0,-1),
+            ( 1, 0), (0, 1),
+            (-1, -1), (-1, 1),
+            ( 1, -1), (1,  1)
+        ]
 
     def check_possible_moves(self, color: str, checking: bool = False) -> list[tuple[int, int]]:
         """Function checking all possible moves of the Queen.
@@ -492,16 +500,10 @@ class Queen(Piece):
 
          - list[tuple[int, int]]: List of all legal position to which Queen can move.
         """
-        if self.check_turn(color) and not checking:
-            return []
         possible_moves: list[tuple[int, int]] = []
-        moves_vec = [
-            (-1, 0), (0,-1),
-            ( 1, 0), (0, 1),
-            (-1, -1), (-1, 1),
-            ( 1, -1), (1,  1)
-        ]
-        for move in moves_vec:
+        if self.check_turn(color) and not checking:
+            return possible_moves
+        for move in self.moves_vec:
             for i in range(1, 8):
                 multiplied_vec = tuple(x * i for x in move)
                 x = self.position[0] + multiplied_vec[0]
@@ -553,9 +555,9 @@ class King(Piece):
 
          - list[tuple[int, int]]: List of all legal position to which King can move.
         """
-        if self.check_turn(color) and not checking:
-            return []
         possible_moves: list[tuple[int, int]] = []
+        if self.check_turn(color) and not checking:
+            return possible_moves
         for i in range(max(0, self.position[0] - 1), min(8, self.position[0] + 2)):
             for j in range(max(0, self.position[1] - 1), min(8, self.position[1] + 2)):
                 if not self.board.board[i][j].figure:

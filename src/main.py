@@ -118,7 +118,7 @@ class MainWindow(ctk.CTk):
         def thread_task():
             children = widget.winfo_children()
             for child in children:
-                if isinstance(child, ctk.CTkLabel) or isinstance(child, ctk.CTkButton):
+                if isinstance(child, ctk.CTkLabel | ctk.CTkButton):
                     size = child.cget('font').cget('size')
                     self.__update_font_on_main_thread(child, size)
                 self.update_font(child)
@@ -128,7 +128,6 @@ class MainWindow(ctk.CTk):
         self.after(0, lambda: widget.configure(font=ctk.CTkFont(get_from_config('font_name'), size)))
 
 if __name__ == "__main__":
-    warnings.filterwarnings('ignore', category=UserWarning, module='customtkinter') # raises type error but ensures correct image removing
     ctk.deactivate_automatic_dpi_awareness()
     app = MainWindow()
     app.mainloop()
