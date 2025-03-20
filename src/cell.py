@@ -3,12 +3,17 @@
 
 import customtkinter as ctk
 from typing import Any
+import platform
+if platform.system() == 'Windows':
+    import pywinstyles
+from PIL import Image
+import os
 
 from notifications import Notification
 from properties import COLOR
 from menus import MovesRecord
 
-from tools import get_from_config
+from tools import get_from_config, resource_path
 
 import piece
 
@@ -19,6 +24,7 @@ class Cell(ctk.CTkLabel):
 
      - ctk.CTkLabel : Inheritance from customtkinter CTkLabel widget.
     """
+    previous_coords: tuple[int, int] | None = None
     def __init__(self, frame: ctk.CTkFrame, figure: piece.Piece | None, position: tuple[int, int], color: str, board) -> None:
         """Constructor:
 
@@ -37,6 +43,7 @@ class Cell(ctk.CTkLabel):
         self.position: tuple[int, int] = position
         self.board: Board = board
         self.figure: None | piece.Piece = figure
+        self.frame_around: ctk.CTkLabel | None = None
         figure_asset: ctk.CTkImage | None = self.figure.image if self.figure else None
         super().__init__(
             master   = frame,
@@ -57,11 +64,9 @@ class Cell(ctk.CTkLabel):
 
          - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
-        if self.figure == self.board.clicked_figure:
-            self.board.remove_highlights()
-            self.board.clicked_figure = None
-        elif self.figure:
-            self.board.remove_highlights()
+        if self.board.clicked_figure and self.board.clicked_figure.color:
+            self.board.handle_move(self.position)
+        if self.figure and not self.board.clicked_figure and self.board.current_turn == self.figure.color:
             self.board.handle_clicks(self.figure, self.position)
         else:
             self.board.handle_move(self.position)
@@ -255,20 +260,23 @@ class Board(ctk.CTkFrame):
          - tuple[bool, bool]: 1st tuple element is game_over and 2nd is in check both True or False.
         """
         in_check = False
+        has_legal_moves = False
         for row in self.board:
             for cell in row:
                 if cell.figure and cell.figure.color == self.current_turn:
                     possible_moves = cell.figure.check_possible_moves(self.current_turn)
                     for move in possible_moves:
                         if not self.check_check(cell.figure.position, move):
-                            return False, False
-        for row in self.board:
-            for cell in row:
-                if isinstance(cell.figure, piece.King) and cell.figure.color == self.current_turn:
-                    if self.check_check(cell.figure.position, cell.figure.position):
-                        in_check = True
+                            has_legal_moves = True
+                            break
+                    if has_legal_moves:
                         break
-        return True, in_check
+            if has_legal_moves:
+                break
+        if not has_legal_moves:
+            king_position = self.get_king_position(self.current_turn)
+            in_check = self.is_under_attack(king_position, self.current_turn)
+        return (not has_legal_moves, in_check)
 
     def handle_clicks(self, figure: piece.Piece, position: tuple[int, int]) -> None:
         """Handles actions after clicking on a specific cell.
@@ -278,13 +286,29 @@ class Board(ctk.CTkFrame):
          - figure (piece.Piece): Chosen figure.
          - position (tuple[int, int]): Position of that figure.
         """
+        if self.previous_coords:
+            if platform.system() == 'Windows':
+                if x := self.board[self.previous_coords[0]][self.previous_coords[1]].frame_around:
+                    x.destroy()
+            self.board[self.previous_coords[0]][self.previous_coords[1]].configure(fg_color=self.determine_tile_color(self.previous_coords))
+        if platform.system() == 'Windows':
+            image_test = ctk.CTkLabel(
+                    fg_color = '#97A789',
+                    master   = self.board[position[0]][position[1]],
+                    text     = '',
+                    image    = ctk.CTkImage(Image.open(resource_path(os.path.join('assets', 'menu', 'frame.png'))).convert('RGBA'), size=(80,80))
+            )
+            pywinstyles.set_opacity(image_test, value=1, color='#97A789')
+            image_test.place(relx=0.5, rely=0.5, anchor='center')
+            self.board[position[0]][position[1]].frame_around = image_test
+        else:
+            self.board[position[0]][position[1]].configure(fg_color=COLOR.TEXT)
         possible_moves = figure.check_possible_moves(self.current_turn)
         if not possible_moves and self.board[position[0]][position[1]].figure:
+            self.previous_coords = position
             return
         self.clicked_figure = figure if figure else None
         self.previous_coords = position
-        if self.highlighted:
-            self.remove_highlights()
         if self.board and possible_moves:
             valid_moves = []
             for coords in possible_moves:
@@ -363,6 +387,12 @@ class Board(ctk.CTkFrame):
 
          - position (tuple[int, int]): Position of the figure.
         """
+        if self.previous_coords:
+            if platform.system() == 'Windows':
+                if x := self.board[self.previous_coords[0]][self.previous_coords[1]].frame_around:
+                    x.destroy()
+            else:
+                self.board[self.previous_coords[0]][self.previous_coords[1]].configure(fg_color=self.determine_tile_color(self.previous_coords))
         if self.clicked_figure and self.previous_coords:
             row, col = position
             cell = self.board[row][col]

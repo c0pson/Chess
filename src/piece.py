@@ -153,7 +153,7 @@ class Pawn(Piece):
          - list[tuple[int, int]]: Returns list of all legal positions to which pawn can move.
         """
         possible_moves: list[tuple[int, int]] = []
-        if self.check_turn(color) and not checking:
+        if self.check_turn(color):
             return possible_moves
         move = self.move
         x, y = self.position[0], self.position[1]
@@ -183,7 +183,7 @@ class Pawn(Piece):
 
         Args:
 
-         - event (Any): _description_
+         - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
          - figure : Figure chosen by the player.
          - choose_piece_menu (ctk.CTkLabel): Label widget.
          - choose_piece_menu_1 (ctk.CTkFrame): Frame widget.
@@ -200,7 +200,7 @@ class Pawn(Piece):
 
         Args:
 
-         - choose_piece_menu (ctk.CTkLabel): _description_
+         - choose_piece_menu (ctk.CTkLabel): Label in which button will be created.
          - figure : Figure that will be possible to choose by clicking the button.
          - choose_piece_menu_1 (ctk.CTkFrame): Frame widget.
         """

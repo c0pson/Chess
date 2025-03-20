@@ -106,9 +106,13 @@ def change_color(color_name: str, color_value: str) -> None:
     with open(resource_path(os.path.join('assets', 'config.ini')), 'w') as configfile:
         config.write(configfile)
 
-from datetime import datetime
-
 def update_error_log(error: Exception) -> None:
+    """Appends new error to error log.
+
+    Args:
+
+     - error (Exception): Error to append log file with.
+    """
     now: str = str(datetime.now())
     with open(resource_path('error.log'), 'a') as file:
-        file.write(f'[{now}]: Error occurred: {error} in {getattr(error, 'filename')}')
+        file.write(f'[{now}]: Error occurred: {error} in {os.path.relpath(__file__)}\n')

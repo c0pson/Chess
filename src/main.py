@@ -18,9 +18,9 @@ Libraries used:
 
 import customtkinter as ctk
 import os
-import warnings
 import platform
 import threading
+from concurrent.futures import ThreadPoolExecutor
 
 from tools import resource_path, get_from_config
 from properties import COLOR
@@ -38,15 +38,16 @@ class MainWindow(ctk.CTk):
     """
     def __init__(self) -> None:
         """Constructor for the MainWindow class: 
-            - sets title
-            - sets geometry
-            - sets minimum size of the window
-            - loads font
-            - Creates instances of the classes:
-                - MoveRecord
-                - Options
-                - Board
-            - loads theme of the app from the config: get_from_config
+
+         - sets title
+         - sets geometry
+         - sets minimum size of the window
+         - loads font
+         - Creates instances of the classes:
+          - MoveRecord
+          - Options
+          - Board
+         - loads theme of the app from the config: get_from_config
         """
         super().__init__(fg_color=COLOR.BACKGROUND)
         self.title('Chess')
@@ -103,7 +104,7 @@ class MainWindow(ctk.CTk):
         for row in self.board.board:
             for cell in row:
                 if cell.figure:
-                    cell.figure.update_image()
+                    threading.Thread(target=cell.figure.update_image).start()
 
     def update_font(self, widget=None) -> None:
         """Handle for updating the font during app runtime without freezing the window.
@@ -116,13 +117,18 @@ class MainWindow(ctk.CTk):
             widget = self
             self.load_font()
         def thread_task():
-            children = widget.winfo_children()
-            for child in children:
-                if isinstance(child, ctk.CTkLabel | ctk.CTkButton):
-                    size = child.cget('font').cget('size')
-                    self.__update_font_on_main_thread(child, size)
-                self.update_font(child)
-        threading.Thread(target=thread_task).start()
+            widgets = []
+            queue = [widget]
+            while queue:
+                current_widget = queue.pop()
+                widgets.append(current_widget)
+                queue.extend(current_widget.winfo_children())
+            with ThreadPoolExecutor() as executor:
+                for child in widgets:
+                    if isinstance(child, ctk.CTkLabel | ctk.CTkButton):
+                        size = child.cget('font').cget('size')
+                        executor.submit(self.__update_font_on_main_thread, child, size)
+        threading.Thread(target=thread_task, daemon=True).start()
 
     def __update_font_on_main_thread(self, widget, size: int) -> None:
         self.after(0, lambda: widget.configure(font=ctk.CTkFont(get_from_config('font_name'), size)))
