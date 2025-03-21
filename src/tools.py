@@ -7,6 +7,9 @@ import configparser
 import sys
 import os
 from datetime import datetime
+import sounddevice
+import soundfile
+from typing import Any
 
 def resource_path(relative_path: str) -> str:
     """Function obtaining the absolute path to desired relative path.
@@ -116,3 +119,6 @@ def update_error_log(error: Exception) -> None:
     now: str = str(datetime.now())
     with open(resource_path('error.log'), 'a') as file:
         file.write(f'[{now}]: Error occurred: {error} in {os.path.relpath(__file__)}\n')
+
+def play_sound(data: Any) -> None:
+    sounddevice.play(data)

@@ -89,7 +89,7 @@ class MainWindow(ctk.CTk):
         """
         size: int = int(get_from_config('size'))
         size = (size+2) * 10 + 40
-        center_pos: str = f'+{(self.winfo_screenwidth()-(int(size*1.5)))//2}+75'
+        center_pos: str = f'+{(self.winfo_screenwidth()-(int(size*1.5)))//2}+10'
         return f'{size + 300}x{size}{center_pos}'
 
     def restart_game(self) -> None:
@@ -104,7 +104,7 @@ class MainWindow(ctk.CTk):
         for row in self.board.board:
             for cell in row:
                 if cell.figure:
-                    threading.Thread(target=cell.figure.update_image).start()
+                    threading.Thread(target=cell.figure.update_image, daemon=True).start()
 
     def update_font(self, widget=None) -> None:
         """Handle for updating the font during app runtime without freezing the window.

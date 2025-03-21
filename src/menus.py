@@ -154,6 +154,7 @@ class Options(ctk.CTkFrame):
         self.update_font_func: Callable = update_font_func
         self.setting_icon: ctk.CTkImage | None = load_menu_image('settings')
         self.replay_icon: ctk.CTkImage | None = load_menu_image('replay')
+        self.settings: Settings | None = None
         self.setting_button()
         self.space_label()
         self.replay_button()
@@ -190,7 +191,10 @@ class Options(ctk.CTkFrame):
 
          - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
-        self.settings = Settings(self.master, self.restart_func, self.update_assets_func, self.update_font_func)
+        if self.settings:
+            self.settings.place(relx=0, rely=0, relwidth=1, relheight=1)
+        else:
+            self.settings = Settings(self.master, self.restart_func, self.update_assets_func, self.update_font_func)
 
     def replay(self, event: Any) -> None:
         """Function restarting the game.
@@ -380,12 +384,9 @@ class Settings(ctk.CTkFrame):
          - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
         if not self.previous_theme and not self.choice:
-            self.destroy()
-            return
-        if self.previous_theme == self.choice:
-            self.restart_func
+            self.place_forget()
         self.update_assets_func()
-        self.destroy()
+        self.place_forget()
 
     @staticmethod
     def open_file_explorer(path: str) -> None:

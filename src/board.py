@@ -8,12 +8,15 @@ if platform.system() == 'Windows':
     import pywinstyles
 from PIL import Image
 import os
+import threading
+import soundfile
+import time
 
 from notifications import Notification
 from properties import COLOR
 from menus import MovesRecord
 
-from tools import get_from_config, resource_path
+from tools import get_from_config, resource_path, play_sound
 
 import piece
 
@@ -100,6 +103,8 @@ class Board(ctk.CTkFrame):
         self.loading_screen: ctk.CTkLabel | None = None
         self.font_name: str = str(get_from_config('font_name'))
         self.loading_animation(0)
+        self.move_sound = soundfile.read(resource_path(os.path.join('sounds', 'move-self.wav')), dtype='float32')[0]
+        self.capture_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
         self.size: int = size
         self.board: list[list[Cell]] = self.create_board()
         self.highlighted: list[Cell] = []
@@ -109,6 +114,7 @@ class Board(ctk.CTkFrame):
         self.notification: None | Notification = None
         self.moves_record: MovesRecord = moves_record
         self.capture: bool = False
+        self.game_over: bool = False
 
     @staticmethod
     def determine_tile_color(pos: tuple[int, int]) -> str:
@@ -291,18 +297,19 @@ class Board(ctk.CTkFrame):
                 if x := self.board[self.previous_coords[0]][self.previous_coords[1]].frame_around:
                     x.destroy()
             self.board[self.previous_coords[0]][self.previous_coords[1]].configure(fg_color=self.determine_tile_color(self.previous_coords))
-        if platform.system() == 'Windows':
-            image_test = ctk.CTkLabel(
-                    fg_color = '#97A789',
-                    master   = self.board[position[0]][position[1]],
-                    text     = '',
-                    image    = ctk.CTkImage(Image.open(resource_path(os.path.join('assets', 'menu', 'frame.png'))).convert('RGBA'), size=(80,80))
-            )
-            pywinstyles.set_opacity(image_test, value=1, color='#97A789')
-            image_test.place(relx=0.5, rely=0.5, anchor='center')
-            self.board[position[0]][position[1]].frame_around = image_test
-        else:
-            self.board[position[0]][position[1]].configure(fg_color=COLOR.TEXT)
+        if not self.game_over:
+            if platform.system() == 'Windows':
+                image_test = ctk.CTkLabel(
+                        fg_color = '#97A789',
+                        master   = self.board[position[0]][position[1]],
+                        text     = '',
+                        image    = ctk.CTkImage(Image.open(resource_path(os.path.join('assets', 'menu', 'frame.png'))).convert('RGBA'), size=(80,80))
+                )
+                pywinstyles.set_opacity(image_test, value=1, color='#97A789')
+                image_test.place(relx=0.5, rely=0.5, anchor='center')
+                self.board[position[0]][position[1]].frame_around = image_test
+            else:
+                self.board[position[0]][position[1]].configure(fg_color=COLOR.TEXT)
         possible_moves = figure.check_possible_moves(self.current_turn)
         if not possible_moves and self.board[position[0]][position[1]].figure:
             self.previous_coords = position
@@ -442,6 +449,7 @@ class Board(ctk.CTkFrame):
                     check = self.is_under_attack(self.get_king_position(self.current_turn), self.current_turn)
                     game_over, in_check = self.is_game_over()
                     if game_over:
+                        self.game_over = True
                         if in_check:
                             self.display_message(f'Checkmate  {"White wins!" if self.current_turn == "b" else "Black wins!"}', 9)
                             if not promotion:
@@ -452,6 +460,11 @@ class Board(ctk.CTkFrame):
                                 self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check)
                     elif not castle and not promotion:
                         self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check)
+                if not capture and isinstance(cell.figure, piece.Pawn) and not cell.figure.moved_by_two:
+                    self.master.after(51, lambda: threading.Thread(target=play_sound, args=(self.move_sound,)).start())
+                else:
+                    self.master.after(51, lambda: threading.Thread(target=play_sound, args=(self.capture_sound,)).start())
+                time.sleep(0.04)
             if not promotion:
                 self.clicked_figure = None
                 self.previous_coords = None
@@ -525,6 +538,7 @@ class Board(ctk.CTkFrame):
         self.previous_coords = None
         self.current_turn = 'w'
         self.notification = None
+        self.game_over = False
         self.board = self.create_board()
 
     def destroy_loading_screen(self) -> None:
@@ -542,16 +556,20 @@ class Board(ctk.CTkFrame):
          - i (int): Iteration value passed by recursive formula.
         """
         if not self.loading_screen:
-            self.loading_screen = ctk.CTkLabel(self.master, text='Loading   ', font=ctk.CTkFont(self.font_name, 42),
-                                                text_color=COLOR.TEXT)
+            self.loading_screen = ctk.CTkLabel(
+                master     = self.master,
+                text       = 'Loading   ',
+                font       = ctk.CTkFont(self.font_name, 42),
+                text_color = COLOR.TEXT
+            )
             self.loading_screen.place(relx=0, rely=0, relwidth=1, relheight=1)
             self.loading_screen.lift()
-            self.master.after(270, lambda: self.loading_animation(0))
+            self.master.after(151, lambda: self.loading_animation(0))
         else:
             self.loading_screen.lift()
             self.loading_screen.configure(text=f'Loading{'.' * i}{' ' * (3 - i)}')
             if i <= 2:
                 i += 1
-                self.master.after(270, self.loading_animation, i)
+                self.master.after(151, self.loading_animation, i)
             else:
-                self.master.after(270, self.destroy_loading_screen)
+                self.master.after(151, self.destroy_loading_screen)
