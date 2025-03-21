@@ -14,6 +14,8 @@ Libraries used:
  - subprocess
  - pywinstyles
  - built in libraries
+ - sounddevice
+ - soundfile
 """
 
 import customtkinter as ctk

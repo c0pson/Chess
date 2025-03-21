@@ -73,7 +73,7 @@ def load_menu_image(option: str, resize: float = 1.5) -> ctk.CTkImage | None:
 
     Returns:
 
-     - ctk.CTkImage | None: _description_
+     - ctk.CTkImage | None: Image object.
     """
     setting_icon_path = resource_path(os.path.join('assets', 'menu', f'{option}.png'))
     try:

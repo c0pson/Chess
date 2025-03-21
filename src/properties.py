@@ -49,4 +49,4 @@ class STRING(str, Enum):
      - Enum : Enum class from enum library.  
     """
     ASSETS_WARNING = 'Make sure the folder under the name of chosen theme have all necessary assets with proper names!'
-    COLORS_WARNING = 'Color changes will be visible after restarting app!'
+    COLORS_WARNING = 'Color changes will be visible after restarting the app!'

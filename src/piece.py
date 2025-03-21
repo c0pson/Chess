@@ -142,7 +142,7 @@ class Pawn(Piece):
         self.notation_func: Callable = notation_func
 
     def check_possible_moves(self, color: str, checking: bool=False) -> list[tuple[int, int]]:
-        """_summary_
+        """Function checking all possible moves for the Pawn.
 
         Args:
          - color (str): Color of the pawn.
@@ -219,7 +219,7 @@ class Pawn(Piece):
 
         Returns:
 
-             - bool: True if pawn was promoted. False otherwise.
+         - bool: True if pawn was promoted. False otherwise.
         """
         if self.position[0] in {0, 7}:
             choose_piece_menu_1: ctk.CTkFrame = ctk.CTkFrame(
