@@ -26,7 +26,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 from tools import resource_path, get_from_config
 from properties import COLOR
-
 from menus import MovesRecord, Options
 from board import Board
 
@@ -91,7 +90,7 @@ class MainWindow(ctk.CTk):
         """
         size: int = int(get_from_config('size'))
         size = (size+2) * 10 + 40
-        center_pos: str = f'+{(self.winfo_screenwidth()-(int(size*1.5)))//2}+10'
+        center_pos: str = f'+{(self.winfo_screenwidth()-(int(size*1.5)))//2}+{(self.winfo_screenheight()-(int(size)*1.1))//2}'
         return f'{size + 300}x{size}{center_pos}'
 
     def restart_game(self) -> None:
@@ -106,7 +105,7 @@ class MainWindow(ctk.CTk):
         for row in self.board.board:
             for cell in row:
                 if cell.figure:
-                    threading.Thread(target=cell.figure.update_image, daemon=True).start()
+                    threading.Thread(target=cell.figure.update_image).start()
 
     def update_font(self, widget=None) -> None:
         """Handle for updating the font during app runtime without freezing the window.

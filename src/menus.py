@@ -203,9 +203,9 @@ class Options(ctk.CTkFrame):
 
          - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
+        self.after(1, self.restart_func)
         self.r_icon_label.unbind('<Button-1>')
-        self.restart_func()
-        self.r_icon_label.bind('<Button-1>', self.cooldown)
+        # self.r_icon_label.bind('<Button-1>', self.cooldown)
         self.master.after(1990, lambda: self.r_icon_label.unbind('<Button-1>'))
         self.master.after(2000, lambda: self.r_icon_label.bind('<Button-1>', self.replay))
 

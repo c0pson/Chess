@@ -157,8 +157,6 @@ class Pawn(Piece):
             return possible_moves
         move = self.move
         x, y = self.position[0], self.position[1]
-        if x in {0, 7}:
-            return possible_moves
         forward_one = (x + move, y)
         forward_two = (x + move * 2, y)
         if not self.board.board[forward_one[0]][forward_one[1]].figure:

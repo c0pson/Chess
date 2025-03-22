@@ -15,9 +15,7 @@ import time
 from notifications import Notification
 from properties import COLOR
 from menus import MovesRecord
-
 from tools import get_from_config, resource_path, play_sound
-
 import piece
 
 class Cell(ctk.CTkLabel):
@@ -105,6 +103,9 @@ class Board(ctk.CTkFrame):
         self.loading_animation(0)
         self.move_sound = soundfile.read(resource_path(os.path.join('sounds', 'move-self.wav')), dtype='float32')[0]
         self.capture_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
+        self.move_check_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
+        self.castle_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
+        self.frame_image: ctk.CTkImage = ctk.CTkImage(Image.open(resource_path(os.path.join('assets', 'menu', 'frame.png'))).convert('RGBA'), size=(80,80))
         self.size: int = size
         self.board: list[list[Cell]] = self.create_board()
         self.highlighted: list[Cell] = []
@@ -229,7 +230,7 @@ class Board(ctk.CTkFrame):
             corner_radius = 0
         )
         new_frame.pack(padx=2, pady=2, fill=ctk.X)
-        for letter in ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']:
+        for letter in ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'):
             ctk.CTkLabel(
                 master   = new_frame,
                 text     = letter,
@@ -303,7 +304,7 @@ class Board(ctk.CTkFrame):
                         fg_color = '#97A789',
                         master   = self.board[position[0]][position[1]],
                         text     = '',
-                        image    = ctk.CTkImage(Image.open(resource_path(os.path.join('assets', 'menu', 'frame.png'))).convert('RGBA'), size=(80,80))
+                        image    = self.frame_image
                 )
                 pywinstyles.set_opacity(image_test, value=1, color='#97A789')
                 image_test.place(relx=0.5, rely=0.5, anchor='center')
@@ -412,6 +413,8 @@ class Board(ctk.CTkFrame):
                     if isinstance(self.clicked_figure, piece.Pawn) and self.clicked_figure.can_en_passant and col != self.previous_coords[1] and not cell.figure:
                         self.board[row - self.clicked_figure.move][col].figure = None
                         self.board[row - self.clicked_figure.move][col].update()
+                        capture = True
+                        self.capture = True
                     if isinstance(self.clicked_figure, piece.King):
                         if abs(col - self.previous_coords[1]) == 2:
                             if col == 6:
@@ -438,11 +441,11 @@ class Board(ctk.CTkFrame):
                     if isinstance(cell.figure, piece.Pawn):
                         if cell.figure.first_move and abs(self.previous_coords[0] - row) == 2:
                             cell.figure.moved_by_two = True
+                            self.reset_en_passant_flags(cell.figure.color)
                         else:
                             cell.figure.moved_by_two = False
                         if cell.figure.promote():
                             promotion = True
-                    self.reset_en_passant_flags(cell.figure.color)
                     if cell.figure.first_move:
                         cell.figure.first_move = False
                     self.current_turn = 'b' if self.current_turn == 'w' else 'w'
@@ -460,11 +463,14 @@ class Board(ctk.CTkFrame):
                                 self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check)
                     elif not castle and not promotion:
                         self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check)
-                if not capture and isinstance(cell.figure, piece.Pawn) and not cell.figure.moved_by_two:
-                    self.master.after(51, lambda: threading.Thread(target=play_sound, args=(self.move_sound,)).start())
+                if capture:
+                    threading.Thread(target=play_sound, args=(self.capture_sound,)).start()
+                elif castle:
+                    threading.Thread(target=play_sound, args=(self.castle_sound,)).start()
+                elif check:
+                    threading.Thread(target=play_sound, args=(self.move_check_sound,)).start()
                 else:
-                    self.master.after(51, lambda: threading.Thread(target=play_sound, args=(self.capture_sound,)).start())
-                time.sleep(0.04)
+                    threading.Thread(target=play_sound, args=(self.move_sound,)).start()
             if not promotion:
                 self.clicked_figure = None
                 self.previous_coords = None
@@ -506,7 +512,6 @@ class Board(ctk.CTkFrame):
 
          - tuple[int, int]: Position of the king.
         """
-        # TODO: make it faster
         for row in self.board:
             for cell in row:
                 if isinstance(cell.figure, piece.King) and cell.figure.color == color:
@@ -531,21 +536,21 @@ class Board(ctk.CTkFrame):
         """
         self.loading_animation(0)
         for child in self.winfo_children():
-            if child != self.loading_screen:
-                child.destroy()
-        self.highlighted = []
+            self.master.after(1, child.destroy) # optimized by 0.1s using after
+        self.highlighted.clear()
         self.clicked_figure = None
         self.previous_coords = None
         self.current_turn = 'w'
         self.notification = None
         self.game_over = False
         self.board = self.create_board()
+        self.destroy_loading_screen()
 
     def destroy_loading_screen(self) -> None:
         """Destroys loading screen widget.
         """
         if self.loading_screen:
-            self.loading_screen.destroy() 
+            self.loading_screen.destroy()
         self.loading_screen = None
 
     def loading_animation(self, i: int) -> None:
@@ -553,7 +558,7 @@ class Board(ctk.CTkFrame):
 
         Args:
 
-         - i (int): Iteration value passed by recursive formula.
+         - i (int, optional): Iteration value passed by recursive formula. Deafults to 0.
         """
         if not self.loading_screen:
             self.loading_screen = ctk.CTkLabel(
@@ -563,13 +568,11 @@ class Board(ctk.CTkFrame):
                 text_color = COLOR.TEXT
             )
             self.loading_screen.place(relx=0, rely=0, relwidth=1, relheight=1)
-            self.loading_screen.lift()
-            self.master.after(151, lambda: self.loading_animation(0))
+            self.master.after(21, lambda: self.loading_animation(0))
         else:
-            self.loading_screen.lift()
             self.loading_screen.configure(text=f'Loading{'.' * i}{' ' * (3 - i)}')
             if i <= 2:
                 i += 1
-                self.master.after(151, self.loading_animation, i)
+                self.master.after(21, lambda: self.loading_animation(i))
             else:
-                self.master.after(151, self.destroy_loading_screen)
+                self.master.after(21, self.destroy_loading_screen)

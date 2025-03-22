@@ -8,8 +8,9 @@ import sys
 import os
 from datetime import datetime
 import sounddevice
-import soundfile
+import platform
 from typing import Any
+import time
 
 def resource_path(relative_path: str) -> str:
     """Function obtaining the absolute path to desired relative path.
@@ -45,6 +46,9 @@ def get_from_config(variable: str) -> str | int:
     db_variable = config['database'][variable]
     if variable == 'size':
         return int(db_variable)
+    if variable == 'font_name':
+        if platform.system() == 'Linux':
+            db_variable = list(db_variable.split(' '))[0]
     return db_variable
 
 def change_config(change_variable: str, value: str | int) -> None:
@@ -122,3 +126,4 @@ def update_error_log(error: Exception) -> None:
 
 def play_sound(data: Any) -> None:
     sounddevice.play(data)
+    sounddevice.wait()

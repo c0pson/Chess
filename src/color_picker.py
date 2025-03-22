@@ -3,6 +3,7 @@
 
 import customtkinter as ctk
 from typing import Any
+import platform
 
 from properties import COLOR  
 
@@ -26,7 +27,8 @@ class ColorPicker(ctk.CTkToplevel):
          - font (ctk.CTkFont | None, optional): Custom font. Defaults to None.
         """
         super().__init__(fg_color=fg_color)
-        self.grab_set()
+        if platform.system() == 'Windows':
+            self.grab_set()
         self.attributes('-topmost', True)
         self.title('Color Picker')
         self.font: ctk.CTkFont | None = font if font else None
