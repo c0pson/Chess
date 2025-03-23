@@ -66,6 +66,12 @@ class Cell(ctk.CTkLabel):
          - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
         if self.board.clicked_figure and self.board.clicked_figure.color:
+            if self.board.board[self.position[0]][self.position[1]] not in self.board.highlighted and self.board.clicked_figure != self.figure:
+                if self.figure:
+                    if self.figure.color != self.board.clicked_figure.color:
+                        threading.Thread(target=play_sound, args=(self.board.illegal_sound,)).start()
+                else:
+                    threading.Thread(target=play_sound, args=(self.board.illegal_sound,)).start()
             self.board.handle_move(self.position)
         if self.figure and not self.board.clicked_figure and self.board.current_turn == self.figure.color:
             self.board.handle_clicks(self.figure, self.position)
@@ -105,6 +111,8 @@ class Board(ctk.CTkFrame):
         self.capture_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
         self.move_check_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
         self.castle_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
+        self.end_game_sound = soundfile.read(resource_path(os.path.join('sounds', 'game-end.wav')), dtype='float32')[0]
+        self.illegal_sound = soundfile.read(resource_path(os.path.join('sounds', 'illegal.wav')), dtype='float32')[0]
         self.frame_image: ctk.CTkImage = ctk.CTkImage(Image.open(resource_path(os.path.join('assets', 'menu', 'frame.png'))).convert('RGBA'), size=(80,80))
         self.size: int = size
         self.board: list[list[Cell]] = self.create_board()
@@ -463,6 +471,8 @@ class Board(ctk.CTkFrame):
                                 self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check)
                     elif not castle and not promotion:
                         self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check)
+                if game_over:
+                    threading.Thread(target=play_sound, args=(self.end_game_sound,)).start()
                 if capture:
                     threading.Thread(target=play_sound, args=(self.capture_sound,)).start()
                 elif castle:

@@ -235,10 +235,8 @@ class Pawn(Piece):
                 border_width  = 4
             )
             choose_piece_menu.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
-            if platform.system() == 'Windows':
-                pywinstyles.set_opacity(choose_piece_menu, color="#000001")
             possible_figures = [Knight, Bishop, Rook, Queen]
-            for i, figure in enumerate(possible_figures):
+            for figure in possible_figures:
                 self.create_button(choose_piece_menu, figure, choose_piece_menu_1)
             return True
         return False
