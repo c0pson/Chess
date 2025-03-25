@@ -10,7 +10,6 @@ from PIL import Image
 import os
 import threading
 import soundfile
-import time
 
 from notifications import Notification
 from properties import COLOR
@@ -25,7 +24,6 @@ class Cell(ctk.CTkLabel):
 
      - ctk.CTkLabel : Inheritance from customtkinter CTkLabel widget.
     """
-    previous_coords: tuple[int, int] | None = None
     def __init__(self, frame: ctk.CTkFrame, figure: piece.Piece | None, position: tuple[int, int], color: str, board) -> None:
         """Constructor:
 

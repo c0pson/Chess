@@ -10,7 +10,6 @@ from datetime import datetime
 import sounddevice
 import platform
 from typing import Any
-import time
 
 def resource_path(relative_path: str) -> str:
     """Function obtaining the absolute path to desired relative path.
@@ -126,4 +125,4 @@ def update_error_log(error: Exception) -> None:
 
 def play_sound(data: Any) -> None:
     sounddevice.play(data)
-    sounddevice.wait()
+    # sounddevice.wait() #idk if this is causing lag in binaries
