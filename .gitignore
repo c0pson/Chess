@@ -5,16 +5,4 @@ src/__pycache__/
 build
 dist
 pdoc
-description.txt
-description.md
-{1ECFA483-6CCC-4096-B099-4050D2830E1B}.png
-{11AE784C-181B-4AB1-87BC-F56CCB603BF2}.png
-{4430F11E-5A8E-455C-906D-DEF574ED71C0}.png
-{A8D8B7A2-3D96-48E9-8098-C49F4DB1428D}.png
-{B0E02BB1-F49D-4000-B3EB-1CFBD861C72C}.png
-{C01FD2DC-7A11-46BB-BF67-D30E70DA5834}.png
-description.pdf
-chess_class_diagram(3).png
-chess_operations_diagram.png
-chess_operations_diagram.drawio
-chess_class_diagram.drawio
+reports
