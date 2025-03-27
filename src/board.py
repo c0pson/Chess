@@ -566,7 +566,7 @@ class Board(ctk.CTkFrame):
 
         Args:
 
-         - i (int, optional): Iteration value passed by recursive formula. Deafults to 0.
+         - i (int, optional): Iteration value passed by recursive formula. Defaults to 0.
         """
         if not self.loading_screen:
             self.loading_screen = ctk.CTkLabel(
