@@ -84,7 +84,7 @@ def load_menu_image(option: str, resize: float = 1.5) -> ctk.CTkImage | None:
         setting_icon = Image.open(setting_icon_path).convert('RGBA')
         return ctk.CTkImage(light_image=setting_icon, dark_image=setting_icon, size=(size, size))
     except (FileNotFoundError, FileExistsError) as e:
-        print(f'Couldn`t load image for due to error: {e}')
+        update_error_log(e)
     return None
 
 def get_colors() -> dict:
