@@ -14,7 +14,7 @@ import soundfile
 from notifications import Notification
 from properties import COLOR
 from menus import MovesRecord
-from tools import get_from_config, resource_path, play_sound
+from tools import get_from_config, resource_path, play_sound, update_error_log
 import piece
 
 class Cell(ctk.CTkLabel):
@@ -471,7 +471,7 @@ class Board(ctk.CTkFrame):
                         self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check)
                 if game_over:
                     threading.Thread(target=play_sound, args=(self.end_game_sound,)).start()
-                if capture:
+                elif capture:
                     threading.Thread(target=play_sound, args=(self.capture_sound,)).start()
                 elif castle:
                     threading.Thread(target=play_sound, args=(self.castle_sound,)).start()
@@ -584,3 +584,39 @@ class Board(ctk.CTkFrame):
                 self.master.after(21, lambda: self.loading_animation(i))
             else:
                 self.master.after(21, self.destroy_loading_screen)
+
+    def load_board_from_file(self, file_info: dict) -> bool:
+        try:
+            self.current_turn = str(file_info['current_turn'])
+            for row in self.board:
+                for cell in row:
+                    cell.figure = None
+                    cell.update()
+            for key, value in file_info['board_state'].items():
+                coord: tuple[int, ...] = tuple(map(int, key.split(',')))
+                match value[0]:
+                    case 'Pawn':
+                        pawn = piece.Pawn(value[1], self, (coord[0], coord[1]), self.notation_promotion)
+                        if not value[2]:
+                            pawn.first_move = False
+                        self.board[coord[0]][coord[1]].figure = pawn
+                    case 'Knight':
+                        self.board[coord[0]][coord[1]].figure = piece.Knight(value[1], self, (coord[0], coord[1]))
+                    case 'Bishop':
+                        self.board[coord[0]][coord[1]].figure = piece.Bishop(value[1], self, (coord[0], coord[1]))
+                    case 'Rook':
+                        rook = piece.Rook(value[1], self, (coord[0], coord[1]))
+                        self.board[coord[0]][coord[1]].figure = rook
+                        if not value[2]:
+                            rook.first_move = False
+                    case 'Queen':
+                        self.board[coord[0]][coord[1]].figure = piece.Queen(value[1], self, (coord[0], coord[1]))
+                    case 'King':
+                        king = piece.King(value[1], self, (coord[0], coord[1]))
+                        self.board[coord[0]][coord[1]].figure = king
+                        if not value[2]:
+                            king.first_move = False
+                self.board[coord[0]][coord[1]].update()
+            return True
+        except (KeyError, ValueError, IndexError) as e:
+            return False

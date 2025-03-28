@@ -10,6 +10,7 @@ from datetime import datetime
 import sounddevice
 import platform
 from typing import Any
+import json
 
 def resource_path(relative_path: str) -> str:
     """Function obtaining the absolute path to desired relative path.
@@ -124,5 +125,36 @@ def update_error_log(error: Exception) -> None:
         file.write(f'[{now}]: Error occurred: {error} in {os.path.relpath(__file__)}\n')
 
 def play_sound(data: Any) -> None:
-    sounddevice.play(data)
-    # sounddevice.wait() #idk if this is causing lag in binaries
+    try:
+        sounddevice.play(data)
+    except Exception as e:
+        update_error_log(e)
+
+def create_save_file(save_info: dict[tuple[int, int], tuple[str, str, bool]], current_turn: str) -> None:
+    save_info_serialized = {f"{k[0]},{k[1]}": v for k, v in save_info.items()}
+    save_data = {
+        "current_turn": current_turn,
+        "board_state": save_info_serialized
+    }
+    files: list[str] = [f for f in os.listdir(resource_path('saves'))]
+    if files:
+        files.sort()
+        new_file: str = f'chess_game_{int(files[-1].replace('.json', '').split('_')[-1])+1}.json'
+        with open(resource_path(os.path.join('saves', new_file)), 'w') as file:
+            json.dump(save_data, file, indent=3)
+    else:
+        new_file = 'chess_game_1.json'
+        with open(resource_path(os.path.join('saves', new_file)), 'w') as file:
+            json.dump(save_data, file, indent=3)
+
+def delete_save_file(file_name: str) -> bool:
+    file_path: str = resource_path(os.path.join('saves', file_name))
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        return True
+    return False
+
+def get_save_info(file_name: str) -> dict:
+    with open(resource_path(os.path.join('saves', file_name)), "r") as file:
+        data: dict = json.load(file)
+    return data

@@ -8,8 +8,9 @@ import subprocess
 import platform
 import os
 import re
+import threading
 
-from tools import get_from_config, change_config, load_menu_image, resource_path, change_color, update_error_log
+from tools import get_from_config, change_config, load_menu_image, resource_path, change_color, update_error_log, create_save_file, delete_save_file, get_save_info
 from properties import COLOR, STRING
 from notifications import Notification
 from color_picker import ColorPicker
@@ -130,6 +131,109 @@ class MovesRecord(ctk.CTkFrame):
         for child in self.black_scroll_frame.winfo_children():
             child.destroy()
 
+
+class Saves(ctk.CTkFrame):
+    def __init__(self, master, board) -> None:
+        super().__init__(master, fg_color=COLOR.BACKGROUND)
+        self.font_32 = ctk.CTkFont(get_from_config('font_name'), 32)
+        self.font_26 = ctk.CTkFont(get_from_config('font_name'), 26)
+        self.close_image: ctk.CTkImage | None = load_menu_image('close')
+        self.show_all_saves(board)
+
+    @staticmethod
+    def save_game_to_file(board) -> None:
+        save_info: dict[tuple[int, int], tuple[str, str, bool]] = dict()
+        for row in board.board:
+            for cell in row:
+                if cell.figure:
+                    figure: str = cell.figure.__class__.__name__
+                    save_info[cell.position] = (figure, cell.figure.color, cell.figure.first_move)
+        create_save_file(save_info, board.current_turn)
+
+    def show_all_saves(self, board) -> None:
+        top_frame: ctk.CTkFrame = ctk.CTkFrame(
+            master   = self,
+            fg_color = COLOR.TRANSPARENT
+        )
+        top_frame.pack(side=ctk.TOP, padx=0, pady=0, fill=ctk.X)
+        settings_text = ctk.CTkLabel(
+            master     = top_frame,
+            text       = 'Saves',
+            font       = ctk.CTkFont(str(get_from_config('font_name')), 38),
+            text_color = COLOR.DARK_TEXT,
+            anchor     = ctk.N
+        )
+        settings_text.pack(side=ctk.LEFT, padx=20, anchor=ctk.NW)
+        close_button = ctk.CTkLabel(
+            master = top_frame,
+            text   = '',
+            font   = ctk.CTkFont(str(get_from_config('font_name')), 24),
+            image  = self.close_image,
+            anchor = ctk.S
+        )
+        close_button.bind('<Button-1>', self.on_close)
+        close_button.pack(side=ctk.RIGHT, anchor=ctk.NE, padx=10, pady=10)
+        self.scrollable_frame = ctk.CTkScrollableFrame(
+            master   = self,
+            fg_color = COLOR.BACKGROUND,
+            corner_radius = 0,
+            scrollbar_button_color = COLOR.DARK_TEXT,
+        )
+        self.scrollable_frame.pack(side=ctk.TOP, padx=0, pady=0, expand=True, fill=ctk.BOTH)
+        files: list[str] = [f for f in os.listdir(resource_path('saves'))]
+        for file in files:
+            self.create_file_button(self.scrollable_frame, file, board)
+
+    def create_file_button(self, frame: ctk.CTkFrame, file_name: str, board) -> None:
+        helper_frame = ctk.CTkFrame(
+            master        = frame,
+            fg_color      = COLOR.TILE_1,
+            corner_radius = 0
+        )
+        helper_frame.pack(side=ctk.TOP, padx=150, pady=10, fill=ctk.X)
+        ctk.CTkLabel(
+            master   = helper_frame,
+            fg_color = COLOR.NOTATION_BACKGROUND_B,
+            text     = '',
+            width    = 20
+        ).pack(side=ctk.LEFT, padx=0, pady=0, fill=ctk.Y)
+        file_name_label = ctk.CTkLabel(
+            master        = helper_frame,
+            text          = file_name.replace('.json', ''),
+            fg_color      = COLOR.TILE_1,
+            font          = self.font_32,
+            corner_radius = 0
+        )
+        file_name_label.bind('<Button-1>', lambda e: self.load_save(e, board, file_name))
+        file_name_label.pack(side=ctk.LEFT, padx=40, pady=3)
+        delete_button = ctk.CTkButton(
+            master        = helper_frame,
+            fg_color      = COLOR.CLOSE,
+            hover_color   = COLOR.CLOSE_HOVER,
+            command       = lambda: self.remove_save(file_name, helper_frame),
+            text          = 'REMOVE',
+            font          = self.font_26,
+            corner_radius = 0
+        )
+        delete_button.pack(side=ctk.RIGHT, padx=10, pady=10, anchor=ctk.N)
+
+    def remove_save(self, file_name: str, frame: ctk.CTkFrame) -> None:
+        if delete_save_file(file_name):
+            frame.destroy()
+            Notification(self.master, f'Save {file_name.replace('.json', '')} has been removed', 2, 'top').show_animation(0)
+        else:
+            Notification(self.master, 'Couldn\'t remove the save', 2, 'top').show_animation(0)
+
+    def load_save(self, event: Any, board, file_name) -> None:
+        if board.load_board_from_file(get_save_info(file_name)):
+            Notification(self.master, 'Save loaded successfully', 3, 'top')
+            self.master.after(201, self.on_close)
+        else:
+            Notification(self.master, 'Couldn\'t load save', 2, 'top')
+
+    def on_close(self, event: Any=None) -> None:
+        self.destroy()
+
 class Options(ctk.CTkFrame):
     """Class handling user interface of available options on main window frame:
 
@@ -137,7 +241,7 @@ class Options(ctk.CTkFrame):
 
      - ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget.
     """
-    def __init__(self, master, restart_func: Callable, update_assets_func: Callable, update_font_func: Callable):
+    def __init__(self, master, restart_func: Callable, update_assets_func: Callable, update_font_func: Callable, get_board_func: Callable):
         """Constructor:
             - places setting and replay buttons
 
@@ -152,12 +256,20 @@ class Options(ctk.CTkFrame):
         self.restart_func: Callable = restart_func
         self.update_assets_func: Callable = update_assets_func
         self.update_font_func: Callable = update_font_func
+        self.get_board_func: Callable = get_board_func
         self.setting_icon: ctk.CTkImage | None = load_menu_image('settings')
         self.replay_icon: ctk.CTkImage | None = load_menu_image('replay')
+        self.saves_image: ctk.CTkImage | None = load_menu_image('saves')
+        self.save_as_image: ctk.CTkImage | None = load_menu_image('save_as')
         self.settings: Settings | None = None
+        self.saves: Saves | None = None
         self.setting_button()
         self.space_label()
         self.replay_button()
+        self.space_label()
+        self.save_button()
+        self.space_label()
+        self.load_saves_button()
 
     def setting_button(self) -> None:
         """Setup of setting button.
@@ -175,6 +287,24 @@ class Options(ctk.CTkFrame):
             image  = self.replay_icon)
         self.r_icon_label.pack(side=ctk.TOP, padx=10, pady=0)
         self.r_icon_label.bind('<Button-1>', self.replay)
+
+    def save_button(self) -> None:
+        self.save_icon_label: ctk.CTkLabel = ctk.CTkLabel(
+            master = self,
+            text   = '',
+            image  = self.save_as_image
+        )
+        self.save_icon_label.pack(side=ctk.TOP, padx=10, pady=0)
+        self.save_icon_label.bind('<Button-1>', self.save_game)
+
+    def load_saves_button(self) -> None:
+        self.load_icon_label: ctk.CTkLabel = ctk.CTkLabel(
+            master = self,
+            text   = '',
+            image  = self.saves_image 
+        )
+        self.load_icon_label.pack(side=ctk.TOP, padx=10, pady=0)
+        self.load_icon_label.bind('<Button-1>', self.load_saves)
 
     def space_label(self) -> None:
         """Space to maintain the desired spacing.
@@ -208,6 +338,13 @@ class Options(ctk.CTkFrame):
         # self.r_icon_label.bind('<Button-1>', self.cooldown)
         self.master.after(1990, lambda: self.r_icon_label.unbind('<Button-1>'))
         self.master.after(2000, lambda: self.r_icon_label.bind('<Button-1>', self.replay))
+
+    def save_game(self, event: Any) -> None:
+        threading.Thread(target=Saves.save_game_to_file, args=(self.get_board_func(),)).start()
+
+    def load_saves(self, event: Any) -> None:
+        self.saves = Saves(self.master, self.get_board_func())
+        self.saves.place(relx=0, rely=0, relwidth=1, relheight=1)
 
     def cooldown(self, event: Any) -> None:
         """Cooldown for restarting the game too quickly.
@@ -326,7 +463,7 @@ class Settings(ctk.CTkFrame):
             font          = ctk.CTkFont(str(get_from_config('font_name')), 30),
             corner_radius = 0,
             fg_color      = COLOR.TILE_1,
-            hover_color   = COLOR.HIGH_TILE_1,
+            hover_color   = COLOR.HIGH_TILE_2,
             text_color    = COLOR.TEXT
         )
         theme_button.pack(side=ctk.LEFT, padx=4, pady=4, expand=True)
@@ -540,7 +677,7 @@ class Settings(ctk.CTkFrame):
             font          = ctk.CTkFont(str(get_from_config('font_name')), 30),
             corner_radius = 0,
             fg_color      = COLOR.TILE_1,
-            hover_color   = COLOR.HIGH_TILE_1,
+            hover_color   = COLOR.HIGH_TILE_2,
             text_color    = COLOR.TEXT
         )
         font_button.pack(side=ctk.LEFT, padx=4, pady=4, expand=True)
@@ -689,7 +826,7 @@ class Settings(ctk.CTkFrame):
             width         = 50,
             corner_radius = 0,
             fg_color      = COLOR.TILE_1,
-            hover_color   = COLOR.HIGH_TILE_2,
+            hover_color   = COLOR.HIGH_TILE_1,
             text_color    = COLOR.TEXT
         )
         ok_button.pack(side=ctk.LEFT, padx=10, pady=4)

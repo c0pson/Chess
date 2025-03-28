@@ -58,7 +58,7 @@ class MainWindow(ctk.CTk):
         self.load_font()
         self.moves_record: MovesRecord = MovesRecord(self)
         self.moves_record.pack(side=ctk.RIGHT, padx=10, pady=10, fill=ctk.Y)
-        self.options: Options = Options(self, self.restart_game, self.update_assets, self.update_font)
+        self.options: Options = Options(self, self.restart_game, self.update_assets, self.update_font, self.get_board)
         self.options.pack(side=ctk.LEFT, padx=10, pady=10, fill=ctk.Y)
         self.board: Board = Board(self, self.moves_record, size)
         self.board.pack(side=ctk.RIGHT, padx=10, pady=10, expand=True, ipadx=5, ipady=5, anchor=ctk.CENTER)
@@ -106,6 +106,9 @@ class MainWindow(ctk.CTk):
             for cell in row:
                 if cell.figure:
                     threading.Thread(target=cell.figure.update_image).start()
+
+    def get_board(self) -> Board:
+        return self.board
 
     def update_font(self, widget=None) -> None:
         """Handle for updating the font during app runtime without freezing the window.
