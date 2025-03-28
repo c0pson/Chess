@@ -108,7 +108,7 @@ class Piece:
 
          - str: Representation of the class Piece: {piece name} Color:{piece color}
         """
-        return f'Piece: {self.__class__.__name__} Color: {'white' if self.color == 'w' else 'black'}'
+        return f'Piece: {self.__class__.__name__} Color: {'white' if self.color == 'w' else 'black'} Position {self.position}'
 
 class Pawn(Piece):
     """Implementation of the pawn. Supports en passant, promotions, moving and capturing.
@@ -586,7 +586,7 @@ class King(Piece):
          - bool: True if King can castle. False otherwise.
         """
         row, col = self.position
-        if isinstance(self.board.board[row][7].figure, Rook) and self.board.board[row][7].figure.first_move:
+        if self.first_move and isinstance(self.board.board[row][7].figure, Rook) and self.board.board[row][7].figure.first_move:
             for i in range(col + 1, 7):
                 if self.board.board[row][i].figure or self.board.is_under_attack((row, i), self.color):
                     return False
@@ -603,7 +603,7 @@ class King(Piece):
          - bool: True if King can castle. False otherwise.
         """
         row, col = self.position
-        if isinstance(self.board.board[row][0].figure, Rook) and self.board.board[row][0].figure.first_move:
+        if self.first_move and isinstance(self.board.board[row][0].figure, Rook) and self.board.board[row][0].figure.first_move:
             for i in range(col - 1, 0, -1):
                 if self.board.board[row][i].figure or self.board.is_under_attack((row, i), self.color):
                     return False
