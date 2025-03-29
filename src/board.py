@@ -586,6 +586,16 @@ class Board(ctk.CTkFrame):
                 self.master.after(21, self.destroy_loading_screen)
 
     def load_board_from_file(self, file_info: dict) -> bool:
+        """Updates board to match the state from the save file.
+
+        Args:
+
+         - file_info (dict): All needed information to load save.
+
+        Returns:
+
+         - bool: Returns True if load was successful, False otherwise.
+        """
         try:
             self.current_turn = str(file_info['current_turn'])
             for row in self.board:

@@ -125,12 +125,29 @@ def update_error_log(error: Exception) -> None:
         file.write(f'[{now}]: Error occurred: {error} in {os.path.relpath(__file__)}\n')
 
 def play_sound(data: Any) -> None:
+    """Plays sound.
+
+    Args:
+
+     - data (Any): Array like with raw sound data.
+    """
     try:
         sounddevice.play(data)
     except Exception as e:
         update_error_log(e)
 
-def create_save_file(save_info: dict[tuple[int, int] | str, tuple[str, str, bool] | list[str]], current_turn: str, white_moves: list[str], black_moves: list[str], game_over, save_name:str | None=None) -> None:
+def create_save_file(save_info: dict[tuple[int, int] | str, tuple[str, str, bool] | list[str]], current_turn: str, white_moves: list[str], black_moves: list[str], game_over: bool, save_name: str | None=None) -> None:
+    """Creates save file in saves directory. Save is .json file with all positions, current turn information, previous notation and game over information.
+
+    Args:
+
+     - save_info (dict[tuple[int, int]  |  str, tuple[str, str, bool]  |  list[str]]): Information to be saved in file.
+     - current_turn (str): Information about color of the current player.
+     - white_moves (list[str]): Notation from previous white moves.
+     - black_moves (list[str]): Notation from previous black moves.
+     - game_over (bool): Information about general state of the game. 
+     - save_name (str | None, optional): Name of the save file. Defaults to None.
+    """
     save_info_serialized = {f"{k[0]},{k[1]}": v for k, v in save_info.items()}
     save_data = {
         'current_turn': current_turn,
@@ -156,6 +173,16 @@ def create_save_file(save_info: dict[tuple[int, int] | str, tuple[str, str, bool
                 json.dump(save_data, file, indent=2)
 
 def delete_save_file(file_name: str) -> bool:
+    """Removes save .json file from saves directory.
+
+    Args:
+
+     - file_name (str): Name of the file to delete.
+
+    Returns:
+
+     - bool: Returns True if file was removed successfully, False otherwise.
+    """
     file_path: str = resource_path(os.path.join('saves', file_name))
     if os.path.exists(file_path):
         os.remove(file_path)
@@ -163,6 +190,16 @@ def delete_save_file(file_name: str) -> bool:
     return False
 
 def get_save_info(file_name: str) -> dict:
+    """Gathers data from .json save file.
+
+    Args:
+
+     - file_name (str): Name of the save to be loaded.
+
+    Returns:
+
+     - dict: All needed information to load the game state.
+    """
     with open(resource_path(os.path.join('saves', file_name)), "r") as file:
         data: dict = json.load(file)
     return data

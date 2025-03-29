@@ -153,7 +153,20 @@ class MovesRecord(ctk.CTkFrame):
             child.destroy()
 
 class Saves(ctk.CTkFrame):
-    def __init__(self, master, board) -> None:
+    """Class handling saving, showing and loading saves.
+
+    Args:
+
+     - ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget.
+    """
+    def __init__(self, master: Any, board) -> None:
+        """Constructor
+
+        Args:
+
+         - master (Any): Parent widget.
+         - board (Board): Board object.
+        """
         super().__init__(master, fg_color=COLOR.BACKGROUND)
         self.font_32 = ctk.CTkFont(get_from_config('font_name'), 32)
         self.font_26 = ctk.CTkFont(get_from_config('font_name'), 26)
@@ -168,6 +181,16 @@ class Saves(ctk.CTkFrame):
 
     @staticmethod
     def save_game_to_file(board) -> bool:
+        """Saves the current game state to the .json file.
+
+        Args:
+
+         - board (Board): Board object.
+
+        Returns:
+        
+         - bool: Returns True if save was created successfully, False otherwise.
+        """
         save_info: dict[tuple[int, int] | str, tuple[str, str, bool] | list[str]] = dict()
         for row in board.board:
             for cell in row:
@@ -182,6 +205,12 @@ class Saves(ctk.CTkFrame):
         return False
 
     def show_all_saves(self, board) -> None:
+        """Displays all saves as clickable buttons.
+
+        Args:
+
+         - board (Board): Board object.
+        """
         top_frame: ctk.CTkFrame = ctk.CTkFrame(
             master   = self,
             fg_color = COLOR.TRANSPARENT
@@ -216,6 +245,13 @@ class Saves(ctk.CTkFrame):
             self.create_file_button(self.scrollable_frame, file, board)
 
     def create_file_button(self, frame: ctk.CTkFrame, file_name: str, board) -> None:
+        """Helper function creating single button which will load specific save.
+
+        Args:
+            frame (ctk.CTkFrame): Parent widget.
+            file_name (str): Name of the file.
+            board (Board): Board object.
+        """
         helper_frame = ctk.CTkFrame(
             master        = frame,
             fg_color      = COLOR.TILE_1,
@@ -250,13 +286,26 @@ class Saves(ctk.CTkFrame):
         delete_button.pack(side=ctk.RIGHT, padx=10, pady=10, anchor=ctk.N)
 
     def remove_save(self, file_name: str, frame: ctk.CTkFrame) -> None:
+        """Deletes specific save.
+
+        Args:
+            file_name (str): Name of the file to be deleted.
+            frame (ctk.CTkFrame): Parent widget.
+        """
         if delete_save_file(file_name):
             frame.destroy()
             Notification(self.master, f'Save {file_name.replace('.json', '')} has been removed', 2, 'top').show_animation(0)
         else:
             Notification(self.master, 'Couldn\'t remove the save', 2, 'top').show_animation(0)
 
-    def load_save(self, event: Any, board, file_name) -> None:
+    def load_save(self, event: Any, board, file_name: str) -> None:
+        """Helper function calling all necessary functions to load the game. Notifications will indicate if it was successful or not.
+
+        Args:
+            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+            board (Board): Board object.
+            file_name (str): Name of the file from which the game will be loaded.
+        """
         if board.load_board_from_file(get_save_info(file_name)):
             Notification(self.master, 'Save loaded successfully', 3, 'top')
             self.master.after(201, self.on_close)
@@ -264,6 +313,11 @@ class Saves(ctk.CTkFrame):
             Notification(self.master, 'Couldn\'t load save', 2, 'top')
 
     def on_close(self, event: Any=None) -> None:
+        """Custom close function.
+
+        Args:
+            event (Any, optional): Event type. Doesn't matter but is required parameter by customtkinter.. Defaults to None.
+        """
         self.destroy()
 
 class Options(ctk.CTkFrame):
