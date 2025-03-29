@@ -130,22 +130,30 @@ def play_sound(data: Any) -> None:
     except Exception as e:
         update_error_log(e)
 
-def create_save_file(save_info: dict[tuple[int, int], tuple[str, str, bool]], current_turn: str) -> None:
+def create_save_file(save_info: dict[tuple[int, int] | str, tuple[str, str, bool] | list[str]], current_turn: str, white_moves: list[str], black_moves: list[str], game_over, save_name:str | None=None) -> None:
     save_info_serialized = {f"{k[0]},{k[1]}": v for k, v in save_info.items()}
     save_data = {
-        "current_turn": current_turn,
-        "board_state": save_info_serialized
+        'current_turn': current_turn,
+        'board_state': save_info_serialized,
+        'white_moves': white_moves,
+        'black_moves': black_moves,
+        'game_over': game_over
     }
-    files: list[str] = [f for f in os.listdir(resource_path('saves'))]
-    if files:
-        files.sort()
-        new_file: str = f'chess_game_{int(files[-1].replace('.json', '').split('_')[-1])+1}.json'
-        with open(resource_path(os.path.join('saves', new_file)), 'w') as file:
-            json.dump(save_data, file, indent=3)
+    if not save_name:
+        files: list[str] = [f for f in os.listdir(resource_path('saves')) if 'chess_game_' in f]
+        if files:
+            files.sort()
+            new_file: str = f'chess_game_{int(files[-1].replace('.json', '').split('_')[-1])+1}.json'
+            with open(resource_path(os.path.join('saves', new_file)), 'w') as file:
+                json.dump(save_data, file, indent=2)
+        else:
+            new_file = 'chess_game_1.json'
+            with open(resource_path(os.path.join('saves', new_file)), 'w') as file:
+                json.dump(save_data, file, indent=2)
     else:
-        new_file = 'chess_game_1.json'
+        new_file = f'{save_name}.json'
         with open(resource_path(os.path.join('saves', new_file)), 'w') as file:
-            json.dump(save_data, file, indent=3)
+                json.dump(save_data, file, indent=2)
 
 def delete_save_file(file_name: str) -> bool:
     file_path: str = resource_path(os.path.join('saves', file_name))

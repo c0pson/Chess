@@ -617,6 +617,8 @@ class Board(ctk.CTkFrame):
                         if not value[2]:
                             king.first_move = False
                 self.board[coord[0]][coord[1]].update()
+            self.moves_record.load_notation_from_save(file_info['white_moves'], file_info['black_moves'])
+            self.game_over = file_info['game_over']
             return True
         except (KeyError, ValueError, IndexError) as e:
             return False

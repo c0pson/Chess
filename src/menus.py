@@ -34,8 +34,10 @@ class MovesRecord(ctk.CTkFrame):
          - master (Any): Parent widget
         """
         super().__init__(master, fg_color=COLOR.BACKGROUND)
+        self.font_32: ctk.CTkFont = ctk.CTkFont(str(get_from_config('font_name')), 32)
         self.create_frames()
-        self.moves: list[list[str]] = []
+        self.moves_white: list[str] = []
+        self.moves_black: list[str] = []
 
     def record_move(self, moved_piece: Piece, previous_coords: tuple[int, int] | None=None, capture: bool=False, castle: str | None=None, check: bool=False, checkmate: bool=False, promotion: str='') -> None:
         """Displays the chess notation of the move on the frame for specific player color.
@@ -63,11 +65,28 @@ class MovesRecord(ctk.CTkFrame):
         else:
             notation = f' {'+' if check and not checkmate else''}{'#' if checkmate else ''}{'0-0-0' if castle == 'queenside' else '0-0'}'
         current_frame = self.white_scroll_frame if moved_piece.color == 'w' else self.black_scroll_frame
+        self.moves_white.append(notation) if moved_piece.color == 'w' else self.moves_black.append(notation)
         ctk.CTkLabel(
             master = current_frame,
             text   = notation,
             font   = ctk.CTkFont(str(get_from_config('font_name')), 32)
         ).pack(side=ctk.BOTTOM)
+
+    def load_notation_from_save(self, white_moves: list[str], black_moves: list[str]) -> None:
+        for notation in white_moves:
+            ctk.CTkLabel(
+                master = self.white_scroll_frame,
+                text   = notation,
+                font   = self.font_32
+            ).pack(side=ctk.BOTTOM)
+        for notation in black_moves:
+            ctk.CTkLabel(
+                master = self.black_scroll_frame,
+                text   = notation,
+                font   = self.font_32
+            ).pack(side=ctk.BOTTOM)
+        self.moves_white[:] = white_moves
+        self.moves_black[:] = black_moves
 
     def create_frames(self) -> None:
         """Creates frames to reserve space for displaying move notations.
@@ -75,7 +94,7 @@ class MovesRecord(ctk.CTkFrame):
         black_label: ctk.CTkLabel = ctk.CTkLabel(
             master     =  self,
             text       = 'Black',
-            font       = ctk.CTkFont(str(get_from_config('font_name')), 32),
+            font       = self.font_32,
             text_color = COLOR.DARK_TEXT
         )
         black_label.pack(side=ctk.TOP, padx=1, pady=1)
@@ -98,7 +117,7 @@ class MovesRecord(ctk.CTkFrame):
         white_label: ctk.CTkLabel = ctk.CTkLabel(
             master     = self, 
             text       = 'White', 
-            font       = ctk.CTkFont(str(get_from_config('font_name')), 32), 
+            font       = self.font_32, 
             text_color = COLOR.TEXT
         )
         white_label.pack(side=ctk.TOP, padx=0, pady=0)
@@ -126,11 +145,12 @@ class MovesRecord(ctk.CTkFrame):
     def restart(self) -> None:
         """Destroys the old notated moves.
         """
+        self.moves_white.clear()
+        self.moves_black.clear()
         for child in self.white_scroll_frame.winfo_children():
             child.destroy()
         for child in self.black_scroll_frame.winfo_children():
             child.destroy()
-
 
 class Saves(ctk.CTkFrame):
     def __init__(self, master, board) -> None:
@@ -139,16 +159,27 @@ class Saves(ctk.CTkFrame):
         self.font_26 = ctk.CTkFont(get_from_config('font_name'), 26)
         self.close_image: ctk.CTkImage | None = load_menu_image('close')
         self.show_all_saves(board)
+        ctk.CTkLabel(
+            master   = self,
+            text     = '',
+            height   = 18,
+            fg_color = COLOR.BACKGROUND
+        ).pack(padx=0, pady=0)
 
     @staticmethod
-    def save_game_to_file(board) -> None:
-        save_info: dict[tuple[int, int], tuple[str, str, bool]] = dict()
+    def save_game_to_file(board) -> bool:
+        save_info: dict[tuple[int, int] | str, tuple[str, str, bool] | list[str]] = dict()
         for row in board.board:
             for cell in row:
                 if cell.figure:
                     figure: str = cell.figure.__class__.__name__
                     save_info[cell.position] = (figure, cell.figure.color, cell.figure.first_move)
-        create_save_file(save_info, board.current_turn)
+        save_name: str | None | bool = SaveName().get_save_name()
+        moves_record : MovesRecord = board.moves_record
+        if not isinstance(save_name, bool):
+            create_save_file(save_info, board.current_turn, moves_record.moves_white, moves_record.moves_black, board.game_over, save_name)
+            return True
+        return False
 
     def show_all_saves(self, board) -> None:
         top_frame: ctk.CTkFrame = ctk.CTkFrame(
@@ -199,13 +230,14 @@ class Saves(ctk.CTkFrame):
         ).pack(side=ctk.LEFT, padx=0, pady=0, fill=ctk.Y)
         file_name_label = ctk.CTkLabel(
             master        = helper_frame,
-            text          = file_name.replace('.json', ''),
+            text          = f' {file_name.replace('.json', '')}',
             fg_color      = COLOR.TILE_1,
             font          = self.font_32,
-            corner_radius = 0
+            corner_radius = 0,
+            anchor        = ctk.W
         )
         file_name_label.bind('<Button-1>', lambda e: self.load_save(e, board, file_name))
-        file_name_label.pack(side=ctk.LEFT, padx=40, pady=3)
+        file_name_label.pack(side=ctk.LEFT, padx=15, pady=0, fill=ctk.BOTH, expand=True)
         delete_button = ctk.CTkButton(
             master        = helper_frame,
             fg_color      = COLOR.CLOSE,
@@ -295,7 +327,7 @@ class Options(ctk.CTkFrame):
             image  = self.save_as_image
         )
         self.save_icon_label.pack(side=ctk.TOP, padx=10, pady=0)
-        self.save_icon_label.bind('<Button-1>', self.save_game)
+        self.save_icon_label.bind('<Button-1>', lambda e: threading.Thread(target=self.save_game, args=(e,)).start())
 
     def load_saves_button(self) -> None:
         self.load_icon_label: ctk.CTkLabel = ctk.CTkLabel(
@@ -340,7 +372,8 @@ class Options(ctk.CTkFrame):
         self.master.after(2000, lambda: self.r_icon_label.bind('<Button-1>', self.replay))
 
     def save_game(self, event: Any) -> None:
-        threading.Thread(target=Saves.save_game_to_file, args=(self.get_board_func(),)).start()
+        if Saves.save_game_to_file(self.get_board_func()):
+            Notification(self.master, 'Save was created successfully', 2, 'top')
 
     def load_saves(self, event: Any) -> None:
         self.saves = Saves(self.master, self.get_board_func())
@@ -896,3 +929,101 @@ class Settings(ctk.CTkFrame):
         entry.insert(0, color)
         change_color(color_name, color)
         entry.configure(fg_color=color)
+
+class SaveName(ctk.CTkToplevel):
+    def __init__(self) -> None:
+        super().__init__(fg_color=COLOR.BACKGROUND)
+        if platform.system() == 'Windows':
+            self.grab_set()
+        self.attributes('-topmost', True)
+        self.title('Save')
+        self.font_21 = ctk.CTkFont(get_from_config('font_name'), 21)
+        self.font_28 = ctk.CTkFont(get_from_config('font_name'), 28)
+        self.save_name: str | None | bool = None
+        self.create_info()
+        self.create_name_entry()
+        self.create_save_button()
+        self.resizable(False, False)
+        self.protocol('WM_DELETE_WINDOW', self.on_close)
+        self.lift()
+        self.center_window()
+        # self.after(201, lambda: self.iconbitmap(resource_path('assets\\logo.ico')))
+
+    def create_info(self) -> None:
+        self.info_label: ctk.CTkLabel = ctk.CTkLabel(
+            master     = self,
+            fg_color   = COLOR.BACKGROUND,
+            text       = 'Empty name will create default save name chess_save_x',
+            text_color = COLOR.CLOSE_HOVER,
+            font       = self.font_21
+        )
+        self.info_label.pack(side=ctk.TOP, padx=15, pady=15, fill=ctk.X)
+
+    def create_name_entry(self) -> None:
+        helper_frame: ctk.CTkFrame = ctk.CTkFrame(
+            master   = self,
+            fg_color = COLOR.BACKGROUND,
+
+        )
+        helper_frame.pack(side=ctk.TOP, padx=15, pady=15, fill=ctk.X)
+        self.save_title_label: ctk.CTkLabel = ctk.CTkLabel(
+            master     = helper_frame,
+            fg_color   = COLOR.BACKGROUND,
+            text       = 'Name: ',
+            font       = self.font_28,
+            text_color = COLOR.TEXT
+        )
+        # self.save_title_label.pack(side=ctk.LEFT, padx=1, pady=1)
+        self.save_name_entry: ctk.CTkEntry = ctk.CTkEntry(
+            master           = helper_frame,
+            fg_color         = COLOR.BACKGROUND,
+            text_color       = COLOR.TEXT,
+            corner_radius    = 0,
+            border_color     = COLOR.DARK_TEXT,
+            font             = self.font_28,
+            border_width     = 3,
+            placeholder_text = 'Name'
+        )
+        self.save_name_entry.pack(side=ctk.LEFT, padx=1, pady=1, fill=ctk.X, expand=True)
+
+    def create_save_button(self) -> None:
+        self.save_button: ctk.CTkButton = ctk.CTkButton(
+            master        = self,
+            fg_color      = COLOR.TILE_1,
+            hover_color   = COLOR.HIGH_TILE_1,
+            text          = 'SAVE',
+            font          = self.font_21,
+            command       = self.on_save_button,
+            corner_radius = 0,
+            width         = ctk.CTkFont.measure(self.font_21, 'SAVE') + 20,
+        )
+        self.save_button.pack(side=ctk.TOP, padx=15, pady=15, expand=True)
+
+    def center_window(self) -> None:
+        """Function centering the TopLevel window. Screen size independent.
+        """
+        x: int = self.winfo_screenwidth()
+        y: int = self.winfo_screenheight()
+        app_width: int = self.winfo_width()
+        app_height: int = self.winfo_height()
+        self.geometry(f'+{(x//2)-(app_width//2)}+{(y//2)-(app_height//2)}')
+
+    def get_save_name(self) -> str | None | bool:
+        self.master.wait_window(self)
+        return self.save_name
+
+    def on_save_button(self) -> None:
+        self.save_name = self.save_name_entry.get()
+        files: list[str] = [f for f in os.listdir(resource_path('saves'))]
+        if f'{self.save_name}.json' in files:
+            self.save_name = None
+        if isinstance(self.save_name, str) and len(self.save_name) < 1:
+            self.save_name = None
+        if isinstance(self.save_name, str) and self.save_name.startswith('chess_game_'):
+            self.save_name = None
+        self.destroy()
+
+    def on_close(self) -> None:
+        self.save_name = False
+        self.grab_release()
+        self.destroy()
