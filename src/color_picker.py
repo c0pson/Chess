@@ -5,7 +5,8 @@ import customtkinter as ctk
 from typing import Any
 import platform
 
-from properties import COLOR  
+from properties import COLOR
+from tools import resource_path
 
 class ColorPicker(ctk.CTkToplevel):
     """Class used to pick custom theme color. Is also a module that can be reused with apps using customtkinter.
@@ -59,6 +60,7 @@ class ColorPicker(ctk.CTkToplevel):
         self.protocol('WM_DELETE_WINDOW', self.on_close)
         self.lift()
         self.center_window()
+        self.after(201, lambda: self.iconbitmap(resource_path('assets\\logo.ico')))
 
     def center_window(self) -> None:
         """Function centering the TopLevel window. Screen size independent.

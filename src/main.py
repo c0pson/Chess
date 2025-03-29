@@ -108,6 +108,11 @@ class MainWindow(ctk.CTk):
                     threading.Thread(target=cell.figure.update_image).start()
 
     def get_board(self) -> Board:
+        """Simple getter.
+
+        Returns:
+            Board: Board object.
+        """
         return self.board
 
     def update_font(self, widget=None) -> None:
