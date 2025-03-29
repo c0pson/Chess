@@ -19,13 +19,12 @@ class ColorPicker(ctk.CTkToplevel):
         """Constructor handling most important function calls and variable setup.
 
         Args:
-
-         - fg_color (str | None, optional): Background color of the window. Defaults to None.
-         - preview_size (int, optional): _description_. Defaults to 100.
-         - r (int, optional): Default red intensity value. Defaults to 0.
-         - g (int, optional): Default green intensity value. Defaults to 0.
-         - b (int, optional): Default blue intensity value. Defaults to 0.
-         - font (ctk.CTkFont | None, optional): Custom font. Defaults to None.
+            fg_color (str | None, optional): Background color of the window. Defaults to None.
+            preview_size (int, optional): _description_. Defaults to 100.
+            r (int, optional): Default red intensity value. Defaults to 0.
+            g (int, optional): Default green intensity value. Defaults to 0.
+            b (int, optional): Default blue intensity value. Defaults to 0.
+            font (ctk.CTkFont | None, optional): Custom font. Defaults to None.
         """
         super().__init__(fg_color=fg_color)
         if platform.system() == 'Windows':
@@ -90,12 +89,10 @@ class ColorPicker(ctk.CTkToplevel):
         """Function validating new character in hex entry box. Can take one character or longer string to allow pasting.
 
         Args:
-
-         - value_if_allowed (str): New value to check.
+            value_if_allowed (str): New value to check.
 
         Returns:
-
-         - bool: True if hex color patter was met, False otherwise.
+            bool: True if hex color patter was met, False otherwise.
         """
         if len(value_if_allowed) == 0 or (value_if_allowed.startswith('#') and len(value_if_allowed) <= 7):
             for char in value_if_allowed[1:]:
@@ -108,8 +105,7 @@ class ColorPicker(ctk.CTkToplevel):
         """Function handling pasting custom color into hex color entry box.
 
         Args:
-
-         - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
         clipboard = self.master.clipboard_get()
         if self.validate_hex_color(clipboard):
@@ -121,8 +117,7 @@ class ColorPicker(ctk.CTkToplevel):
         """Function handling all changes on entering last hex color. It changes RGB labels values, sliders values and color preview frame to the desired color.
 
         Args:
-
-         - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
         if len(self.hex_val_label.get()) == 7:
             self.r_val, self.g_val, self.b_val = self.convert_to_r_g_b()
@@ -175,12 +170,10 @@ class ColorPicker(ctk.CTkToplevel):
         """Function creating frame for slider used to change R or G or B value.
 
         Args:
-
-         - frame (ctk.CTkFrame): Parent Frame on which cell will be represented.
+            frame (ctk.CTkFrame): Parent Frame on which cell will be represented.
 
         Returns:
-
-         - ctk.CTkFrame: Ready packed frame.
+            ctk.CTkFrame: Ready packed frame.
         """
         slider_frame: ctk.CTkFrame = ctk.CTkFrame(
             master        = frame,
@@ -195,12 +188,10 @@ class ColorPicker(ctk.CTkToplevel):
         """Validation of R,G,B inputs from entry boxes.
 
         Args:
-
-         - P (str): New input character.
+            P (str): New input character.
 
         Returns:
-
-         - bool: True if RGB encoding requirements are met, False otherwise. 
+            bool: True if RGB encoding requirements are met, False otherwise. 
         """
         if P == '':
             return True
@@ -325,11 +316,10 @@ class ColorPicker(ctk.CTkToplevel):
         """Function updating position of sliders and its corresponding RGB entry boxes to proper value after changing hex entry box.
 
         Args:
-
-         - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
-         - r (int, optional): Given red color intensity. Defaults to -1.
-         - g (int, optional): Given green color intensity. Defaults to -1.
-         - b (int, optional): Given blue color intensity. Defaults to -1.
+            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+            r (int, optional): Given red color intensity. Defaults to -1.
+            g (int, optional): Given green color intensity. Defaults to -1.
+            b (int, optional): Given blue color intensity. Defaults to -1.
         """
         if r == -1:
             r = int(self.r_val_label.get()) if self.r_val_label.get() != '' else 0
@@ -349,11 +339,10 @@ class ColorPicker(ctk.CTkToplevel):
         """Updates corresponding RGB color code and hex color value based on value of slider.
 
         Args:
-
-         - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
-         - r (bool, optional): Flag to set which slider was changed [r]. Defaults to False.
-         - g (bool, optional): Flag to set which slider was changed [g]. Defaults to False.
-         - b (bool, optional): Flag to set which slider was changed [b]. Defaults to False.
+            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+            r (bool, optional): Flag to set which slider was changed [r]. Defaults to False.
+            g (bool, optional): Flag to set which slider was changed [g]. Defaults to False.
+            b (bool, optional): Flag to set which slider was changed [b]. Defaults to False.
         """
         if r:
             self.r_val = int(self.r_slider.get())
@@ -375,8 +364,7 @@ class ColorPicker(ctk.CTkToplevel):
         """Function converting RGB value to hex color code.
 
         Returns:
-
-         - str: f'{6 digit code}' | Regex example: ^#[0-9a-fA-F]{6}
+            str: f'{6 digit code}' | Regex example: ^#[0-9a-fA-F]{6}
         """
         return f'#{self.r_val:02x}{self.g_val:02x}{self.b_val:02x}'
 
@@ -384,8 +372,7 @@ class ColorPicker(ctk.CTkToplevel):
         """Function converting hex color code to RGB value.
 
         Returns:
-
-         - tuple[int, int , int]: Tuple of R, G and B values.
+            tuple[int, int , int]: Tuple of R, G and B values.
         """
         self.hex_val = self.hex_val_label.get()
         hex_code: str = self.hex_val.lstrip('#') if self.hex_val else '000000'
@@ -410,8 +397,7 @@ class ColorPicker(ctk.CTkToplevel):
         """Function waiting for the window being destroyed.
 
         Returns:
-
-         - str | None: Hex color code if closed with OK button or None if closed with ❌.
+            str | None: Hex color code if closed with OK button or None if closed with ❌.
         """
         self.master.wait_window(self)
         return self.convert_to_hex() if self.hex_val else None

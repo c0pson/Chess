@@ -14,22 +14,19 @@ class Notification(ctk.CTkFrame):
     """Class handling showing notifications in the app.
 
     Args:
-
-     - ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget. 
+        ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget. 
     """
     def __init__(self, master: Any, message: str, duration_sec: float, position: str='center'):
         """Constructor:
-
-         - loads font name from config
-         - converts amount of seconds to milliseconds
-         - shows itself at the end
+             - loads font name from config
+             - converts amount of seconds to milliseconds
+             - shows itself at the end
 
         Args:
-
-         - master (Any): Parent widget.
-         - message (str): Desired message to show on screen.
-         - duration_sec (float): Amount of seconds before hiding the notification.
-         - position (str, optional): Position of the notification 'center' or 'top'. Defaults to 'center'.
+            master (Any): Parent widget.
+            message (str): Desired message to show on screen.
+            duration_sec (float): Amount of seconds before hiding the notification.
+            position (str, optional): Position of the notification 'center' or 'top'. Defaults to 'center'.
         """
         super().__init__(
             master        = master,
@@ -67,8 +64,7 @@ class Notification(ctk.CTkFrame):
         """Animates the notification appearing on the screen. At the end calls hide_notification delayed by (duration_sec * 1000).
 
         Args:
-
-         - i (int): Iteration value passed by recursive formula.
+            i (int): Iteration value passed by recursive formula.
         """
         if not self.winfo_exists:
             return
@@ -84,8 +80,7 @@ class Notification(ctk.CTkFrame):
         """Animates the notification before removing it from the screen.
 
         Args:
-
-         - i (int): Iteration value passed by recursive formula.
+            i (int): Iteration value passed by recursive formula.
         """
         if i < 100:
             i += 1

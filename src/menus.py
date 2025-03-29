@@ -20,18 +20,15 @@ class MovesRecord(ctk.CTkFrame):
     """Class handling recording the moves during playtime.
 
     Args:
-
-     - ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget. 
+        ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget. 
     """
     def __init__(self, master) -> None:
         """Constructor:
-
-         - calls function create_frames
-         - creates 2D vector to record moves
+             - calls function create_frames
+             - creates 2D vector to record moves
 
         Args:
-
-         - master (Any): Parent widget
+            master (Any): Parent widget
         """
         super().__init__(master, fg_color=COLOR.BACKGROUND)
         self.font_32: ctk.CTkFont = ctk.CTkFont(str(get_from_config('font_name')), 32)
@@ -43,14 +40,13 @@ class MovesRecord(ctk.CTkFrame):
         """Displays the chess notation of the move on the frame for specific player color.
 
         Args:
-
-         - moved_piece (Piece): Figure which was moved
-         - previous_coords (tuple[int, int] | None, optional): Coordinates of position before moving the figure. Defaults to None.
-         - capture (bool, optional): Flag to check if figure captured another figure. Defaults to False.
-         - castle (str | None, optional): Flag to check if castle occurred. Defaults to None.
-         - check (bool, optional): Checks if move caused the check. Defaults to False.
-         - checkmate (bool, optional): Checks if move caused the checkmate. Defaults to False.
-         - promotion (str, optional): Checks if pawn was promoted. Defaults to '' which means the promotion didn't occurred.
+            moved_piece (Piece): Figure which was moved
+            previous_coords (tuple[int, int] | None, optional): Coordinates of position before moving the figure. Defaults to None.
+            capture (bool, optional): Flag to check if figure captured another figure. Defaults to False.
+            castle (str | None, optional): Flag to check if castle occurred. Defaults to None.
+            check (bool, optional): Checks if move caused the check. Defaults to False.
+            checkmate (bool, optional): Checks if move caused the checkmate. Defaults to False.
+            promotion (str, optional): Checks if pawn was promoted. Defaults to '' which means the promotion didn't occurred.
         """
         y_axis: list[str] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
         x, y = 8 - moved_piece.position[0], y_axis[moved_piece.position[1]]
@@ -73,6 +69,12 @@ class MovesRecord(ctk.CTkFrame):
         ).pack(side=ctk.BOTTOM)
 
     def load_notation_from_save(self, white_moves: list[str], black_moves: list[str]) -> None:
+        """Loads notation from save file.
+
+        Args:
+            white_moves (list[str]): List of previous white moves.
+            black_moves (list[str]): List of previous white moves.
+        """
         for notation in white_moves:
             ctk.CTkLabel(
                 master = self.white_scroll_frame,
@@ -156,16 +158,16 @@ class Saves(ctk.CTkFrame):
     """Class handling saving, showing and loading saves.
 
     Args:
-
-     - ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget.
+        ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget.
     """
     def __init__(self, master: Any, board) -> None:
-        """Constructor
+        """Constructor:
+            loads fonts
+            calls function showing all saves
 
         Args:
-
-         - master (Any): Parent widget.
-         - board (Board): Board object.
+            master (Any): Parent widget.
+            board (Board): Board object.
         """
         super().__init__(master, fg_color=COLOR.BACKGROUND)
         self.font_32 = ctk.CTkFont(get_from_config('font_name'), 32)
@@ -184,12 +186,10 @@ class Saves(ctk.CTkFrame):
         """Saves the current game state to the .json file.
 
         Args:
-
-         - board (Board): Board object.
+            board (Board): Board object.
 
         Returns:
-        
-         - bool: Returns True if save was created successfully, False otherwise.
+            bool: Returns True if save was created successfully, False otherwise.
         """
         save_info: dict[tuple[int, int] | str, tuple[str, str, bool] | list[str]] = dict()
         for row in board.board:
@@ -208,8 +208,7 @@ class Saves(ctk.CTkFrame):
         """Displays all saves as clickable buttons.
 
         Args:
-
-         - board (Board): Board object.
+            board (Board): Board object.
         """
         top_frame: ctk.CTkFrame = ctk.CTkFrame(
             master   = self,
@@ -324,19 +323,18 @@ class Options(ctk.CTkFrame):
     """Class handling user interface of available options on main window frame:
 
     Args:
-
-     - ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget.
+        ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget.
     """
     def __init__(self, master, restart_func: Callable, update_assets_func: Callable, update_font_func: Callable, get_board_func: Callable):
         """Constructor:
-            - places setting and replay buttons
+             - places setting and replay buttons
+             - loads menu assets
 
         Args:
-
-         - master (Any): Parent widget
-         - restart_func (Callable): Master function to restart the game
-         - update_assets_func (Callable): Master function to update assets
-         - update_font_func (Callable): Master function to update font
+            master (Any): Parent widget
+            restart_func (Callable): Master function to restart the game
+            update_assets_func (Callable): Master function to update assets
+            update_font_func (Callable): Master function to update font
         """
         super().__init__(master, fg_color=COLOR.BACKGROUND)
         self.restart_func: Callable = restart_func
@@ -375,6 +373,8 @@ class Options(ctk.CTkFrame):
         self.r_icon_label.bind('<Button-1>', self.replay)
 
     def save_button(self) -> None:
+        """Setup of save button.
+        """
         self.save_icon_label: ctk.CTkLabel = ctk.CTkLabel(
             master = self,
             text   = '',
@@ -384,6 +384,8 @@ class Options(ctk.CTkFrame):
         self.save_icon_label.bind('<Button-1>', lambda e: threading.Thread(target=self.save_game, args=(e,)).start())
 
     def load_saves_button(self) -> None:
+        """Setup of button for showing all saves.
+        """
         self.load_icon_label: ctk.CTkLabel = ctk.CTkLabel(
             master = self,
             text   = '',
@@ -404,8 +406,7 @@ class Options(ctk.CTkFrame):
         """Function opening settings.
 
         Args:
-
-         - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
         if self.settings:
             self.settings.place(relx=0, rely=0, relwidth=1, relheight=1)
@@ -416,8 +417,7 @@ class Options(ctk.CTkFrame):
         """Function restarting the game.
 
         Args:
-
-         - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
         self.after(1, self.restart_func)
         self.r_icon_label.unbind('<Button-1>')
@@ -426,6 +426,11 @@ class Options(ctk.CTkFrame):
         self.master.after(2000, lambda: self.r_icon_label.bind('<Button-1>', self.replay))
 
     def save_game(self, event: Any) -> None:
+        """Saves game and displays notification if successful.
+
+        Args:
+            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+        """
         if Saves.save_game_to_file(self.get_board_func()):
             Notification(self.master, 'Save was created successfully', 2, 'top')
 
@@ -437,8 +442,7 @@ class Options(ctk.CTkFrame):
         """Cooldown for restarting the game too quickly.
 
         Args:
-
-         - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
         self.notification: Notification = Notification(self.master, 'Not so fast', 1, 'top')
 
@@ -446,20 +450,18 @@ class Settings(ctk.CTkFrame):
     """Class handling changes in setting such as fonts, assets and colors.
 
     Args:
-
-     - ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget.
+        ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget.
     """
     def __init__(self, master, restart_func: Callable, update_assets_func: Callable, update_font_func: Callable) -> None:
         """Constructor
-            - places itself on the screen
-            - calls all functions creating frames containing content
+            places itself on the screen
+            calls all functions creating frames containing content
 
         Args:
-
-         - master (Any): Parent widget
-         - restart_func (Callable): Master function to restart the game
-         - update_assets_func (Callable): Master function to update assets
-         - update_font_func (Callable): Master function to update font
+            master (Any): Parent widget
+            restart_func (Callable): Master function to restart the game
+            update_assets_func (Callable): Master function to update assets
+            update_font_func (Callable): Master function to update font
         """
         super().__init__(master, fg_color=COLOR.BACKGROUND, corner_radius=0)
         self.place(relx=0, rely=0, relwidth=1, relheight=1)
@@ -491,12 +493,10 @@ class Settings(ctk.CTkFrame):
         """Lists all directories from given path.
 
         Args:
-
-         - path (str): Desired path
+            path (str): Desired path
 
         Returns:
-
-         - list[str]: List of all directories from path
+            list[str]: List of all directories from path
         """
         try:
             entries: list[str] = os.listdir(path)
@@ -539,9 +539,8 @@ class Settings(ctk.CTkFrame):
         """Setup of theme button.
 
         Args:
-
-         - frame (ctk.CTkFrame): Frame in which button will be placed.
-         - theme (str): Style of Figures to choose.
+            frame (ctk.CTkFrame): Frame in which button will be placed.
+            theme (str): Style of Figures to choose.
         """
         theme_button: ctk.CTkButton = ctk.CTkButton(
             master        = frame,
@@ -594,8 +593,7 @@ class Settings(ctk.CTkFrame):
         """Helper function to save theme changes to config file.
 
         Args:
-
-         - choice (str): Name of theme to save.
+            choice (str): Name of theme to save.
         """
         self.choice = choice
         change_config('theme', choice)
@@ -604,8 +602,7 @@ class Settings(ctk.CTkFrame):
         """Waits for close action to properly destroy the window
 
         Args:
-
-         - event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
         if not self.previous_theme and not self.choice:
             self.place_forget()
@@ -617,8 +614,7 @@ class Settings(ctk.CTkFrame):
         """Opens file explorer with function specific to operating system.
 
         Args:
-
-         - path (str): Path to open.
+            path (str): Path to open.
         """
         system: str = platform.system()
         if system == 'Windows':
@@ -633,18 +629,15 @@ class Settings(ctk.CTkFrame):
         """Gathers all files from directory. If error occurs after catching the exception empty list is returned.
 
         Args:
-
-         - path (str): Path of the desired directory.
+            path (str): Path of the desired directory.
 
         Returns:
-
-         - list[str]: List of all file names from path directory.
+            list[str]: List of all file names from path directory.
 
         Exceptions:
-
-         - FileNotFoundError: If the directory does not exist.
-         - PermissionError: If access to the directory is denied.
-         - OSError: If an OS-related error occurs.
+            FileNotFoundError: If the directory does not exist.
+            PermissionError: If access to the directory is denied.
+            OSError: If an OS-related error occurs.
         """
         path = resource_path(path)
         try:
@@ -659,12 +652,10 @@ class Settings(ctk.CTkFrame):
         """Gets name of the font from file name.
 
         Args:
-
-         - ttf_path (str): Path to .ttf font file name.
+            ttf_path (str): Path to .ttf font file name.
 
         Returns:
-
-         - str | None: Returns font name on success otherwise None.
+            str | None: Returns font name on success otherwise None.
         """
         try:
             font: TTFont = TTFont(resource_path(ttf_path))
@@ -754,8 +745,8 @@ class Settings(ctk.CTkFrame):
         """Setup of font button.
 
         Args:
-         - frame (ctk.CTkFrame): Frame in which button will be placed.
-         - font (str): Font name.
+            frame (ctk.CTkFrame): Frame in which button will be placed.
+            font (str): Font name.
         """
         font_button = ctk.CTkButton(
             master        = frame,
@@ -773,8 +764,7 @@ class Settings(ctk.CTkFrame):
         """Helper function to save change of font to config file.
 
         Args:
-
-         - font (str): Font name.
+            font (str): Font name.
         """
         if os.path.basename(font) == self.previous_font:
             return
@@ -789,12 +779,10 @@ class Settings(ctk.CTkFrame):
         """Checks if user passed string is valid with hex color.
 
         Args:
-
-         - color (str): User defined color.
+            color (str): User defined color.
 
         Returns:
-
-         - bool: True if color passes regex pattern for hex color, False otherwise.
+            bool: True if color passes regex pattern for hex color, False otherwise.
         """
         hex_color_pattern = re.compile(r'^#[0-9a-fA-F]{6}$')
         return bool(hex_color_pattern.match(color))
@@ -804,12 +792,10 @@ class Settings(ctk.CTkFrame):
         """Validation function for color input.
 
         Args:
-
-         - new_value (str): User input from color entry.
+            new_value (str): User input from color entry.
 
         Returns:
-
-         - bool: True if length of the string is not longer than 7, False otherwise.
+            bool: True if length of the string is not longer than 7, False otherwise.
         """
         return len(new_value) <= 7
 
@@ -867,9 +853,8 @@ class Settings(ctk.CTkFrame):
         """Function creating color preview frame.
 
         Args:
-
-         - frame (ctk.CTkFrame): Parent frame.
-         - color (str): New hex color string.
+            frame (ctk.CTkFrame): Parent frame.
+            color (str): New hex color string.
         """
         for color_name , color_str in COLOR.__members__.items():
             if color_str == color:
@@ -941,10 +926,9 @@ class Settings(ctk.CTkFrame):
         """Saves new color into config file.
 
         Args:
-
-         - color_name (str): Name of the color to change.
-         - entry (ctk.CTkEntry): User input with color hex code.
-         - color_label (ctk.CTkLabel): Parent frame to update.
+            color_name (str): Name of the color to change.
+            entry (ctk.CTkEntry): User input with color hex code.
+            color_label (ctk.CTkLabel): Parent frame to update.
         """
         new_color = entry.get()
         if self.is_valid_color(new_color):
@@ -955,11 +939,11 @@ class Settings(ctk.CTkFrame):
         """Input dialog with custom color picker for easy use.
 
         Args:
-         - r (int): Red color intensity.
-         - g (int): Green color intensity.
-         - b (int): Blue color intensity.
-         - entry (ctk.CTkEntry): Entry frame for user input.
-         - color_name (str): Color name from config file.
+            r (int): Red color intensity.
+            g (int): Green color intensity.
+            b (int): Blue color intensity.
+            entry (ctk.CTkEntry): Entry frame for user input.
+            color_name (str): Color name from config file.
         """
         picker = ColorPicker(fg_color=COLOR.BACKGROUND, r=r, g=g, b=b, font=ctk.CTkFont(self.font_name, 15))
         # self.master.after(201, lambda: picker.iconbitmap(resource_path('assets\\logo.ico')))
@@ -974,10 +958,9 @@ class Settings(ctk.CTkFrame):
         """Helper function to close input dialog without changing any properties in config file.
 
         Args:
-
-        - color_name (str): Color name from config file.
-        - entry (ctk.CTkEntry): Entry frame for user input.
-        - color (str): Color to keep.
+            color_name (str): Color name from config file.
+            entry (ctk.CTkEntry): Entry frame for user input.
+            color (str): Color to keep.
         """
         entry.delete(0, ctk.END)
         entry.insert(0, color)
@@ -985,7 +968,18 @@ class Settings(ctk.CTkFrame):
         entry.configure(fg_color=color)
 
 class SaveName(ctk.CTkToplevel):
+    """Class for asking user for the save name.
+
+    Args:
+        ctk.CTkTopLevel : Inheritance from customtkinter CTkFrame widget.
+    """
     def __init__(self) -> None:
+        """Constructor:
+            sets window to appear on top
+            loads fonts
+            calls all setup functions
+            centers window
+        """
         super().__init__(fg_color=COLOR.BACKGROUND)
         if platform.system() == 'Windows':
             self.grab_set()
@@ -1004,16 +998,20 @@ class SaveName(ctk.CTkToplevel):
         # self.after(201, lambda: self.iconbitmap(resource_path('assets\\logo.ico')))
 
     def create_info(self) -> None:
+        """Displays warning info.
+        """
         self.info_label: ctk.CTkLabel = ctk.CTkLabel(
             master     = self,
             fg_color   = COLOR.BACKGROUND,
-            text       = 'Empty name will create default save name chess_save_x',
+            text       = STRING.SAVES_WARNING,
             text_color = COLOR.CLOSE_HOVER,
             font       = self.font_21
         )
         self.info_label.pack(side=ctk.TOP, padx=15, pady=15, fill=ctk.X)
 
     def create_name_entry(self) -> None:
+        """Creates entry for name of the save.
+        """
         helper_frame: ctk.CTkFrame = ctk.CTkFrame(
             master   = self,
             fg_color = COLOR.BACKGROUND,
@@ -1041,6 +1039,8 @@ class SaveName(ctk.CTkToplevel):
         self.save_name_entry.pack(side=ctk.LEFT, padx=1, pady=1, fill=ctk.X, expand=True)
 
     def create_save_button(self) -> None:
+        """Setups save button.
+        """
         self.save_button: ctk.CTkButton = ctk.CTkButton(
             master        = self,
             fg_color      = COLOR.TILE_1,
@@ -1063,10 +1063,17 @@ class SaveName(ctk.CTkToplevel):
         self.geometry(f'+{(x//2)-(app_width//2)}+{(y//2)-(app_height//2)}')
 
     def get_save_name(self) -> str | None | bool:
+        """Getter for user input from the entry widget.
+
+        Returns:
+            str | None | bool: String if name is valid, None if canceled when closing window with ❌.
+        """
         self.master.wait_window(self)
         return self.save_name
 
     def on_save_button(self) -> None:
+        """Function checking if user entry is valid after clicking save button
+        """
         self.save_name = self.save_name_entry.get()
         files: list[str] = [f for f in os.listdir(resource_path('saves'))]
         if f'{self.save_name}.json' in files:
@@ -1078,6 +1085,8 @@ class SaveName(ctk.CTkToplevel):
         self.destroy()
 
     def on_close(self) -> None:
+        """Custom closing function ensuring proper closing of the window. Sets save_name to None to cancel saving.
+        """
         self.save_name = False
         self.grab_release()
         self.destroy()

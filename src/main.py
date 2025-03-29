@@ -34,21 +34,19 @@ class MainWindow(ctk.CTk):
     updating font, updating assets and restarting the game all happens here.
 
     Args:
-
-     - ctk.CTk : Main app window of customtkinter library (master).
+        ctk.CTk : Main app window of customtkinter library (master).
     """
     def __init__(self) -> None:
         """Constructor for the MainWindow class: 
-
-         - sets title
-         - sets geometry
-         - sets minimum size of the window
-         - loads font
-         - Creates instances of the classes:
-          - MoveRecord
-          - Options
-          - Board
-         - loads theme of the app from the config: get_from_config
+             - sets title
+             - sets geometry
+             - sets minimum size of the window
+             - loads font
+             - Creates instances of the classes:
+              - MoveRecord
+              - Options
+              - Board
+             - loads theme of the app from the config: get_from_config
         """
         super().__init__(fg_color=COLOR.BACKGROUND)
         self.title('Chess')
@@ -85,8 +83,7 @@ class MainWindow(ctk.CTk):
         """Calculating the size necessary to display all elements of the app on the screen.
 
         Returns:
-
-         - str: f'{width}x{height]}' because customtkinter uses f'{width}x{height]}' to set the size of the window.
+            str: f'{width}x{height]}' because customtkinter uses f'{width}x{height]}' to set the size of the window.
         """
         size: int = int(get_from_config('size'))
         size = (size+2) * 10 + 40
@@ -119,8 +116,7 @@ class MainWindow(ctk.CTk):
         """Handle for updating the font during app runtime without freezing the window.
 
         Args:
-
-         - widget (Any, optional): Child of the widget. Defaults to None as master widget doesn't have any parents.
+            widget (Any, optional): Child of the widget. Defaults to None as master widget doesn't have any parents.
         """
         if widget is None:
             widget = self
