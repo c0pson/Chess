@@ -75,15 +75,16 @@ class Piece:
         path: str = resource_path(os.path.join('assets', f'{get_from_config('theme')}', f'{piece_name}_{self.color}.png'))
         try: 
             loaded_image = Image.open(path).convert('RGBA')
+            size = int(get_from_config('size')) - 10
             if piece:
                 return ctk.CTkImage(
                     light_image=loaded_image,
                     dark_image=loaded_image,
-                    size=(int(get_from_config('size'))-10, int(get_from_config('size'))-10))
+                    size=(size, size))
             self.image = ctk.CTkImage(
                 light_image=loaded_image,
                 dark_image=loaded_image,
-                size=(int(get_from_config('size'))-10, int(get_from_config('size'))-10))
+                size=(size, size))
         except (FileExistsError, FileNotFoundError) as e:
             update_error_log(e)
         return None
@@ -100,7 +101,7 @@ class Piece:
         Returns:
             str: Representation of the class Piece: {piece name} Color:{piece color}
         """
-        return f'Piece: {self.__class__.__name__} Color: {'white' if self.color == 'w' else 'black'} Position {self.position}'
+        return f'Piece: {self.__class__.__name__} | Color: {'white' if self.color == 'w' else 'black'} | Position {self.position}'
 
 class Pawn(Piece):
     """Implementation of the pawn. Supports en passant, promotions, moving and capturing.
@@ -144,7 +145,8 @@ class Pawn(Piece):
         if self.check_turn(color):
             return possible_moves
         move = self.move
-        x, y = self.position[0], self.position[1]
+        x: int = self.position[0]
+        y: int = self.position[1]
         forward_one = (x + move, y)
         forward_two = (x + move * 2, y)
         if not self.board.board[forward_one[0]][forward_one[1]].figure:
@@ -157,8 +159,7 @@ class Pawn(Piece):
                 target_square = self.board.board[capture_position[0]][capture_position[1]]
                 if target_square.figure and target_square.figure.color != self.color:
                     possible_moves.append(capture_position)
-                adjacent_pawn_position = (x, y + offset)
-                adjacent_pawn = self.board.board[adjacent_pawn_position[0]][adjacent_pawn_position[1]].figure
+                adjacent_pawn = self.board.board[x][y + offset].figure
                 if isinstance(adjacent_pawn, Pawn) and adjacent_pawn.color != self.color and adjacent_pawn.moved_by_two:
                     possible_moves.append((x + move, y + offset))
                     self.can_en_passant = True

@@ -10,6 +10,7 @@ from PIL import Image
 import os
 import threading
 import soundfile
+from typing import cast
 
 from notifications import Notification
 from properties import COLOR
@@ -98,6 +99,7 @@ class Board(ctk.CTkFrame):
         self.master: Any = master
         self.loading_screen: ctk.CTkLabel | None = None
         self.font_name: str = str(get_from_config('font_name'))
+        self.font_42  = ctk.CTkFont(self.font_name, 42)
         self.loading_animation(0)
         self.move_sound = soundfile.read(resource_path(os.path.join('sounds', 'move-self.wav')), dtype='float32')[0]
         self.capture_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
@@ -107,6 +109,7 @@ class Board(ctk.CTkFrame):
         self.illegal_sound = soundfile.read(resource_path(os.path.join('sounds', 'illegal.wav')), dtype='float32')[0]
         self.frame_image: ctk.CTkImage = ctk.CTkImage(Image.open(resource_path(os.path.join('assets', 'menu', 'frame.png'))).convert('RGBA'), size=(80,80))
         self.size: int = size
+        self.board_font = ctk.CTkFont(self.font_name, self.size//3)
         self.board: list[list[Cell]] = self.create_board()
         self.highlighted: list[Cell] = []
         self.clicked_figure: piece.Piece | None = None
@@ -127,7 +130,9 @@ class Board(ctk.CTkFrame):
         Returns:
             str: Color of the cell.
         """
-        if (pos[0]%2 and pos[1]%2) or (not pos[0]%2 and not pos[1]%2):
+        pos_0_divisible_by_2 = pos[0]%2
+        pos_1_divisible_by_2 = pos[1]%2
+        if (pos_0_divisible_by_2 and pos_1_divisible_by_2) or (not pos_0_divisible_by_2 and not pos_1_divisible_by_2):
             return COLOR.TILE_1
         else:
             return COLOR.TILE_2
@@ -136,10 +141,10 @@ class Board(ctk.CTkFrame):
         """Creates outline of the board.
         """
         ctk.CTkLabel(
-            master = self,
-            text=f' ',
-            font=ctk.CTkFont(self.font_name, self.size//3),
-            text_color=COLOR.DARK_TEXT
+            master     = self,
+            text       =f' ',
+            font       =self.board_font,
+            text_color =COLOR.DARK_TEXT
         ).pack(padx=10, pady=1)
         new_frame = ctk.CTkFrame(
             master        = self,
@@ -151,7 +156,7 @@ class Board(ctk.CTkFrame):
             ctk.CTkLabel(
                 master   = new_frame,
                 text     = f' {i+1}',
-                font     = ctk.CTkFont(self.font_name, self.size//3),
+                font     = self.board_font,
                 fg_color = COLOR.DARK_TEXT,
                 anchor   = ctk.E
             ).pack(side=ctk.TOP, padx=10, pady=0, expand=True)
@@ -169,7 +174,7 @@ class Board(ctk.CTkFrame):
         ctk.CTkLabel(
             master     = new_frame, 
             text       = '  ',
-            font       = ctk.CTkFont(self.font_name, self.size//3), 
+            font       = self.board_font, 
             text_color = COLOR.DARK_TEXT, 
             fg_color   = COLOR.DARK_TEXT
         ).pack(padx=10, pady=1)
@@ -181,7 +186,7 @@ class Board(ctk.CTkFrame):
             list[list[Cell]]: 2D representation of the board.
         """
         self.create_outline_l_r_t()
-        board: list[list[Cell]] = []
+        board: list[list[Cell]] = cast(list[list[Cell]], [[None] * 8] * 8)
         board_frame = ctk.CTkFrame(
             master        = self,
             corner_radius = 0,
@@ -207,7 +212,7 @@ class Board(ctk.CTkFrame):
             (7, 4): piece.King('w', self, (7, 4))    # White King
         }
         for i in range(8):
-            row = []
+            row: list[Cell] = cast(list[Cell], [None] * 8)
             new_frame: ctk.CTkFrame = ctk.CTkFrame(
                 master   = board_frame,
                 fg_color = COLOR.DARK_TEXT
@@ -219,8 +224,8 @@ class Board(ctk.CTkFrame):
                 color: str = self.determine_tile_color((i, j))
                 figure: piece.Piece | None = piece_positions.get((i, j)) if (i, j) in piece_positions else (piece.Pawn('b' if i == 1 else 'w', self, (i, j), self.notation_promotion) if i in [1, 6] else None)
                 cell = Cell(new_frame, figure, (i, j), color, self)
-                row.append(cell)
-            board.append(row)
+                row[j] = cell
+            board[i] = row
         new_frame = ctk.CTkFrame(
             master        = self,
             fg_color      = COLOR.DARK_TEXT,
@@ -231,7 +236,7 @@ class Board(ctk.CTkFrame):
             ctk.CTkLabel(
                 master   = new_frame,
                 text     = letter,
-                font     = ctk.CTkFont(self.font_name, self.size//3),
+                font     = self.board_font,
                 fg_color = COLOR.DARK_TEXT
             ).pack(side=ctk.LEFT, padx=0, pady=0, expand=True)
         return board
@@ -240,9 +245,8 @@ class Board(ctk.CTkFrame):
         """Removes highlights from the cell.
         """
         for cell in self.highlighted:
-            color = self.determine_tile_color(cell.position)
-            cell.configure(fg_color=color)
-        self.highlighted = []
+            cell.configure(fg_color=self.determine_tile_color(cell.position))
+        self.highlighted.clear()
 
     def display_message(self, message: str, duration_sec: int) -> None:
         """Displays message on the screen using Notification class.
@@ -287,24 +291,9 @@ class Board(ctk.CTkFrame):
             figure (piece.Piece): Chosen figure.
             position (tuple[int, int]): Position of that figure.
         """
-        if self.previous_coords:
-            if platform.system() == 'Windows':
-                if x := self.board[self.previous_coords[0]][self.previous_coords[1]].frame_around:
-                    x.destroy()
-            self.board[self.previous_coords[0]][self.previous_coords[1]].configure(fg_color=self.determine_tile_color(self.previous_coords))
-        if not self.game_over:
-            if platform.system() == 'Windows':
-                image_test = ctk.CTkLabel(
-                        fg_color = '#97A789',
-                        master   = self.board[position[0]][position[1]],
-                        text     = '',
-                        image    = self.frame_image
-                )
-                pywinstyles.set_opacity(image_test, value=1, color='#97A789')
-                image_test.place(relx=0.5, rely=0.5, anchor='center')
-                self.board[position[0]][position[1]].frame_around = image_test
-            else:
-                self.board[position[0]][position[1]].configure(fg_color=COLOR.TEXT)
+        if self.game_over:
+            return
+        self.handle_chosen_figure_highlight(position)
         possible_moves = figure.check_possible_moves(self.current_turn)
         if not possible_moves and self.board[position[0]][position[1]].figure:
             self.previous_coords = position
@@ -314,14 +303,42 @@ class Board(ctk.CTkFrame):
         if self.board and possible_moves:
             valid_moves = []
             for coords in possible_moves:
-                check = self.check_check(position, coords)
-                if not check:
+                if not self.check_check(position, coords):
                     valid_moves.append(coords)
             for coords in valid_moves:
-                color = self.board[coords[0]][coords[1]].cget('fg_color')
+                x_ = coords[0]
+                y_ = coords[1]
+                color = self.board[x_][y_].cget('fg_color')
                 new_color = COLOR.HIGH_TILE_1 if color == COLOR.TILE_1 else COLOR.HIGH_TILE_2
-                self.board[coords[0]][coords[1]].configure(fg_color=new_color)
-                self.highlighted.append(self.board[coords[0]][coords[1]])
+                self.board[x_][y_].configure(fg_color=new_color)
+                self.highlighted.append(self.board[x_][y_])
+
+    def hide_clicked_figure_frame(self) -> None:
+        if self.previous_coords:
+                previous_x = self.previous_coords[0]
+                previous_y = self.previous_coords[1]
+                if platform.system() == 'Windows':
+                    if frame := self.board[previous_x][previous_y].frame_around:
+                        frame.destroy()
+                else:
+                    self.board[previous_x][previous_y].configure(fg_color=self.determine_tile_color(self.previous_coords))
+
+    def handle_chosen_figure_highlight(self, position) -> None:
+        self.hide_clicked_figure_frame()
+        x: int = position[0]
+        y: int = position[1]
+        if platform.system() == 'Windows':
+            image_test: ctk.CTkLabel = ctk.CTkLabel(
+                    fg_color = '#97A789',
+                    master   = self.board[x][y],
+                    text     = '',
+                    image    = self.frame_image
+            )
+            pywinstyles.set_opacity(image_test, value=1, color='#97A789')
+            image_test.place(relx=0.5, rely=0.5, anchor='center')
+            self.board[x][y].frame_around = image_test
+        else:
+            self.board[x][y].configure(fg_color=COLOR.TEXT)
 
     def check_check(self, move_from: tuple[int, int], move_to: tuple[int, int]) -> bool:
         """Checks if King is in a check.
@@ -385,6 +402,8 @@ class Board(ctk.CTkFrame):
         Args:
             position (tuple[int, int]): Position of the figure.
         """
+        if self.clicked_figure and self.clicked_figure.position == position:
+            return
         if self.previous_coords:
             if platform.system() == 'Windows':
                 if x := self.board[self.previous_coords[0]][self.previous_coords[1]].frame_around:
@@ -397,7 +416,7 @@ class Board(ctk.CTkFrame):
             capture = bool(cell.figure)
             self.capture = bool(cell.figure)
             promotion = False
-            if cell in self.highlighted and self.previous_coords != position:
+            if cell in self.highlighted:
                 castle = False
                 if not self.check_check(self.previous_coords, position):
                     if isinstance(self.clicked_figure, piece.Pawn) and self.clicked_figure.can_en_passant and col != self.previous_coords[1] and not cell.figure:
@@ -466,7 +485,8 @@ class Board(ctk.CTkFrame):
             if not promotion:
                 self.clicked_figure = None
                 self.previous_coords = None
-        self.remove_highlights()
+        if self.highlighted:
+            self.remove_highlights()
 
     def notation_promotion(self, promotion:str) -> None:
         """Helper function to note the promotion of the pawn.
@@ -474,21 +494,20 @@ class Board(ctk.CTkFrame):
         Args:
             promotion (str): Figure representation to which pawn was promoted.
         """
-        capture = self.capture
         check = self.is_under_attack(self.get_king_position(self.current_turn), self.current_turn)
         game_over, in_check = self.is_game_over()
         if game_over:
             if in_check:
                 self.display_message(f'Checkmate  {"White wins!" if self.current_turn == "b" else "Black wins!"}', 9)
                 if self.clicked_figure:
-                    self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check, promotion=promotion[0])
+                    self.moves_record.record_move(self.clicked_figure, capture=self.capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check, promotion=promotion[0])
             else:
                 self.display_message('Stalemate', 9)
                 if self.clicked_figure:
-                    self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check, promotion=promotion[0])
+                    self.moves_record.record_move(self.clicked_figure, capture=self.capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check, promotion=promotion[0])
         else:
             if self.clicked_figure:
-                self.moves_record.record_move(self.clicked_figure, capture=capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check, promotion=promotion[0])
+                self.moves_record.record_move(self.clicked_figure, capture=self.capture, previous_coords=self.previous_coords, check=check, checkmate=game_over and in_check, promotion=promotion[0])
         self.clicked_figure = None
         self.previous_coords = None
 
@@ -524,7 +543,7 @@ class Board(ctk.CTkFrame):
         """
         self.loading_animation(0)
         for child in self.winfo_children():
-            self.master.after(1, child.destroy) # optimized by 0.1s using after
+            self.master.after(1, child.destroy)
         self.highlighted.clear()
         self.clicked_figure = None
         self.previous_coords = None
@@ -551,18 +570,18 @@ class Board(ctk.CTkFrame):
             self.loading_screen = ctk.CTkLabel(
                 master     = self.master,
                 text       = 'Loading   ',
-                font       = ctk.CTkFont(self.font_name, 42),
+                font       = self.font_42,
                 text_color = COLOR.TEXT
             )
             self.loading_screen.place(relx=0, rely=0, relwidth=1, relheight=1)
-            self.master.after(21, lambda: self.loading_animation(0))
+            self.master.after(90, lambda: self.loading_animation(0))
         else:
             self.loading_screen.configure(text=f'Loading{'.' * i}{' ' * (3 - i)}')
             if i <= 2:
                 i += 1
-                self.master.after(21, lambda: self.loading_animation(i))
+                self.master.after(90, lambda: self.loading_animation(i))
             else:
-                self.master.after(21, self.destroy_loading_screen)
+                self.master.after(90, self.destroy_loading_screen)
 
     def load_board_from_file(self, file_info: dict) -> bool:
         """Updates board to match the state from the save file.
@@ -573,39 +592,47 @@ class Board(ctk.CTkFrame):
         Returns:
             bool: Returns True if load was successful, False otherwise.
         """
+        self.master.after(1, lambda: self.loading_animation(0))
         try:
             self.current_turn = str(file_info['current_turn'])
             for row in self.board:
                 for cell in row:
-                    cell.figure = None
-                    cell.update()
+                    if cell.figure:
+                        cell.figure = None
+                        cell.update()
             for key, value in file_info['board_state'].items():
                 coord: tuple[int, ...] = tuple(map(int, key.split(',')))
+                x: int = coord[0]
+                y: int = coord[1]
                 match value[0]:
                     case 'Pawn':
-                        pawn = piece.Pawn(value[1], self, (coord[0], coord[1]), self.notation_promotion)
+                        pawn = piece.Pawn(value[1], self, (x, y), self.notation_promotion)
                         if not value[2]:
                             pawn.first_move = False
-                        self.board[coord[0]][coord[1]].figure = pawn
+                        self.board[x][y].figure = pawn
                     case 'Knight':
-                        self.board[coord[0]][coord[1]].figure = piece.Knight(value[1], self, (coord[0], coord[1]))
+                        self.board[x][y].figure = piece.Knight(value[1], self, (x, y))
                     case 'Bishop':
-                        self.board[coord[0]][coord[1]].figure = piece.Bishop(value[1], self, (coord[0], coord[1]))
+                        self.board[x][y].figure = piece.Bishop(value[1], self, (x, y))
                     case 'Rook':
-                        rook = piece.Rook(value[1], self, (coord[0], coord[1]))
-                        self.board[coord[0]][coord[1]].figure = rook
+                        rook = piece.Rook(value[1], self, (x, y))
+                        self.board[x][y].figure = rook
                         if not value[2]:
                             rook.first_move = False
                     case 'Queen':
-                        self.board[coord[0]][coord[1]].figure = piece.Queen(value[1], self, (coord[0], coord[1]))
+                        self.board[x][y].figure = piece.Queen(value[1], self, (x, y))
                     case 'King':
-                        king = piece.King(value[1], self, (coord[0], coord[1]))
-                        self.board[coord[0]][coord[1]].figure = king
+                        king = piece.King(value[1], self, (x, y))
+                        self.board[x][y].figure = king
                         if not value[2]:
                             king.first_move = False
-                self.board[coord[0]][coord[1]].update()
-            self.moves_record.load_notation_from_save(file_info['white_moves'], file_info['black_moves'])
+                self.master.after(1, self.board[x][y].update)
+            self.master.after(21, lambda: self.moves_record.load_notation_from_save(file_info['white_moves'], file_info['black_moves']))
+            self.master.after(21, self.hide_clicked_figure_frame)
+            self.master.after(21, self.remove_highlights)
             self.game_over = file_info['game_over']
+            self.clicked_figure = None
             return True
         except (KeyError, ValueError, IndexError) as e:
+            update_error_log(e)
             return False

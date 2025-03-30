@@ -11,6 +11,7 @@ import sounddevice
 import platform
 from typing import Any
 import json
+import time
 
 def resource_path(relative_path: str) -> str:
     """Function obtaining the absolute path to desired relative path.
@@ -148,8 +149,7 @@ def create_save_file(save_info: dict[tuple[int, int] | str, tuple[str, str, bool
     if not save_name:
         files: list[str] = [f for f in os.listdir(resource_path('saves')) if 'chess_game_' in f]
         if files:
-            files.sort()
-            new_file: str = f'chess_game_{int(files[-1].replace('.json', '').split('_')[-1])+1}.json'
+            new_file: str = f'chess_game_{len(files)+1}.json'
             with open(resource_path(os.path.join('saves', new_file)), 'w') as file:
                 json.dump(save_data, file, indent=2)
         else:
@@ -188,3 +188,12 @@ def get_save_info(file_name: str) -> dict:
     with open(resource_path(os.path.join('saves', file_name)), "r") as file:
         data: dict = json.load(file)
     return data
+
+def timeit(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.perf_counter()
+        result = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        print(f"{func.__name__} executed in {end_time - start_time:.6f} seconds")
+        return result
+    return wrapper

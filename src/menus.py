@@ -65,7 +65,7 @@ class MovesRecord(ctk.CTkFrame):
         ctk.CTkLabel(
             master = current_frame,
             text   = notation,
-            font   = ctk.CTkFont(str(get_from_config('font_name')), 32)
+            font   = self.font_32
         ).pack(side=ctk.BOTTOM)
 
     def load_notation_from_save(self, white_moves: list[str], black_moves: list[str]) -> None:
@@ -293,9 +293,9 @@ class Saves(ctk.CTkFrame):
         """
         if delete_save_file(file_name):
             frame.destroy()
-            Notification(self.master, f'Save {file_name.replace('.json', '')} has been removed', 2, 'top').show_animation(0)
+            Notification(self.master, f'Save {file_name.replace('.json', '')} has been removed', 2, 'top')
         else:
-            Notification(self.master, 'Couldn\'t remove the save', 2, 'top').show_animation(0)
+            Notification(self.master, 'Couldn\'t remove the save', 2, 'top')
 
     def load_save(self, event: Any, board, file_name: str) -> None:
         """Helper function calling all necessary functions to load the game. Notifications will indicate if it was successful or not.
@@ -420,10 +420,6 @@ class Options(ctk.CTkFrame):
             event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
         self.after(1, self.restart_func)
-        self.r_icon_label.unbind('<Button-1>')
-        # self.r_icon_label.bind('<Button-1>', self.cooldown)
-        self.master.after(1990, lambda: self.r_icon_label.unbind('<Button-1>'))
-        self.master.after(2000, lambda: self.r_icon_label.bind('<Button-1>', self.replay))
 
     def save_game(self, event: Any) -> None:
         """Saves game and displays notification if successful.
@@ -437,14 +433,6 @@ class Options(ctk.CTkFrame):
     def load_saves(self, event: Any) -> None:
         self.saves = Saves(self.master, self.get_board_func())
         self.saves.place(relx=0, rely=0, relwidth=1, relheight=1)
-
-    def cooldown(self, event: Any) -> None:
-        """Cooldown for restarting the game too quickly.
-
-        Args:
-            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
-        """
-        self.notification: Notification = Notification(self.master, 'Not so fast', 1, 'top')
 
 class Settings(ctk.CTkFrame):
     """Class handling changes in setting such as fonts, assets and colors.
@@ -468,6 +456,7 @@ class Settings(ctk.CTkFrame):
         self.close_image: ctk.CTkImage | None = load_menu_image('close')
         self.color_picker_image: ctk.CTkImage | None = load_menu_image('colorpicker', resize=2)
         self.close_button()
+        self.font_30: ctk.CTkFont = ctk.CTkFont(str(get_from_config('font_name')), 30)
         self.scrollable_frame: ctk.CTkScrollableFrame = ctk.CTkScrollableFrame(self, corner_radius=0, fg_color=COLOR.BACKGROUND,
                                                         scrollbar_button_color=COLOR.DARK_TEXT)
         self.scrollable_frame.pack(side=ctk.TOP, padx=0, pady=0, fill=ctk.BOTH, expand=True)
@@ -541,18 +530,21 @@ class Settings(ctk.CTkFrame):
         Args:
             frame (ctk.CTkFrame): Frame in which button will be placed.
             theme (str): Style of Figures to choose.
-        """
+        """ 
+        current_theme = get_from_config('theme')
         theme_button: ctk.CTkButton = ctk.CTkButton(
             master        = frame,
             text          = theme,
-            command       = lambda: self.select_theme(theme),
-            font          = ctk.CTkFont(str(get_from_config('font_name')), 30),
+            command       = lambda: self.select_theme(theme, theme_button),
+            font          = self.font_30,
             corner_radius = 0,
             fg_color      = COLOR.TILE_1,
             hover_color   = COLOR.HIGH_TILE_2,
-            text_color    = COLOR.TEXT
+            text_color    = COLOR.TEXT,
         )
         theme_button.pack(side=ctk.LEFT, padx=4, pady=4, expand=True)
+        if current_theme == theme:
+            theme_button.configure(state=ctk.DISABLED)
 
     def choose_theme(self) -> None:
         """Setup of theme chooser.
@@ -589,13 +581,19 @@ class Settings(ctk.CTkFrame):
         )
         warning_text.pack(side=ctk.TOP, anchor=ctk.SW, padx=100, pady=0)
 
-    def select_theme(self, choice: str) -> None:
+    def select_theme(self, choice: str, button: ctk.CTkButton) -> None:
         """Helper function to save theme changes to config file.
 
         Args:
             choice (str): Name of theme to save.
         """
         self.choice = choice
+        theme = get_from_config('theme')
+        for child in button.master.winfo_children():
+            if isinstance(child, ctk.CTkButton) and child.cget('text') == theme:
+                child.configure(state=ctk.NORMAL)
+            elif isinstance(child, ctk.CTkButton) and child.cget('text') == choice:
+                child.configure(state=ctk.DISABLED)
         change_config('theme', choice)
 
     def on_close(self, event: Any) -> None:
@@ -748,19 +746,23 @@ class Settings(ctk.CTkFrame):
             frame (ctk.CTkFrame): Frame in which button will be placed.
             font (str): Font name.
         """
-        font_button = ctk.CTkButton(
+        current_font = get_from_config('font_name')
+        font_name = self.get_font_name(font)
+        font_button: ctk.CTkButton = ctk.CTkButton(
             master        = frame,
-            text          = self.get_font_name(font),
-            command       = lambda: self.select_font(font),
-            font          = ctk.CTkFont(str(get_from_config('font_name')), 30),
+            text          = font_name,
+            command       = lambda: self.select_font(font, font_button),
+            font          = self.font_30,
             corner_radius = 0,
             fg_color      = COLOR.TILE_1,
             hover_color   = COLOR.HIGH_TILE_2,
             text_color    = COLOR.TEXT
         )
         font_button.pack(side=ctk.LEFT, padx=4, pady=4, expand=True)
+        if current_font == font_name:
+            font_button.configure(state=ctk.DISABLED)
 
-    def select_font(self, font: str) -> None:
+    def select_font(self, font: str, button: ctk.CTkButton) -> None:
         """Helper function to save change of font to config file.
 
         Args:
@@ -768,7 +770,13 @@ class Settings(ctk.CTkFrame):
         """
         if os.path.basename(font) == self.previous_font:
             return
-        if new_font := self.get_font_name(font):
+        new_font = self.get_font_name(font)
+        for child in button.master.winfo_children():
+            if isinstance(child, ctk.CTkButton) and child.cget('text') ==  get_from_config('font_name'):
+                child.configure(state=ctk.NORMAL)
+            elif isinstance(child, ctk.CTkButton) and child.cget('text') == new_font:
+                child.configure(state=ctk.DISABLED)
+        if new_font:
             change_config('font_name', new_font)
             change_config('font_file_name', os.path.basename(font))
             self.update_font_func()
@@ -784,8 +792,7 @@ class Settings(ctk.CTkFrame):
         Returns:
             bool: True if color passes regex pattern for hex color, False otherwise.
         """
-        hex_color_pattern = re.compile(r'^#[0-9a-fA-F]{6}$')
-        return bool(hex_color_pattern.match(color))
+        return bool(re.compile(r'^#[0-9a-fA-F]{6}$').match(color))
 
     @staticmethod
     def validate_length(new_value: str) -> bool:
@@ -797,7 +804,8 @@ class Settings(ctk.CTkFrame):
         Returns:
             bool: True if length of the string is not longer than 7, False otherwise.
         """
-        return len(new_value) <= 7
+        
+        return bool(re.compile(r'^[#\w]{0,7}$').match(new_value))
 
     def change_colors(self) -> None:
         """Function updating color preview.
@@ -894,7 +902,7 @@ class Settings(ctk.CTkFrame):
             master        = color_frame, 
             text          = 'OK', 
             font          = ctk.CTkFont(get_from_config('font_name'), 20),
-            command       = lambda: self.save_color(color_name, color_entry, color_entry),
+            command       = lambda: self.save_color(color_name, color_entry, color_entry, color),
             width         = 50,
             corner_radius = 0,
             fg_color      = COLOR.TILE_1,
@@ -922,7 +930,7 @@ class Settings(ctk.CTkFrame):
         )
         color_name_label.pack(side=ctk.RIGHT, padx=4, pady=4)
 
-    def save_color(self, color_name: str, entry: ctk.CTkEntry, color_label: ctk.CTkLabel) -> None:
+    def save_color(self, color_name: str, entry: ctk.CTkEntry, color_label: ctk.CTkLabel, old_color: str) -> None:
         """Saves new color into config file.
 
         Args:
@@ -934,6 +942,9 @@ class Settings(ctk.CTkFrame):
         if self.is_valid_color(new_color):
             change_color(color_name, new_color)
             color_label.configure(fg_color=new_color)
+        else:
+            entry.delete(0, ctk.END)
+            entry.insert(0, old_color)
 
     def ask_for_color(self, r: int, g: int, b: int, entry: ctk.CTkEntry, color_name: str) -> None:
         """Input dialog with custom color picker for easy use.
@@ -946,7 +957,6 @@ class Settings(ctk.CTkFrame):
             color_name (str): Color name from config file.
         """
         picker = ColorPicker(fg_color=COLOR.BACKGROUND, r=r, g=g, b=b, font=ctk.CTkFont(self.font_name, 15))
-        # self.master.after(201, lambda: picker.iconbitmap(resource_path('assets\\logo.ico')))
         color = picker.get_color()
         if color:
             entry.delete(0, ctk.END)
@@ -993,9 +1003,8 @@ class SaveName(ctk.CTkToplevel):
         self.create_save_button()
         self.resizable(False, False)
         self.protocol('WM_DELETE_WINDOW', self.on_close)
-        self.lift()
         self.center_window()
-        # self.after(201, lambda: self.iconbitmap(resource_path('assets\\logo.ico')))
+        self.after(201, lambda: self.iconbitmap(resource_path('assets\\logo.ico')))
 
     def create_info(self) -> None:
         """Displays warning info.
@@ -1018,14 +1027,6 @@ class SaveName(ctk.CTkToplevel):
 
         )
         helper_frame.pack(side=ctk.TOP, padx=15, pady=15, fill=ctk.X)
-        self.save_title_label: ctk.CTkLabel = ctk.CTkLabel(
-            master     = helper_frame,
-            fg_color   = COLOR.BACKGROUND,
-            text       = 'Name: ',
-            font       = self.font_28,
-            text_color = COLOR.TEXT
-        )
-        # self.save_title_label.pack(side=ctk.LEFT, padx=1, pady=1)
         self.save_name_entry: ctk.CTkEntry = ctk.CTkEntry(
             master           = helper_frame,
             fg_color         = COLOR.BACKGROUND,
