@@ -25,7 +25,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 
 from tools import resource_path, get_from_config
-from properties import COLOR
+from properties import COLOR, SYSTEM
 from menus import MovesRecord, Options
 from board import Board
 
@@ -66,17 +66,16 @@ class MainWindow(ctk.CTk):
     def load_font(self) -> None:
         """Function loads font independently on the users operating system.
         """
-        font: str | int = get_from_config('font_file_name')
-        system_name: str = platform.system()
-        if system_name == 'Windows':
-            ctk.FontManager.windows_load_font(resource_path(os.path.join('fonts', str(font))))
+        font: str = str(get_from_config('font_file_name'))
+        if SYSTEM == 'Windows':
+            ctk.FontManager.windows_load_font(resource_path(os.path.join('fonts', font)))
         else:
-            ctk.FontManager.load_font(resource_path(os.path.join('fonts', str(font))))
+            ctk.FontManager.load_font(resource_path(os.path.join('fonts', font)))
 
     def set_icon(self) -> None:
         """Only for windows machines logo icon will be set due to lack of implementation for linux and mac.
         """
-        if os.name == 'nt':
+        if SYSTEM == 'Windows':
             self.iconbitmap(resource_path(os.path.join('assets', 'logo.ico')))
 
     def set_window_size(self) -> str:

@@ -8,10 +8,9 @@ import sys
 import os
 from datetime import datetime
 import sounddevice
-import platform
 from typing import Any
 import json
-import time
+from properties import SYSTEM
 
 def resource_path(relative_path: str) -> str:
     """Function obtaining the absolute path to desired relative path.
@@ -43,8 +42,8 @@ def get_from_config(variable: str) -> str | int:
     db_variable = config['database'][variable]
     if variable == 'size':
         return int(db_variable)
-    if variable == 'font_name':
-        if platform.system() == 'Linux':
+    elif variable == 'font_name':
+        if SYSTEM == 'Linux':
             db_variable = list(db_variable.split(' '))[0]
     return db_variable
 
@@ -188,12 +187,3 @@ def get_save_info(file_name: str) -> dict:
     with open(resource_path(os.path.join('saves', file_name)), "r") as file:
         data: dict = json.load(file)
     return data
-
-def timeit(func):
-    def wrapper(*args, **kwargs):
-        start_time = time.perf_counter()
-        result = func(*args, **kwargs)
-        end_time = time.perf_counter()
-        print(f"{func.__name__} executed in {end_time - start_time:.6f} seconds")
-        return result
-    return wrapper

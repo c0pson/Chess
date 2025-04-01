@@ -4,11 +4,11 @@
 import customtkinter as ctk
 from typing import Any
 import platform
-if platform.system() == 'Windows':
+from properties import COLOR, SYSTEM
+if SYSTEM == 'Windows':
     import pywinstyles
 
 from tools import get_from_config
-from properties import COLOR
 
 class Notification(ctk.CTkFrame):
     """Class handling showing notifications in the app.
@@ -58,6 +58,8 @@ class Notification(ctk.CTkFrame):
             self.place(relx=0.504, rely=0.47, anchor=ctk.CENTER)
         elif self.position == 'top':
             self.place(relx=0.5, y=20, anchor=ctk.N)
+        else:
+            self.place(relx=0.504, rely=0.47, anchor=ctk.CENTER)
         self.show_animation(0)
 
     def show_animation(self, i: int) -> None:
@@ -70,7 +72,7 @@ class Notification(ctk.CTkFrame):
             return
         if i < 100:
             i += 1
-            if platform.system() == 'Windows':
+            if SYSTEM == 'Windows':
                 pywinstyles.set_opacity(self, value=(0.01*i), color='#000001')
             self.master.after(1, lambda: self.show_animation(i))
         else:
@@ -85,7 +87,7 @@ class Notification(ctk.CTkFrame):
         if i < 100:
             i += 1
             if self.winfo_exists():
-                if platform.system() == 'Windows':
+                if SYSTEM == 'Windows':
                     pywinstyles.set_opacity(self, value=(1 - (0.01*i)), color='#000001')
                 self.master.after(1, lambda: self.hide_notification(i))
         else:

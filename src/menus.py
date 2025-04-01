@@ -11,7 +11,7 @@ import re
 import threading
 
 from tools import get_from_config, change_config, load_menu_image, resource_path, change_color, update_error_log, create_save_file, delete_save_file, get_save_info
-from properties import COLOR, STRING
+from properties import COLOR, STRING, SYSTEM
 from notifications import Notification
 from color_picker import ColorPicker
 from piece import Piece, Knight
@@ -614,12 +614,11 @@ class Settings(ctk.CTkFrame):
         Args:
             path (str): Path to open.
         """
-        system: str = platform.system()
-        if system == 'Windows':
+        if SYSTEM == 'Windows':
             os.startfile(resource_path(path))
-        elif system == 'Darwin':
+        elif SYSTEM == 'Darwin':
             subprocess.run(['open', resource_path(path)])
-        elif system == 'Linux':
+        elif SYSTEM == 'Linux':
             subprocess.run(['xdg-open', resource_path(path)])
 
     @staticmethod
@@ -991,7 +990,7 @@ class SaveName(ctk.CTkToplevel):
             centers window
         """
         super().__init__(fg_color=COLOR.BACKGROUND)
-        if platform.system() == 'Windows':
+        if SYSTEM == 'Windows':
             self.grab_set()
         self.attributes('-topmost', True)
         self.title('Save')

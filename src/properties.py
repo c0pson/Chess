@@ -3,6 +3,7 @@
 
 from tools import get_colors
 from enum import Enum
+from platform import system
 
 class StrEnum(str, Enum):
     """Custom string enum for loading enum COLOR purposes.
@@ -47,3 +48,5 @@ class STRING(str, Enum):
     ASSETS_WARNING = 'Make sure the folder under the name of chosen theme have all necessary assets with proper names!'
     COLORS_WARNING = 'Color changes will be visible after restarting the app!'
     SAVES_WARNING = 'Empty name will create default save name chess_save_x'
+
+SYSTEM = system()
