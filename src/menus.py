@@ -5,10 +5,9 @@ from fontTools.ttLib import TTFont
 from typing import Callable, Any
 import customtkinter as ctk
 import subprocess
-import platform
 import os
 import re
-import threading
+import pywinstyles
 
 from tools import get_from_config, change_config, load_menu_image, resource_path, change_color, update_error_log, create_save_file, delete_save_file, get_save_info
 from properties import COLOR, STRING, SYSTEM
@@ -31,7 +30,7 @@ class MovesRecord(ctk.CTkFrame):
             master (Any): Parent widget
         """
         super().__init__(master, fg_color=COLOR.BACKGROUND)
-        self.font_32: ctk.CTkFont = ctk.CTkFont(str(get_from_config('font_name')), 32)
+        self.font: ctk.CTkFont = ctk.CTkFont(str(get_from_config('font_name')), int(int(get_from_config('size')) * 0.4))
         self.create_frames()
         self.moves_white: list[str] = []
         self.moves_black: list[str] = []
@@ -65,7 +64,7 @@ class MovesRecord(ctk.CTkFrame):
         ctk.CTkLabel(
             master = current_frame,
             text   = notation,
-            font   = self.font_32
+            font   = self.font
         ).pack(side=ctk.BOTTOM)
 
     def load_notation_from_save(self, white_moves: list[str], black_moves: list[str]) -> None:
@@ -79,13 +78,13 @@ class MovesRecord(ctk.CTkFrame):
             ctk.CTkLabel(
                 master = self.white_scroll_frame,
                 text   = notation,
-                font   = self.font_32
+                font   = self.font
             ).pack(side=ctk.BOTTOM)
         for notation in black_moves:
             ctk.CTkLabel(
                 master = self.black_scroll_frame,
                 text   = notation,
-                font   = self.font_32
+                font   = self.font
             ).pack(side=ctk.BOTTOM)
         self.moves_white[:] = white_moves
         self.moves_black[:] = black_moves
@@ -96,7 +95,7 @@ class MovesRecord(ctk.CTkFrame):
         black_label: ctk.CTkLabel = ctk.CTkLabel(
             master     =  self,
             text       = 'Black',
-            font       = self.font_32,
+            font       = self.font,
             text_color = COLOR.DARK_TEXT
         )
         black_label.pack(side=ctk.TOP, padx=1, pady=1)
@@ -119,7 +118,7 @@ class MovesRecord(ctk.CTkFrame):
         white_label: ctk.CTkLabel = ctk.CTkLabel(
             master     = self, 
             text       = 'White', 
-            font       = self.font_32, 
+            font       = self.font, 
             text_color = COLOR.TEXT
         )
         white_label.pack(side=ctk.TOP, padx=0, pady=0)
@@ -180,6 +179,7 @@ class Saves(ctk.CTkFrame):
             height   = 18,
             fg_color = COLOR.BACKGROUND
         ).pack(padx=0, pady=0)
+        self.master.bind('<Escape>', self.on_close)
 
     @staticmethod
     def save_game_to_file(board) -> bool:
@@ -317,7 +317,13 @@ class Saves(ctk.CTkFrame):
         Args:
             event (Any, optional): Event type. Doesn't matter but is required parameter by customtkinter.. Defaults to None.
         """
-        self.destroy()
+        def update_opacity(i: int) -> None:
+            if i >= 0:
+                pywinstyles.set_opacity(self, value=i*0.005, color='#000001')
+                self.master.after(1, lambda: update_opacity(i - 1))
+            else:
+                self.after(10, self.destroy)
+        update_opacity(200)
 
 class Options(ctk.CTkFrame):
     """Class handling user interface of available options on main window frame:
@@ -381,7 +387,7 @@ class Options(ctk.CTkFrame):
             image  = self.save_as_image
         )
         self.save_icon_label.pack(side=ctk.TOP, padx=10, pady=0)
-        self.save_icon_label.bind('<Button-1>', lambda e: threading.Thread(target=self.save_game, args=(e,)).start())
+        self.save_icon_label.bind('<Button-1>', self.save_game)
 
     def load_saves_button(self) -> None:
         """Setup of button for showing all saves.
@@ -395,7 +401,7 @@ class Options(ctk.CTkFrame):
         self.load_icon_label.bind('<Button-1>', self.load_saves)
 
     def space_label(self) -> None:
-        """Space to maintain the desired spacing.
+        """Setups of space to maintain the desired spacing.
         """
         space: ctk.CTkLabel = ctk.CTkLabel(
             master = self,
@@ -476,10 +482,11 @@ class Settings(ctk.CTkFrame):
             height   = 18,
             fg_color = COLOR.BACKGROUND
         ).pack(padx=0, pady=0)
+        self.master.bind('<Escape>', self.on_close)
 
     @staticmethod
     def list_directories_os(path: str) -> list[str]:
-        """Lists all directories from given path.
+        """Lists all directories for given path.
 
         Args:
             path (str): Desired path
@@ -499,7 +506,7 @@ class Settings(ctk.CTkFrame):
             return []
 
     def close_button(self) -> None:
-        """Setup of close button
+        """Setup of close button.
         """
         top_frame: ctk.CTkFrame = ctk.CTkFrame(
             master   = self,
@@ -602,10 +609,17 @@ class Settings(ctk.CTkFrame):
         Args:
             event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
         """
-        if not self.previous_theme and not self.choice:
-            self.place_forget()
-        self.update_assets_func()
-        self.place_forget()
+        def update_opacity(i: int) -> None:
+            if i >= 0:
+                pywinstyles.set_opacity(self, value=i*0.005, color='#000001')
+                self.master.after(1, lambda: update_opacity(i - 1))
+            else:
+                if not self.previous_theme and not self.choice:
+                    self.place_forget()
+                self.update_assets_func()
+                self.place_forget()
+                pywinstyles.set_opacity(self, value=1, color='#000001')
+        update_opacity(200)
 
     @staticmethod
     def open_file_explorer(path: str) -> None:
@@ -778,6 +792,8 @@ class Settings(ctk.CTkFrame):
         if new_font:
             change_config('font_name', new_font)
             change_config('font_file_name', os.path.basename(font))
+            self.master.board.font_42 = ctk.CTkFont(get_from_config('font_name'), 42)
+            self.master.board.board_font = ctk.CTkFont(get_from_config('font_name'), int(get_from_config('size'))//3)
             self.update_font_func()
             self.previous_font = str(get_from_config('font_file_name'))
 
@@ -1060,7 +1076,7 @@ class SaveName(ctk.CTkToplevel):
         y: int = self.winfo_screenheight()
         app_width: int = self.winfo_width()
         app_height: int = self.winfo_height()
-        self.geometry(f'+{(x//2)-(app_width//2)}+{(y//2)-(app_height//2)}')
+        self.geometry(f'+{(x//2)-(app_width)}+{(y//2)-(app_height)}')
 
     def get_save_name(self) -> str | None | bool:
         """Getter for user input from the entry widget.
