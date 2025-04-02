@@ -20,7 +20,6 @@ Libraries used:
 
 import customtkinter as ctk
 import os
-import platform
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
@@ -59,7 +58,6 @@ class MainWindow(ctk.CTk):
         self.options: Options = Options(self, self.restart_game, self.update_assets, self.update_font, self.get_board)
         self.options.pack(side=ctk.LEFT, padx=10, pady=10, fill=ctk.Y)
         self.board: Board = Board(self, self.moves_record, size)
-        self.board.pack(side=ctk.RIGHT, padx=10, pady=10, expand=True, ipadx=5, ipady=5, anchor=ctk.CENTER)
         self.theme: str = str(get_from_config('theme'))
         self.set_icon()
 
@@ -79,7 +77,7 @@ class MainWindow(ctk.CTk):
             self.iconbitmap(resource_path(os.path.join('assets', 'logo.ico')))
 
     def set_window_size(self) -> str:
-        """Calculating the size necessary to display all elements of the app on the screen.
+        """Calculates the size necessary to display all elements of the app on the screen.
 
         Returns:
             str: f'{width}x{height]}' because customtkinter uses f'{width}x{height]}' to set the size of the window.
@@ -90,13 +88,13 @@ class MainWindow(ctk.CTk):
         return f'{size + 300}x{size}{center_pos}'
 
     def restart_game(self) -> None:
-        """Handle for game restart just by calling functions from Board and MoveRecord classes.
+        """Helper function for game restart just by calling functions from Board and MoveRecord classes.
         """
         self.board.restart_game()
         self.moves_record.restart()
 
     def update_assets(self) -> None:
-        """Updates asset on the Board
+        """Updates asset on the Board using thread to avoid window freezing.
         """
         for row in self.board.board:
             for cell in row:
@@ -104,7 +102,7 @@ class MainWindow(ctk.CTk):
                     threading.Thread(target=cell.figure.update_image).start()
 
     def get_board(self) -> Board:
-        """Simple getter.
+        """Getter for board object.
 
         Returns:
             Board: Board object.
@@ -112,7 +110,7 @@ class MainWindow(ctk.CTk):
         return self.board
 
     def update_font(self, widget=None) -> None:
-        """Handle for updating the font during app runtime without freezing the window.
+        """Helper function updating the font during app runtime without freezing the window.
 
         Args:
             widget (Any, optional): Child of the widget. Defaults to None as master widget doesn't have any parents.
