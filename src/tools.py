@@ -10,7 +10,7 @@ from datetime import datetime
 import sounddevice
 from typing import Any
 import json
-from properties import SYSTEM
+from platform import system
 
 def resource_path(relative_path: str) -> str:
     """Function obtaining the absolute path to desired relative path.
@@ -43,7 +43,7 @@ def get_from_config(variable: str) -> str | int:
     if variable == 'size':
         return int(db_variable)
     elif variable == 'font_name':
-        if SYSTEM == 'Linux':
+        if system() == 'Linux':
             db_variable = list(db_variable.split(' '))[0]
     return db_variable
 
@@ -130,7 +130,7 @@ def create_save_file(save_info: dict[tuple[int, int] | str, tuple[str, str, bool
     """Creates save file in saves directory. Save is .json file with all positions, current turn information, previous notation and game over information.
 
     Args:
-        save_info (dict[tuple[int, int]  |  str, tuple[str, str, bool]  |  list[str]]): Information to be saved in file.
+        save_info (dict[tuple[int, int] | str, tuple[str, str, bool] | list[str]]): Information to be saved in file.
         current_turn (str): Information about color of the current player.
         white_moves (list[str]): Notation from previous white moves.
         black_moves (list[str]): Notation from previous black moves.
@@ -140,10 +140,10 @@ def create_save_file(save_info: dict[tuple[int, int] | str, tuple[str, str, bool
     save_info_serialized = {f"{k[0]},{k[1]}": v for k, v in save_info.items()}
     save_data = {
         'current_turn': current_turn,
-        'board_state': save_info_serialized,
-        'white_moves': white_moves,
-        'black_moves': black_moves,
-        'game_over': game_over
+        'board_state' : save_info_serialized,
+        'white_moves' : white_moves,
+        'black_moves' : black_moves,
+        'game_over'   : game_over
     }
     if not save_name:
         files: list[str] = [f for f in os.listdir(resource_path('saves')) if 'chess_game_' in f]
@@ -158,7 +158,7 @@ def create_save_file(save_info: dict[tuple[int, int] | str, tuple[str, str, bool
     else:
         new_file = f'{save_name}.json'
         with open(resource_path(os.path.join('saves', new_file)), 'w') as file:
-                json.dump(save_data, file, indent=2)
+            json.dump(save_data, file, indent=2)
 
 def delete_save_file(file_name: str) -> bool:
     """Removes save .json file from saves directory.
@@ -173,7 +173,9 @@ def delete_save_file(file_name: str) -> bool:
     if os.path.exists(file_path):
         os.remove(file_path)
         return True
-    return False
+    else:
+        update_error_log(FileNotFoundError(f'Couldn\'t delete the file: {file_name}. File not found.'))
+        return False
 
 def get_save_info(file_name: str) -> dict:
     """Gathers data from .json save file.

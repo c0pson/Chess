@@ -3,7 +3,6 @@
 
 import customtkinter as ctk
 from typing import Any
-import platform
 from properties import COLOR, SYSTEM
 if SYSTEM == 'Windows':
     import pywinstyles
@@ -60,6 +59,7 @@ class Notification(ctk.CTkFrame):
             self.place(relx=0.5, y=20, anchor=ctk.N)
         else:
             self.place(relx=0.504, rely=0.47, anchor=ctk.CENTER)
+        self.text_label.bind('<Button-1>', lambda e: self.hide_notification(0))
         self.show_animation(0)
 
     def show_animation(self, i: int) -> None:
