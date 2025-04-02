@@ -3,7 +3,6 @@
 
 import customtkinter as ctk
 from typing import Any
-import platform
 
 from properties import COLOR, SYSTEM
 from tools import resource_path
