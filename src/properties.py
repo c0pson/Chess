@@ -32,12 +32,6 @@ def create_color_enum():
 
 COLOR = create_color_enum()
 
-def refresh_color_enum():
-    """Function reloading colors of the app.
-    """
-    global COLOR
-    COLOR = create_color_enum()
-
 class STRING(str, Enum):
     """Class holding strings constants about warnings.
 
