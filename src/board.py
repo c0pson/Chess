@@ -12,7 +12,6 @@ import threading
 import soundfile
 from typing import cast, Generator, NoReturn
 import re
-import time
 
 from notifications import Notification
 from menus import MovesRecord
@@ -128,6 +127,7 @@ class Board(ctk.CTkFrame):
         self.moves_record: MovesRecord = moves_record
         self.capture: bool = False
         self.game_over: bool = False
+        self.destroy_loading_screen()
 
     @staticmethod
     def determine_tile_color(pos: tuple[int, int]) -> str:
@@ -484,7 +484,7 @@ class Board(ctk.CTkFrame):
                         self.handle_game_over(in_check, promotion, self.capture, in_check)
                     elif not castle and not promotion:
                         self.moves_record.record_move(self.clicked_figure, capture=self.capture, previous_coords=self.previous_coords, check=in_check, checkmate=game_over and in_check)
-                self.master.after(1, lambda: self.play_correct_sound(game_over, self.capture, castle, in_check))
+                threading.Thread(target=lambda: self.play_correct_sound(game_over, self.capture, castle, in_check)).start()
             if not promotion:
                 self.clicked_figure = None
                 self.previous_coords = None
