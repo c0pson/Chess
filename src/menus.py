@@ -179,7 +179,6 @@ class Saves(ctk.CTkFrame):
             height   = 18,
             fg_color = COLOR.BACKGROUND
         ).pack(padx=0, pady=0)
-        self.master.bind('<Escape>', self.on_close)
 
     @staticmethod
     def save_game_to_file(board) -> bool:
@@ -482,7 +481,6 @@ class Settings(ctk.CTkFrame):
             height   = 18,
             fg_color = COLOR.BACKGROUND
         ).pack(padx=0, pady=0)
-        self.master.bind('<Escape>', self.on_close)
 
     @staticmethod
     def list_directories_os(path: str) -> list[str]:
