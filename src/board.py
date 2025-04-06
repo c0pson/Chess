@@ -1,4 +1,4 @@
-"""File containing implementation for Board and Cells on the board. Code structure allows custom sizes of the board but is limited to square boards.
+"""File containing implementation for Board and Cells on the board.
 """
 
 import customtkinter as ctk
@@ -99,7 +99,7 @@ class Board(ctk.CTkFrame):
         Args:
             master (Any): Parent widget.
             moves_record (MovesRecord): class handling move records.
-            size (int): Size n of the n x n board.
+            size (int): Size of the tiles and fonts.
         """
         super().__init__(master, fg_color=COLOR.DARK_TEXT, corner_radius=0)
         self.master: Any = master
@@ -108,17 +108,12 @@ class Board(ctk.CTkFrame):
         self.font_42  = ctk.CTkFont(self.font_name, 42)
         self.master.after(1, lambda: self.loading_animation(0))
         self.pack(side=ctk.RIGHT, padx=10, pady=10, expand=True, ipadx=5, ipady=5, anchor=ctk.CENTER)
-        self.move_sound = soundfile.read(resource_path(os.path.join('sounds', 'move-self.wav')), dtype='float32')[0]
-        self.capture_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
-        self.move_check_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
-        self.castle_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
-        self.end_game_sound = soundfile.read(resource_path(os.path.join('sounds', 'game-end.wav')), dtype='float32')[0]
-        self.illegal_sound = soundfile.read(resource_path(os.path.join('sounds', 'illegal.wav')), dtype='float32')[0]
-        self.frame_image: ctk.CTkImage = ctk.CTkImage(Image.open(resource_path(os.path.join('assets', 'menu', 'frame.png'))).convert('RGBA'), size=(80,80))
+        threading.Thread(target=self.load_sound).start()
+        self.frame_image: ctk.CTkImage = ctk.CTkImage(Image.open(resource_path(os.path.join('assets', 'menu', 'frame.png'))).convert('RGBA'), size=(80, 80))
         self.size: int = size
         self.turns: Generator[str, None, NoReturn] = self.turn()
         self.current_turn = next(self.turns)
-        self.board_font = ctk.CTkFont(self.font_name, self.size//3)
+        self.board_font = ctk.CTkFont(self.font_name, self.size // 3)
         self.board: list[list[Cell]] = self.create_board()
         self.highlighted: list[Cell] = []
         self.clicked_figure: piece.Piece | None = None
@@ -128,6 +123,14 @@ class Board(ctk.CTkFrame):
         self.capture: bool = False
         self.game_over: bool = False
         self.destroy_loading_screen()
+
+    def load_sound(self):
+        self.move_sound = soundfile.read(resource_path(os.path.join('sounds', 'move-self.wav')), dtype='float32')[0]
+        self.capture_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
+        self.move_check_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
+        self.castle_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
+        self.end_game_sound = soundfile.read(resource_path(os.path.join('sounds', 'game-end.wav')), dtype='float32')[0]
+        self.illegal_sound = soundfile.read(resource_path(os.path.join('sounds', 'illegal.wav')), dtype='float32')[0]
 
     @staticmethod
     def determine_tile_color(pos: tuple[int, int]) -> str:
@@ -139,12 +142,7 @@ class Board(ctk.CTkFrame):
         Returns:
             str: Color of the cell.
         """
-        pos_0_divisible_by_2 = pos[0] % 2
-        pos_1_divisible_by_2 = pos[1] % 2
-        if (pos_0_divisible_by_2 and pos_1_divisible_by_2) or (not pos_0_divisible_by_2 and not pos_1_divisible_by_2):
-            return COLOR.TILE_1
-        else:
-            return COLOR.TILE_2
+        return COLOR.TILE_1 if (pos[0] % 2) == (pos[1] % 2) else COLOR.TILE_2
 
     def create_outline_l_r_t(self) -> None:
         """Creates outline of the board with coordinates notation.
@@ -231,7 +229,9 @@ class Board(ctk.CTkFrame):
             new_frame.pack(padx=0, pady=0)
             for j in range(8):
                 color: str = self.determine_tile_color((i, j))
-                figure: piece.Piece | None = piece_positions.get((i, j)) if (i, j) in piece_positions else (piece.Pawn('b' if i == 1 else 'w', self, (i, j), self.notation_promotion) if i in [1, 6] else None)
+                figure: piece.Piece | None = piece_positions.get((i, j)) if (i, j) in piece_positions else (
+                    piece.Pawn('b' if i == 1 else 'w', self, (i, j), self.notation_promotion) if i in [1, 6] else None
+                )
                 cell = Cell(new_frame, figure, (i, j), color, self)
                 row[j] = cell
             board[i] = row
@@ -346,12 +346,12 @@ class Board(ctk.CTkFrame):
         y: int = position[1]
         if SYSTEM == 'Windows':
             image_test: ctk.CTkLabel = ctk.CTkLabel(
-                    fg_color = '#97A789',
+                    fg_color = COLOR.TRANSPARENT_MASK,
                     master   = self.board[x][y],
                     text     = '',
                     image    = self.frame_image
             )
-            pywinstyles.set_opacity(image_test, value=1, color='#97A789')
+            pywinstyles.set_opacity(image_test, value=1, color=COLOR.TRANSPARENT_MASK)
             image_test.place(relx=0.5, rely=0.5, anchor='center')
             self.board[x][y].frame_around = image_test
         else:
