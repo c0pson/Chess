@@ -2,10 +2,7 @@
 """
 
 import customtkinter as ctk
-from typing import Any
-
-from properties import COLOR, SYSTEM
-from tools import resource_path
+import re
 
 class ColorPicker(ctk.CTkToplevel):
     """Class used to pick custom theme color. Is also a module that can be reused with apps using customtkinter.
@@ -14,7 +11,9 @@ class ColorPicker(ctk.CTkToplevel):
 
      - ctk.CTkTopLevel : Inheritance from customtkinter CTkTopLevel window.
     """
-    def __init__(self, fg_color: str | None=None, preview_size: int=100, r: int=0, g: int=0, b: int=0, font: ctk.CTkFont | None=None) -> None:
+    def __init__(self, fg_color: str | None=None, preview_size: int=100, r: int=0, g: int=0, b: int=0, font: ctk.CTkFont | None=None, 
+                 border_color: str | None=None, slider_button_color: str | None=None, slider_progress_color: str | None=None, slider_fg_color: str | None=None, 
+                 preview_border_color: str | None=None, button_fg_color: str | None=None, button_hover_color: str | None=None, icon: str | None=None) -> None:
         """Constructor handling most important function calls and variable setup.
 
         Args:
@@ -26,8 +25,15 @@ class ColorPicker(ctk.CTkToplevel):
             font (ctk.CTkFont | None, optional): Custom font. Defaults to None.
         """
         super().__init__(fg_color=fg_color)
-        if SYSTEM == 'Windows':
-            self.grab_set()
+        self.fg_color: str| None = fg_color
+        self.border_color: str| None = border_color
+        self.slider_button_color: str| None = slider_button_color
+        self.slider_progress_color: str| None = slider_progress_color
+        self.slider_fg_color: str| None = slider_fg_color
+        self.preview_border_color: str | None = preview_border_color
+        self.button_fg_color: str | None = button_fg_color
+        self.button_hover_color: str | None = button_hover_color
+        self.grab_set()
         self.attributes('-topmost', True)
         self.title('Color Picker')
         self.font: ctk.CTkFont | None = font if font else None
@@ -40,7 +46,7 @@ class ColorPicker(ctk.CTkToplevel):
         self.main_frame: ctk.CTkFrame = ctk.CTkFrame(
             master        = self,
             corner_radius = 0,
-            fg_color      = COLOR.BACKGROUND # TODO: replace colors with passing to function color
+            fg_color      = self.fg_color
         )
         self.main_frame.pack(side=ctk.TOP, expand=True, ipadx=10, ipady=10)
         self.color_preview()
@@ -58,7 +64,7 @@ class ColorPicker(ctk.CTkToplevel):
         self.protocol('WM_DELETE_WINDOW', self.on_close)
         self.lift()
         self.center_window()
-        self.after(201, lambda: self.iconbitmap(resource_path('assets\\logo.ico')))
+        self.after(201, lambda: self.iconbitmap(icon))
 
     def center_window(self) -> None:
         """Function centering the TopLevel window. Screen size independent.
@@ -79,7 +85,7 @@ class ColorPicker(ctk.CTkToplevel):
             width         = self.preview_size, 
             height        = self.preview_size,
             corner_radius = 0,
-            border_color  = COLOR.TILE_2
+            border_color  = self.preview_border_color
         )
         self.color_prev_box.pack(side=ctk.RIGHT, padx=3, pady=3, expand=True)
 
@@ -93,14 +99,14 @@ class ColorPicker(ctk.CTkToplevel):
         Returns:
             bool: True if hex color patter was met, False otherwise.
         """
-        if len(value_if_allowed) == 0 or (value_if_allowed.startswith('#') and len(value_if_allowed) <= 7):
+        if len(value_if_allowed) == 0 or (re.compile(r'^#[0-9a-fA-F]{0,6}$').match(value_if_allowed)):
             for char in value_if_allowed[1:]:
                 if char not in '0123456789ABCDEFabcdef':
                     return False
             return True
         return False
 
-    def paste_hex_color(self, event: Any) -> None:
+    def paste_hex_color(self, event) -> None:
         """Function handling pasting custom color into hex color entry box.
 
         Args:
@@ -112,7 +118,7 @@ class ColorPicker(ctk.CTkToplevel):
             self.hex_val_label.insert(0, clipboard)
         return None
 
-    def update_on_hex(self, event: Any) -> None:
+    def update_on_hex(self, event) -> None:
         """Function handling all changes on entering last hex color. It changes RGB labels values, sliders values and color preview frame to the desired color.
 
         Args:
@@ -140,7 +146,7 @@ class ColorPicker(ctk.CTkToplevel):
             corner_radius   = 0,
             font            = self.font if self.font else ctk.CTkFont('', self.font_size),
             width           = (self.font_size*8),
-            border_color    = COLOR.TILE_2
+            border_color    = self.border_color
         )
         self.hex_val_label.pack(side=ctk.LEFT, padx=3, pady=3)
         self.hex_val_label.insert(0, f'{self.hex_val}')
@@ -158,9 +164,9 @@ class ColorPicker(ctk.CTkToplevel):
             width         = (self.font_size*3),
             corner_radius = 0,
             border_width  = 2,
-            border_color  = COLOR.TILE_2,
-            fg_color      = COLOR.NOTATION_BACKGROUND_B,
-            hover_color   = COLOR.NOTATION_BACKGROUND_W
+            border_color  = self.border_color,
+            fg_color      = self.button_fg_color,
+            hover_color   = self.button_hover_color
         )
         ok_button.pack(side=ctk.RIGHT, padx=3, pady=3)
 
@@ -225,7 +231,7 @@ class ColorPicker(ctk.CTkToplevel):
             corner_radius   = 0,
             font            = self.font if self.font else ctk.CTkFont('', self.font_size),
             width           = (self.font_size*3),
-            border_color    = COLOR.TILE_2
+            border_color    = self.border_color
         )
         self.r_val_label.pack(side=ctk.LEFT, padx=3, pady=3)
         self.r_slider: ctk.CTkSlider = ctk.CTkSlider(
@@ -237,10 +243,10 @@ class ColorPicker(ctk.CTkToplevel):
             button_corner_radius = 1,
             button_length        = 12,
             corner_radius        = 1,
-            button_color         = COLOR.TILE_2,
+            button_color         = self.slider_button_color,
             hover                = False,
-            progress_color       = COLOR.TEXT,
-            fg_color             = COLOR.DARK_TEXT
+            progress_color       = self.slider_progress_color,
+            fg_color             = self.slider_fg_color
         )
     # G value slider
         slider_frame = self.new_slider_frame(frame)
@@ -252,7 +258,7 @@ class ColorPicker(ctk.CTkToplevel):
             corner_radius   = 0,
             font            = self.font if self.font else ctk.CTkFont('', self.font_size),
             width           = (self.font_size*3),
-            border_color    = COLOR.TILE_2
+            border_color    = self.border_color
         )
         self.g_val_label.pack(side=ctk.LEFT, padx=3, pady=3)
         self.g_slider: ctk.CTkSlider = ctk.CTkSlider(
@@ -264,10 +270,10 @@ class ColorPicker(ctk.CTkToplevel):
             button_corner_radius = 1,
             button_length        = 12,
             corner_radius        = 1,
-            button_color         = COLOR.TILE_2,
+            button_color         = self.slider_button_color,
             hover                = False,
-            progress_color       = COLOR.TEXT,
-            fg_color             = COLOR.DARK_TEXT
+            progress_color       = self.slider_progress_color,
+            fg_color             = self.slider_fg_color
         )
     # B value slider
         slider_frame = self.new_slider_frame(frame)
@@ -279,7 +285,7 @@ class ColorPicker(ctk.CTkToplevel):
             corner_radius   = 0,
             font            = self.font if self.font else ctk.CTkFont('', self.font_size), 
             width           = (self.font_size*3),
-            border_color    = COLOR.TILE_2
+            border_color    = self.border_color
         )
         self.b_val_label.pack(side=ctk.LEFT, padx=3, pady=3)
         self.b_slider: ctk.CTkSlider = ctk.CTkSlider(
@@ -291,10 +297,10 @@ class ColorPicker(ctk.CTkToplevel):
             button_corner_radius = 1,
             button_length        = 12,
             corner_radius        = 1,
-            button_color         = COLOR.TILE_2,
+            button_color         = self.slider_button_color,
             hover                = False,
-            progress_color       = COLOR.TEXT,
-            fg_color             = COLOR.DARK_TEXT
+            progress_color       = self.slider_progress_color,
+            fg_color             = self.slider_fg_color
         )
     # initial setup of all labels
         self.r_val_label.insert(0, self.r_val)
@@ -311,7 +317,7 @@ class ColorPicker(ctk.CTkToplevel):
         self.g_val_label.bind('<KeyRelease>', lambda e: self.update_sliders(e))
         self.b_val_label.bind('<KeyRelease>', lambda e: self.update_sliders(e))
 
-    def update_sliders(self, event: Any, r: int=-1, g: int=-1, b: int=-1) -> None:
+    def update_sliders(self, event, r: int=-1, g: int=-1, b: int=-1) -> None:
         """Function updating position of sliders and its corresponding RGB entry boxes to proper value after changing hex entry box.
 
         Args:
@@ -334,7 +340,7 @@ class ColorPicker(ctk.CTkToplevel):
         self.b_slider.set(b) if 0 < b <= 255 else self.b_slider.set(0)
         self.color_prev_box.configure(fg_color=self.convert_to_hex())
 
-    def slider_on_change(self, event: Any, r: bool=False, g: bool=False, b: bool=False) -> None:
+    def slider_on_change(self, event, r: bool=False, g: bool=False, b: bool=False) -> None:
         """Updates corresponding RGB color code and hex color value based on value of slider.
 
         Args:
