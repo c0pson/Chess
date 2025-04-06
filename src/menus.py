@@ -969,7 +969,21 @@ class Settings(ctk.CTkFrame):
             entry (ctk.CTkEntry): Entry frame for user input.
             color_name (str): Color name from config file.
         """
-        picker = ColorPicker(fg_color=COLOR.BACKGROUND, r=r, g=g, b=b, font=ctk.CTkFont(self.font_name, 15))
+        picker = ColorPicker(
+            fg_color              = COLOR.BACKGROUND,
+            r                     = r,
+            g                     = g,
+            b                     = b,
+            font                  = ctk.CTkFont(self.font_name, 15),
+            border_color          = COLOR.TILE_2,
+            slider_button_color   = COLOR.TILE_2,
+            slider_progress_color = COLOR.TEXT,
+            slider_fg_color       = COLOR.DARK_TEXT,
+            preview_border_color  = COLOR.DARK_TEXT,
+            button_fg_color       = COLOR.NOTATION_BACKGROUND_B,
+            button_hover_color    = COLOR.NOTATION_BACKGROUND_W,
+            icon                  = resource_path(os.path.join('assets', 'logo.ico'))
+        )
         color = picker.get_color()
         if color:
             entry.delete(0, ctk.END)
