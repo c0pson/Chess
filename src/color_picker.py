@@ -202,6 +202,8 @@ class ColorPicker(ctk.CTkToplevel):
             return True
         if not P.isdigit():
             return False
+        if len(P) > 3:
+            return False
         value = int(P)
         if 0 <= value <= 255:
             return True
@@ -316,8 +318,15 @@ class ColorPicker(ctk.CTkToplevel):
         self.r_val_label.bind('<KeyRelease>', lambda e: self.update_sliders(e))
         self.g_val_label.bind('<KeyRelease>', lambda e: self.update_sliders(e))
         self.b_val_label.bind('<KeyRelease>', lambda e: self.update_sliders(e))
+        self.r_val_label.bind('<KeyRelease>', lambda e: self.update_hex(e))
+        self.g_val_label.bind('<KeyRelease>', lambda e: self.update_hex(e))
+        self.b_val_label.bind('<KeyRelease>', lambda e: self.update_hex(e))
 
-    def update_sliders(self, event, r: int=-1, g: int=-1, b: int=-1) -> None:
+    def update_hex(self, event=None) -> None:
+        self.hex_val_label.delete(0, ctk.END)
+        self.hex_val_label.insert(0, f'{self.convert_to_hex()}')
+
+    def update_sliders(self, event=None, r: int=-1, g: int=-1, b: int=-1) -> None:
         """Function updating position of sliders and its corresponding RGB entry boxes to proper value after changing hex entry box.
 
         Args:
@@ -362,8 +371,7 @@ class ColorPicker(ctk.CTkToplevel):
             self.b_val_label.delete(0, ctk.END)
             self.b_val_label.insert(0, self.b_val)
         self.color_prev_box.configure(fg_color=self.convert_to_hex())
-        self.hex_val_label.delete(0, ctk.END)
-        self.hex_val_label.insert(0, f'{self.convert_to_hex()}')
+        self.update_hex()
 
     def convert_to_hex(self) -> str:
         """Function converting RGB value to hex color code.
@@ -406,3 +414,6 @@ class ColorPicker(ctk.CTkToplevel):
         """
         self.master.wait_window(self)
         return self.convert_to_hex() if self.hex_val else None
+
+if __name__ == "__main__":
+    ColorPicker().get_color()
