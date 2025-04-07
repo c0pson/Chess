@@ -13,7 +13,8 @@ class ColorPicker(ctk.CTkToplevel):
     """
     def __init__(self, fg_color: str | None=None, preview_size: int=100, r: int=0, g: int=0, b: int=0, font: ctk.CTkFont | None=None, 
                  border_color: str | None=None, slider_button_color: str | None=None, slider_progress_color: str | None=None, slider_fg_color: str | None=None, 
-                 preview_border_color: str | None=None, button_fg_color: str | None=None, button_hover_color: str | None=None, icon: str | None=None) -> None:
+                 preview_border_color: str | None=None, button_fg_color: str | None=None, button_hover_color: str | None=None, icon: str | None=None,
+                 corner_radius: int | None=None) -> None:
         """Constructor handling most important function calls and variable setup.
 
         Args:
@@ -33,6 +34,7 @@ class ColorPicker(ctk.CTkToplevel):
         self.preview_border_color: str | None = preview_border_color
         self.button_fg_color: str | None = button_fg_color
         self.button_hover_color: str | None = button_hover_color
+        self.corner_radius: int | None = corner_radius
         self.grab_set()
         self.attributes('-topmost', True)
         self.title('Color Picker')
@@ -54,7 +56,7 @@ class ColorPicker(ctk.CTkToplevel):
         self.update_sliders(None)
         self.bottom_frame: ctk.CTkFrame = ctk.CTkFrame(
             master        = self.main_frame,
-            corner_radius = 0,
+            corner_radius = self.corner_radius,
             fg_color      = 'transparent'
         )
         self.bottom_frame.pack(side=ctk.BOTTOM, expand=True, ipadx=10, ipady=10)
@@ -84,7 +86,7 @@ class ColorPicker(ctk.CTkToplevel):
             border_width  = 3,
             width         = self.preview_size, 
             height        = self.preview_size,
-            corner_radius = 0,
+            corner_radius = self.corner_radius,
             border_color  = self.preview_border_color
         )
         self.color_prev_box.pack(side=ctk.RIGHT, padx=3, pady=3, expand=True)
@@ -143,7 +145,7 @@ class ColorPicker(ctk.CTkToplevel):
             master          = self.bottom_frame,
             validate        = 'key',
             validatecommand = vcmd,
-            corner_radius   = 0,
+            corner_radius   = self.corner_radius,
             font            = self.font if self.font else ctk.CTkFont('', self.font_size),
             width           = (self.font_size*8),
             border_color    = self.border_color
@@ -162,7 +164,7 @@ class ColorPicker(ctk.CTkToplevel):
             command       = self.on_ok_button,
             font          = self.font if self.font else ctk.CTkFont('', self.font_size),
             width         = (self.font_size*3),
-            corner_radius = 0,
+            corner_radius = self.corner_radius,
             border_width  = 2,
             border_color  = self.border_color,
             fg_color      = self.button_fg_color,
@@ -170,8 +172,7 @@ class ColorPicker(ctk.CTkToplevel):
         )
         ok_button.pack(side=ctk.RIGHT, padx=3, pady=3)
 
-    @staticmethod
-    def new_slider_frame(frame: ctk.CTkFrame) -> ctk.CTkFrame:
+    def new_slider_frame(self, frame: ctk.CTkFrame) -> ctk.CTkFrame:
         """Function creating frame for slider used to change R or G or B value.
 
         Args:
@@ -183,7 +184,7 @@ class ColorPicker(ctk.CTkToplevel):
         slider_frame: ctk.CTkFrame = ctk.CTkFrame(
             master        = frame,
             fg_color      = 'transparent',
-            corner_radius = 0
+            corner_radius = self.corner_radius
         )
         slider_frame.pack(side=ctk.TOP, padx=3, pady=3)
         return slider_frame
@@ -230,7 +231,7 @@ class ColorPicker(ctk.CTkToplevel):
             master          = slider_frame,
             validate        = 'key',
             validatecommand = vcmd,
-            corner_radius   = 0,
+            corner_radius   = self.corner_radius,
             font            = self.font if self.font else ctk.CTkFont('', self.font_size),
             width           = (self.font_size*3),
             border_color    = self.border_color
@@ -242,9 +243,9 @@ class ColorPicker(ctk.CTkToplevel):
             to                   = 255,
             number_of_steps      = 255,
             command              = lambda e: self.slider_on_change(e, r=True),
-            button_corner_radius = 1,
+            button_corner_radius = self.corner_radius + 1 if self.corner_radius is not None else self.corner_radius,
             button_length        = 12,
-            corner_radius        = 1,
+            corner_radius        = self.corner_radius + 1 if self.corner_radius is not None else self.corner_radius,
             button_color         = self.slider_button_color,
             hover                = False,
             progress_color       = self.slider_progress_color,
@@ -257,7 +258,7 @@ class ColorPicker(ctk.CTkToplevel):
             master          = slider_frame,
             validate        = 'key',
             validatecommand = vcmd,
-            corner_radius   = 0,
+            corner_radius   = self.corner_radius,
             font            = self.font if self.font else ctk.CTkFont('', self.font_size),
             width           = (self.font_size*3),
             border_color    = self.border_color
@@ -269,9 +270,9 @@ class ColorPicker(ctk.CTkToplevel):
             to                   = 255,
             number_of_steps      = 255,
             command              = lambda e: self.slider_on_change(e, g=True),
-            button_corner_radius = 1,
+            button_corner_radius = self.corner_radius + 1 if self.corner_radius is not None else self.corner_radius,
             button_length        = 12,
-            corner_radius        = 1,
+            corner_radius        = self.corner_radius + 1 if self.corner_radius is not None else self.corner_radius,
             button_color         = self.slider_button_color,
             hover                = False,
             progress_color       = self.slider_progress_color,
@@ -284,7 +285,7 @@ class ColorPicker(ctk.CTkToplevel):
             master          = slider_frame,
             validate        = 'key',
             validatecommand = vcmd,
-            corner_radius   = 0,
+            corner_radius   = self.corner_radius,
             font            = self.font if self.font else ctk.CTkFont('', self.font_size), 
             width           = (self.font_size*3),
             border_color    = self.border_color
@@ -296,9 +297,9 @@ class ColorPicker(ctk.CTkToplevel):
             to                   = 255,
             number_of_steps      = 255,
             command              = lambda e: self.slider_on_change(e, b=True),
-            button_corner_radius = 1,
+            button_corner_radius = self.corner_radius + 1 if self.corner_radius is not None else self.corner_radius,
             button_length        = 12,
-            corner_radius        = 1,
+            corner_radius        = self.corner_radius + 1 if self.corner_radius is not None else self.corner_radius,
             button_color         = self.slider_button_color,
             hover                = False,
             progress_color       = self.slider_progress_color,
@@ -414,6 +415,3 @@ class ColorPicker(ctk.CTkToplevel):
         """
         self.master.wait_window(self)
         return self.convert_to_hex() if self.hex_val else None
-
-if __name__ == "__main__":
-    ColorPicker().get_color()
