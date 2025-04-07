@@ -982,7 +982,8 @@ class Settings(ctk.CTkFrame):
             preview_border_color  = COLOR.DARK_TEXT,
             button_fg_color       = COLOR.NOTATION_BACKGROUND_B,
             button_hover_color    = COLOR.NOTATION_BACKGROUND_W,
-            icon                  = resource_path(os.path.join('assets', 'logo.ico'))
+            icon                  = resource_path(os.path.join('assets', 'logo.ico')),
+            corner_radius         = 0
         )
         color = picker.get_color()
         if color:
