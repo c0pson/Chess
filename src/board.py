@@ -610,7 +610,8 @@ class Board(ctk.CTkFrame):
         self.board = self.create_board()
 
     def destroy_loading_screen(self) -> None:
-        """Destroys loading screen widget."""
+        """Destroys loading screen widget.
+        """
         def update_opacity(i: int) -> None:
             if i >= 0 and self.loading_screen:
                 pywinstyles.set_opacity(self.loading_screen, value=i*0.005, color='#000001')
