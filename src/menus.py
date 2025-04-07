@@ -16,7 +16,7 @@ from color_picker import ColorPicker
 from piece import Piece, Knight
 
 class MovesRecord(ctk.CTkFrame):
-    """Class handling recording the moves during playtime.
+    """Class handling recording the moves during playtime. Class stores both players moves in lists and displays notation in two boxes dedicated for each player.
 
     Args:
         ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget. 
@@ -36,7 +36,8 @@ class MovesRecord(ctk.CTkFrame):
         self.moves_black: list[str] = []
 
     def record_move(self, moved_piece: Piece, previous_coords: tuple[int, int] | None=None, capture: bool=False, castle: str | None=None, check: bool=False, checkmate: bool=False, promotion: str='') -> None:
-        """Displays the chess notation of the move on the frame for specific player color.
+        """Displays the chess notation of the move on the frame for specific player color. Simple if else logic with flags passed to the function is responsible of handling 
+        correctness of the notation.
 
         Args:
             moved_piece (Piece): Figure which was moved
@@ -68,7 +69,7 @@ class MovesRecord(ctk.CTkFrame):
         ).pack(side=ctk.BOTTOM)
 
     def load_notation_from_save(self, white_moves: list[str], black_moves: list[str]) -> None:
-        """Loads notation from save file.
+        """Loads notation from save file. Function gets already parsed json format to two lists and displays it using record_move() function.
 
         Args:
             white_moves (list[str]): List of previous white moves.
@@ -90,7 +91,7 @@ class MovesRecord(ctk.CTkFrame):
         self.moves_black[:] = black_moves
 
     def create_frames(self) -> None:
-        """Creates frames to reserve space for displaying move notations.
+        """Creates frames to reserve space on main app page for displaying move notations.
         """
         black_label: ctk.CTkLabel = ctk.CTkLabel(
             master     =  self,
@@ -144,7 +145,7 @@ class MovesRecord(ctk.CTkFrame):
         space_label.pack()
 
     def restart(self) -> None:
-        """Destroys the old notated moves.
+        """Destroys the old notated moves and clears the lists.
         """
         self.moves_white.clear()
         self.moves_black.clear()
@@ -154,15 +155,15 @@ class MovesRecord(ctk.CTkFrame):
             child.destroy()
 
 class Saves(ctk.CTkFrame):
-    """Class handling saving, showing and loading saves.
+    """Class handling saving, showing and loading saves in separate menu.
 
     Args:
         ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget.
     """
     def __init__(self, master: Any, board) -> None:
         """Constructor:
-            loads fonts
-            calls function showing all saves
+         - loads fonts
+         - calls function showing all saves
 
         Args:
             master (Any): Parent widget.
@@ -182,7 +183,7 @@ class Saves(ctk.CTkFrame):
 
     @staticmethod
     def save_game_to_file(board) -> bool:
-        """Saves the current game state to the .json file.
+        """Saves the current game state to the .json file in saves folder.
 
         Args:
             board (Board): Board object.
@@ -204,7 +205,7 @@ class Saves(ctk.CTkFrame):
         return False
 
     def show_all_saves(self, board) -> None:
-        """Displays all saves as clickable buttons.
+        """Displays all saves as clickable buttons in saves menu.
 
         Args:
             board (Board): Board object.
@@ -243,7 +244,7 @@ class Saves(ctk.CTkFrame):
             self.create_file_button(self.scrollable_frame, file, board)
 
     def create_file_button(self, frame: ctk.CTkFrame, file_name: str, board) -> None:
-        """Helper function creating single button which will load specific save.
+        """Helper function creating single button which will load specific save after clicking.
 
         Args:
             frame (ctk.CTkFrame): Parent widget.
@@ -284,7 +285,7 @@ class Saves(ctk.CTkFrame):
         delete_button.pack(side=ctk.RIGHT, padx=10, pady=10, anchor=ctk.N)
 
     def remove_save(self, file_name: str, frame: ctk.CTkFrame) -> None:
-        """Deletes specific save.
+        """Deletes specific save. Button is part of the save button which makes it easier for user to determine which save is being deleted.
 
         Args:
             file_name (str): Name of the file to be deleted.
@@ -297,7 +298,7 @@ class Saves(ctk.CTkFrame):
             Notification(self.master, 'Couldn\'t remove the save', 2, 'top')
 
     def load_save(self, event: Any, board, file_name: str) -> None:
-        """Helper function calling all necessary functions to load the game. Notifications will indicate if it was successful or not.
+        """Helper function calling all necessary functions to load the game from save. Notifications will indicate if it was successful or not.
 
         Args:
             event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
@@ -311,7 +312,7 @@ class Saves(ctk.CTkFrame):
             Notification(self.master, 'Couldn\'t load save', 2, 'top')
 
     def on_close(self, event: Any=None) -> None:
-        """Custom close function.
+        """Custom close function handling slow fade out animation.
 
         Args:
             event (Any, optional): Event type. Doesn't matter but is required parameter by customtkinter.. Defaults to None.
@@ -325,21 +326,26 @@ class Saves(ctk.CTkFrame):
         update_opacity(200)
 
 class Options(ctk.CTkFrame):
-    """Class handling user interface of available options on main window frame:
+    """Class handling user interface with available options on main window frame:
+     - customization settings
+     - restarting game
+     - saving game
+     - loading game
 
     Args:
         ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget.
     """
     def __init__(self, master, restart_func: Callable, update_assets_func: Callable, update_font_func: Callable, get_board_func: Callable):
         """Constructor:
-             - places setting and replay buttons
+             - places all options buttons
              - loads menu assets
+             - calls all necessary setup functions
 
         Args:
-            master (Any): Parent widget
-            restart_func (Callable): Master function to restart the game
-            update_assets_func (Callable): Master function to update assets
-            update_font_func (Callable): Master function to update font
+            master (Any): Parent widget.
+            restart_func (Callable): Master function to restart the game.
+            update_assets_func (Callable): Master function to update assets.
+            update_font_func (Callable): Master function to update font.
         """
         super().__init__(master, fg_color=COLOR.BACKGROUND)
         self.restart_func: Callable = restart_func
@@ -389,7 +395,7 @@ class Options(ctk.CTkFrame):
         self.save_icon_label.bind('<Button-1>', self.save_game)
 
     def load_saves_button(self) -> None:
-        """Setup of button for showing all saves.
+        """Setup of button showing all saves.
         """
         self.load_icon_label: ctk.CTkLabel = ctk.CTkLabel(
             master = self,
@@ -400,7 +406,7 @@ class Options(ctk.CTkFrame):
         self.load_icon_label.bind('<Button-1>', self.load_saves)
 
     def space_label(self) -> None:
-        """Setups of space to maintain the desired spacing.
+        """Setups of space to maintain spacing between the button.
         """
         space: ctk.CTkLabel = ctk.CTkLabel(
             master = self,
@@ -408,7 +414,8 @@ class Options(ctk.CTkFrame):
         space.pack(padx=2, pady=2)
 
     def open_settings(self, event: Any) -> None:
-        """Function opening settings.
+        """Function opening settings menu. For optimizations the settings frame is not being destroyed, but is hidden,
+        it has no impact on user experience as all changes are dynamic and app restart wont be required to see the changes.
 
         Args:
             event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
@@ -419,7 +426,7 @@ class Options(ctk.CTkFrame):
             self.settings = Settings(self.master, self.restart_func, self.update_assets_func, self.update_font_func)
 
     def replay(self, event: Any) -> None:
-        """Function restarting the game.
+        """Function restarting the game. Calls function passed from Board to restart state of the game.
 
         Args:
             event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
@@ -427,7 +434,7 @@ class Options(ctk.CTkFrame):
         self.after(1, self.restart_func)
 
     def save_game(self, event: Any) -> None:
-        """Saves game and displays notification if successful.
+        """Saves game to .json file and displays notification if successful.
 
         Args:
             event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
@@ -436,25 +443,31 @@ class Options(ctk.CTkFrame):
             Notification(self.master, 'Save was created successfully', 2, 'top')
 
     def load_saves(self, event: Any) -> None:
+        """Function opening saves menu. To always get all saves even these created during app runtime it has to be created every time from scratch to avoid bugs and unintended behavior.
+
+        Args:
+            event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
+        """
         self.saves = Saves(self.master, self.get_board_func())
         self.saves.place(relx=0, rely=0, relwidth=1, relheight=1)
 
 class Settings(ctk.CTkFrame):
-    """Class handling changes in setting such as fonts, assets and colors.
+    """Class handling changes in setting such as fonts, assets and colors made by user.
+    Handles saving and updating the changes during app runtime except for color changes as they could take too much time for smooth experience.
 
     Args:
         ctk.CTkFrame : Inheritance from customtkinter CTkFrame widget.
     """
     def __init__(self, master, restart_func: Callable, update_assets_func: Callable, update_font_func: Callable) -> None:
         """Constructor
-            places itself on the screen
-            calls all functions creating frames containing content
+         - places itself on the screen
+         - calls all functions creating frames containing content
 
         Args:
-            master (Any): Parent widget
-            restart_func (Callable): Master function to restart the game
-            update_assets_func (Callable): Master function to update assets
-            update_font_func (Callable): Master function to update font
+            master (Any): Parent widget.
+            restart_func (Callable): Master function to restart the game.
+            update_assets_func (Callable): Master function to update assets.
+            update_font_func (Callable): Master function to update font.
         """
         super().__init__(master, fg_color=COLOR.BACKGROUND, corner_radius=0)
         self.place(relx=0, rely=0, relwidth=1, relheight=1)
@@ -487,10 +500,10 @@ class Settings(ctk.CTkFrame):
         """Lists all directories for given path.
 
         Args:
-            path (str): Desired path
+            path (str): Desired path.
 
         Returns:
-            list[str]: List of all directories from path
+            list[str]: List of all directories from path.
         """
         try:
             entries: list[str] = os.listdir(path)
@@ -602,7 +615,7 @@ class Settings(ctk.CTkFrame):
         change_config('theme', choice)
 
     def on_close(self, event: Any) -> None:
-        """Waits for close action to properly destroy the window
+        """Waits for close action to properly destroy the window with fade out animation.
 
         Args:
             event (Any): Event type. Doesn't matter but is required parameter by customtkinter.
@@ -621,7 +634,7 @@ class Settings(ctk.CTkFrame):
 
     @staticmethod
     def open_file_explorer(path: str) -> None:
-        """Opens file explorer with function specific to operating system.
+        """Opens file explorer with system call specific to user operating system.
 
         Args:
             path (str): Path to open.
@@ -658,7 +671,7 @@ class Settings(ctk.CTkFrame):
 
     @staticmethod
     def get_font_name(ttf_path: str) -> str | None:
-        """Gets name of the font from file name.
+        """Gets name of the font from font file.
 
         Args:
             ttf_path (str): Path to .ttf font file name.
@@ -724,7 +737,7 @@ class Settings(ctk.CTkFrame):
         ).pack(side=ctk.TOP, padx=80, pady=0, fill=ctk.X)
 
     def choose_font(self) -> None:
-        """setup of choose option dialog.
+        """setup of choose font.
         """
         self.previous_font = str(get_from_config('font_file_name'))
         fonts = self.get_all_files('fonts')
@@ -774,10 +787,10 @@ class Settings(ctk.CTkFrame):
             font_button.configure(state=ctk.DISABLED)
 
     def select_font(self, font: str, button: ctk.CTkButton) -> None:
-        """Helper function to save change of font to config file.
+        """Helper function to save change of font name and path to file to config file.
 
         Args:
-            font (str): Font name.
+            font (str): Font path.
         """
         if os.path.basename(font) == self.previous_font:
             return
@@ -821,7 +834,7 @@ class Settings(ctk.CTkFrame):
         return bool(re.compile(r'^[#\w]{0,7}$').match(new_value))
 
     def change_colors(self) -> None:
-        """Function updating color preview.
+        """Function updating color preview in the theme changer.
         """
         text = ctk.CTkLabel(
             master     = self.scrollable_frame, 
@@ -1006,17 +1019,17 @@ class Settings(ctk.CTkFrame):
         entry.configure(fg_color=color)
 
 class SaveName(ctk.CTkToplevel):
-    """Class for asking user for the save name.
+    """Class for asking user for the save name in popup window.
 
     Args:
         ctk.CTkTopLevel : Inheritance from customtkinter CTkFrame widget.
     """
     def __init__(self) -> None:
         """Constructor:
-            sets window to appear on top
-            loads fonts
-            calls all setup functions
-            centers window
+         - sets window to appear on top
+         - loads fonts
+         - calls all setup functions
+         - centers window
         """
         super().__init__(fg_color=COLOR.BACKGROUND)
         if SYSTEM == 'Windows':
@@ -1095,13 +1108,13 @@ class SaveName(ctk.CTkToplevel):
         """Getter for user input from the entry widget.
 
         Returns:
-            str | None | bool: String if name is valid, None if canceled when closing window with ❌.
+            str | None | bool: String if name is valid, None if user decides to keep default save name and bool if canceled with closing window with ❌.
         """
         self.master.wait_window(self)
         return self.save_name
 
     def on_save_button(self) -> None:
-        """Function checking if user entry is valid after clicking save button
+        """Function checking if user entry is valid after clicking save button.
         """
         self.save_name = self.save_name_entry.get()
         files: list[str] = [f for f in os.listdir(resource_path('saves'))]
@@ -1114,7 +1127,7 @@ class SaveName(ctk.CTkToplevel):
         self.destroy()
 
     def on_close(self) -> None:
-        """Custom closing function ensuring proper closing of the window. Sets save_name to None to cancel saving.
+        """Custom closing function ensuring proper closing of the window. Sets save_name to False to cancel saving.
         """
         self.save_name = False
         self.grab_release()

@@ -19,7 +19,7 @@ from tools import get_from_config, resource_path, play_sound, update_error_log
 import piece
 
 class Cell(ctk.CTkLabel):
-    """Class handling actions inside specific cell.
+    """Class handling actions inside specific cell and linking figure to the position on the board.
 
     Args:
         ctk.CTkLabel : Inheritance from customtkinter CTkLabel widget.
@@ -108,8 +108,9 @@ class Board(ctk.CTkFrame):
         self.font_42  = ctk.CTkFont(self.font_name, 42)
         self.master.after(1, lambda: self.loading_animation(0))
         self.pack(side=ctk.RIGHT, padx=10, pady=10, expand=True, ipadx=5, ipady=5, anchor=ctk.CENTER)
-        threading.Thread(target=self.load_sound).start()
+        thread = threading.Thread(target=self.load_sound)
         self.frame_image: ctk.CTkImage = ctk.CTkImage(Image.open(resource_path(os.path.join('assets', 'menu', 'frame.png'))).convert('RGBA'), size=(80, 80))
+        thread.start()
         self.size: int = size
         self.turns: Generator[str, None, NoReturn] = self.turn()
         self.current_turn = next(self.turns)
@@ -122,9 +123,12 @@ class Board(ctk.CTkFrame):
         self.moves_record: MovesRecord = moves_record
         self.capture: bool = False
         self.game_over: bool = False
+        thread.join()
         self.destroy_loading_screen()
 
     def load_sound(self):
+        """Function loading sound on thread to speed up the process if possible. Constructor will have to wait with destroying loading screen if process could take too long.
+        """
         self.move_sound = soundfile.read(resource_path(os.path.join('sounds', 'move-self.wav')), dtype='float32')[0]
         self.capture_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
         self.move_check_sound = soundfile.read(resource_path(os.path.join('sounds', 'capture.wav')), dtype='float32')[0]
@@ -145,7 +149,7 @@ class Board(ctk.CTkFrame):
         return COLOR.TILE_1 if (pos[0] % 2) == (pos[1] % 2) else COLOR.TILE_2
 
     def create_outline_l_r_t(self) -> None:
-        """Creates outline of the board with coordinates notation.
+        """Creates outline of the board with coordinates.
         """
         ctk.CTkLabel(
             master     = self,
@@ -188,10 +192,10 @@ class Board(ctk.CTkFrame):
         ).pack(padx=10, pady=1)
 
     def create_board(self) -> list[list[Cell]]:
-        """Creates a board filled with colored tiles and figures. Uses prepared dictionary of the correct figures positions to place the Figures.
+        """Creates a board filled with colored tiles and figures. Uses prepared dictionary with correct figures positions to place the Figures.
 
         Returns:
-            list[list[Cell]]: 2D representation of the board.
+            list[list[Cell]]: 2D representation of the board with Cell linking figures to correct positions.
         """
         self.create_outline_l_r_t()
         board: list[list[Cell]] = cast(list[list[Cell]], [[None] * 8] * 8)
@@ -252,17 +256,18 @@ class Board(ctk.CTkFrame):
 
     def remove_highlights(self) -> None:
         """Removes highlights from the cells. Ensures proper move handling and enhances user experience.
+        If user doesn't want the help they can change the color of the highlighted tile to the same as not highlighted in customization menu.
         """
         for cell in self.highlighted:
             cell.configure(fg_color=self.determine_tile_color(cell.position))
         self.highlighted.clear()
 
     def display_message(self, message: str, duration_sec: int) -> None:
-        """Displays message on the screen using Notification class.
+        """Displays message on the screen using Notification module.
 
         Args:
-            message (str): Desired message to display. <br>
-            duration_sec (int): Amount of seconds before hiding the notification .
+            message (str): Desired message to display.
+            duration_sec (int): Amount of seconds before hiding the notification.
         """
         if self.notification:
             self.notification.destroy()
@@ -419,6 +424,8 @@ class Board(ctk.CTkFrame):
 
     def handle_move(self, position: tuple[int, int]) -> None:
         """Function handles moving pieces on the board. Calls notations functions, plays sounds appropriately to the move and removes previous highlights.
+        Function handles all possible moves including pawn promotion, castle, en_passant and moving pawn by two squares at first move. Function has to check if move is 
+        for sure legal and is not causing check for the current player taking turn. Ensures proper notation in every case.
 
         Args:
             position (tuple[int, int]): Position of the figure.

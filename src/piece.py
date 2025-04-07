@@ -13,8 +13,11 @@ from tools import resource_path, get_from_config, update_error_log
 from properties import COLOR
 
 class Piece:
+    """Parent class for every figure. Has general implementation of functions that can be reused.
+    Abstract method which raises NotImplementedError if check_possible_moves() is not implemented to prevent adding figure that could cause errors when used.
+    """
     def __init__(self, color: str, board, position: tuple[int, int]) -> None:
-        """Main class used to implement all figures. Contains all essential methods for every figure such as:
+        """Constructor:
              - loading assets
              - virtual function for checking possible moves
              - checking turns
