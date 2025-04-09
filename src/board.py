@@ -444,45 +444,22 @@ class Board(ctk.CTkFrame):
             row, col = position
             cell = self.board[row][col]
             self.capture = bool(cell.figure)
-            promotion = False
+            promotion: bool = False
             if cell in self.highlighted:
-                castle = False
+                castle: bool = False
                 if not self.check_check(self.previous_coords, position):
                     if isinstance(self.clicked_figure, piece.Pawn) and self.clicked_figure.can_en_passant and col != prev_y and not cell.figure:
                         self.board[row - self.clicked_figure.move][col].figure = None
                         self.board[row - self.clicked_figure.move][col].update()
                         self.capture = True
                     if isinstance(self.clicked_figure, piece.King):
-                        if abs(col - prev_y) == 2:
-                            if col == 6:
-                                self.board[row][5].figure = self.board[row][7].figure
-                                self.board[row][7].figure = None
-                                self.board[row][5].figure.position = (row, 5) # type: ignore # isinstance already checks it but mypy don't understand it
-                                self.board[row][5].update()
-                                self.board[row][7].update()
-                                self.moves_record.record_move(self.clicked_figure, castle="kingside")
-                                castle = True
-                            elif col == 2:
-                                self.board[row][3].figure = self.board[row][0].figure
-                                self.board[row][0].figure = None
-                                self.board[row][3].figure.position = (row, 3) # type: ignore # isinstance already checks it but mypy don't understand it
-                                self.board[row][3].update()
-                                self.board[row][0].update()
-                                self.moves_record.record_move(self.clicked_figure, castle="queenside")
-                                castle =True
+                        castle = self.handle_move_castle(row, col, prev_y)
                     cell.figure = self.clicked_figure
                     cell.figure.position = position
                     cell.update()
                     self.board[prev_x][prev_y].figure = None
                     self.board[prev_x][prev_y].update()
-                    if isinstance(cell.figure, piece.Pawn):
-                        if cell.figure.first_move and abs(self.previous_coords[0] - row) == 2:
-                            cell.figure.moved_by_two = True
-                            self.reset_en_passant_flags(cell.figure.color)
-                        else:
-                            cell.figure.moved_by_two = False
-                        if cell.figure.promote():
-                            promotion = True
+                    self.handle_move_pawn(cell, row)
                     if cell.figure.first_move:
                         cell.figure.first_move = False
                     self.current_turn = next(self.turns)
@@ -490,13 +467,55 @@ class Board(ctk.CTkFrame):
                     if game_over:
                         self.handle_game_over(in_check, promotion, self.capture, in_check)
                     elif not castle and not promotion:
-                        self.moves_record.record_move(self.clicked_figure, capture=self.capture, previous_coords=self.previous_coords, check=in_check, checkmate=game_over and in_check)
+                        self.moves_record.record_move(
+                            moved_piece     = self.clicked_figure,
+                            capture         = self.capture,
+                            previous_coords = self.previous_coords,
+                            check           = in_check,
+                            checkmate       = game_over and in_check
+                        )
                 threading.Thread(target=lambda: self.play_correct_sound(game_over, self.capture, castle, in_check)).start()
             if not promotion:
                 self.clicked_figure = None
                 self.previous_coords = None
         if self.highlighted:
             self.remove_highlights()
+
+    def handle_move_pawn(self, cell: Cell, row: int) -> bool:
+        if not cell.figure or not self.previous_coords:
+            return False
+        if isinstance(cell.figure, piece.Pawn):
+            if cell.figure.first_move and abs(self.previous_coords[0] - row) == 2:
+                cell.figure.moved_by_two = True
+            else:
+                cell.figure.moved_by_two = False
+            if cell.figure.promote():
+                promotion = True
+        self.reset_en_passant_flags(cell.figure.color)
+        return False
+
+    def handle_move_castle(self, row: int, col: int, prev_y: int) -> bool:
+        if not self.clicked_figure:
+            return False
+        castle = False
+        if abs(col - prev_y) == 2:
+            if col == 6:
+                self.board[row][5].figure = self.board[row][7].figure
+                self.board[row][7].figure = None
+                self.board[row][5].figure.position = (row, 5) # type: ignore # isinstance already checks it but mypy don't understand it
+                self.board[row][5].update()
+                self.board[row][7].update()
+                self.moves_record.record_move(self.clicked_figure, castle="kingside")
+                castle = True
+            elif col == 2:
+                self.board[row][3].figure = self.board[row][0].figure
+                self.board[row][0].figure = None
+                self.board[row][3].figure.position = (row, 3) # type: ignore # isinstance already checks it but mypy don't understand it
+                self.board[row][3].update()
+                self.board[row][0].update()
+                self.moves_record.record_move(self.clicked_figure, castle="queenside")
+                castle =True
+        return castle
 
     def turn(self) -> Generator[str, None, NoReturn]:
         """Simple infinite yielding function for easy turn changing.
