@@ -9,7 +9,17 @@ import os
 import re
 import pywinstyles
 
-from tools import get_from_config, change_config, load_menu_image, resource_path, change_color, update_error_log, create_save_file, delete_save_file, get_save_info
+from tools import (
+    get_from_config,
+    change_config,
+    load_menu_image,
+    resource_path,
+    change_color,
+    update_error_log,
+    create_save_file,
+    delete_save_file,
+    get_save_info
+)
 from properties import COLOR, STRING, SYSTEM
 from notifications import Notification
 from color_picker import ColorPicker
@@ -35,9 +45,10 @@ class MovesRecord(ctk.CTkFrame):
         self.moves_white: list[str] = []
         self.moves_black: list[str] = []
 
-    def record_move(self, moved_piece: Piece, previous_coords: tuple[int, int] | None=None, capture: bool=False, castle: str | None=None, check: bool=False, checkmate: bool=False, promotion: str='') -> None:
-        """Displays the chess notation of the move on the frame for specific player color. Simple if else logic with flags passed to the function is responsible of handling 
-        correctness of the notation.
+    def record_move(self, moved_piece: Piece, previous_coords: tuple[int, int] | None=None, capture: bool=False,
+                    castle: str | None=None, check: bool=False, checkmate: bool=False, promotion: str='') -> None:
+        """Displays the chess notation of the move on the frame for specific player color.
+        Simple if else logic with flags passed to the function is responsible of handling correctness of the notation.
 
         Args:
             moved_piece (Piece): Figure which was moved
@@ -56,10 +67,13 @@ class MovesRecord(ctk.CTkFrame):
             piece_name = moved_piece.__class__.__name__[0] if not moved_piece.__class__.__name__ == 'Pawn' else ''
         else:
             piece_name = 'N'
+        check_nota: str = '+' if check and not checkmate else ''
+        checkmate_nota: str = '#' if checkmate else ''
+        promotion_nota: str = promotion if promotion != 'K' else 'N'
         if not castle:
-            notation = f' {'+' if check and not checkmate else ''}{'#' if checkmate else ''}{'x' if capture else ''}{piece_name}{prev_y}{prev_x}-{y}{x}{promotion if promotion != 'K' else 'N'}'
+            notation = f' {check_nota}{checkmate_nota}{'x' if capture else ''}{piece_name}{prev_y}{prev_x}-{y}{x}{promotion_nota}'
         else:
-            notation = f' {'+' if check and not checkmate else''}{'#' if checkmate else ''}{'0-0-0' if castle == 'queenside' else '0-0'}'
+            notation = f' {check_nota}{checkmate_nota}{'0-0-0' if castle == 'queenside' else '0-0'}'
         current_frame = self.white_scroll_frame if moved_piece.color == 'w' else self.black_scroll_frame
         self.moves_white.append(notation) if moved_piece.color == 'w' else self.moves_black.append(notation)
         ctk.CTkLabel(
@@ -200,7 +214,14 @@ class Saves(ctk.CTkFrame):
         save_name: str | None | bool = SaveName().get_save_name()
         moves_record : MovesRecord = board.moves_record
         if not isinstance(save_name, bool):
-            create_save_file(save_info, board.current_turn, moves_record.moves_white, moves_record.moves_black, board.game_over, save_name)
+            create_save_file(
+                save_info,
+                board.current_turn,
+                moves_record.moves_white,
+                moves_record.moves_black,
+                board.game_over,
+                save_name
+            )
             return True
         return False
 

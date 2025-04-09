@@ -126,7 +126,8 @@ def play_sound(data: Any) -> None:
     except Exception as e:
         update_error_log(e)
 
-def create_save_file(save_info: dict[tuple[int, int] | str, tuple[str, str, bool] | list[str]], current_turn: str, white_moves: list[str], black_moves: list[str], game_over: bool, save_name: str | None=None) -> None:
+def create_save_file(save_info: dict[tuple[int, int] | str, tuple[str, str, bool] | list[str]], current_turn: str,
+                     white_moves: list[str], black_moves: list[str], game_over: bool, save_name: str | None=None) -> None:
     """Creates save file in saves directory. Save is .json file with all positions, current turn information, previous notation and game over information.
 
     Args:
