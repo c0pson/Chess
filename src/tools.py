@@ -150,12 +150,10 @@ def create_save_file(save_info: dict[tuple[int, int] | str, tuple[str, str, bool
         files: list[str] = [f for f in os.listdir(resource_path('saves')) if 'chess_game_' in f]
         if files:
             new_file: str = f'chess_game_{len(files)+1}.json'
-            with open(resource_path(os.path.join('saves', new_file)), 'w') as file:
-                json.dump(save_data, file, indent=2)
         else:
             new_file = 'chess_game_1.json'
-            with open(resource_path(os.path.join('saves', new_file)), 'w') as file:
-                json.dump(save_data, file, indent=2)
+        with open(resource_path(os.path.join('saves', new_file)), 'w') as file:
+            json.dump(save_data, file, indent=2)
     else:
         new_file = f'{save_name}.json'
         with open(resource_path(os.path.join('saves', new_file)), 'w') as file:
