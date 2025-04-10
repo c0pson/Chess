@@ -17,7 +17,7 @@ Libraries used:
  - sounddevice
  - soundfile
 
-Link to full documentation: http://chessdocumentation.ct.ws/
+Link to full documentation: https://chessdocumentation.pages.dev/
 """
 
 import customtkinter as ctk
