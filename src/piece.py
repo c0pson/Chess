@@ -151,7 +151,7 @@ class Pawn(Piece):
         x: int = self.position[0]
         y: int = self.position[1]
         forward_one = (x + move, y)
-        forward_two = (x + move * 2, y)
+        forward_two = (x + move + move, y)
         if not self.board.board[forward_one[0]][forward_one[1]].figure:
             possible_moves.append(forward_one)
             if self.first_move and not self.board.board[forward_two[0]][forward_two[1]].figure:
