@@ -211,8 +211,12 @@ class Saves(ctk.CTkFrame):
                 if cell.figure:
                     figure: str = cell.figure.__class__.__name__
                     save_info[cell.position] = (figure, cell.figure.color, cell.figure.first_move)
-        save_name: str | None | bool = SaveName().get_save_name()
-        moves_record : MovesRecord = board.moves_record
+        if not board.current_save_name:
+            save_name: str | None | bool = SaveName().get_save_name()
+            board.current_save_name = save_name
+        else:
+            save_name = board.current_save_name.strip('.json')
+        moves_record: MovesRecord = board.moves_record
         if not isinstance(save_name, bool):
             create_save_file(
                 save_info,
@@ -326,7 +330,7 @@ class Saves(ctk.CTkFrame):
             board (Board): Board object.
             file_name (str): Name of the file from which the game will be loaded.
         """
-        if board.load_board_from_file(get_save_info(file_name)):
+        if board.load_board_from_file(get_save_info(file_name), file_name):
             Notification(self.master, 'Save loaded successfully', 3, 'top')
             self.master.after(201, self.on_close)
         else:

@@ -123,6 +123,7 @@ class Board(ctk.CTkFrame):
         self.moves_record: MovesRecord = moves_record
         self.capture: bool = False
         self.game_over: bool = False
+        self.current_save_name: str | None = None
         thread.join()
         self.destroy_loading_screen()
 
@@ -459,7 +460,7 @@ class Board(ctk.CTkFrame):
                     cell.update()
                     self.board[prev_x][prev_y].figure = None
                     self.board[prev_x][prev_y].update()
-                    self.handle_move_pawn(cell, row)
+                    promotion = self.handle_move_pawn(cell, row)
                     if cell.figure.first_move:
                         cell.figure.first_move = False
                     self.current_turn = next(self.turns)
@@ -482,8 +483,18 @@ class Board(ctk.CTkFrame):
             self.remove_highlights()
 
     def handle_move_pawn(self, cell: Cell, row: int) -> bool:
+        """Helper function handling pawn special case - promotion. Ensures all flags are properly reset after each move.
+
+        Args:
+            cell (Cell): Cell object linking figure to position.
+            row (int): Row in which pawn is being moved.
+
+        Returns:
+            bool: True if pawn promoted, False otherwise.
+        """
         if not cell.figure or not self.previous_coords:
             return False
+        promotion = False
         if isinstance(cell.figure, piece.Pawn):
             if cell.figure.first_move and abs(self.previous_coords[0] - row) == 2:
                 cell.figure.moved_by_two = True
@@ -492,9 +503,19 @@ class Board(ctk.CTkFrame):
             if cell.figure.promote():
                 promotion = True
         self.reset_en_passant_flags(cell.figure.color)
-        return False
+        return promotion
 
     def handle_move_castle(self, row: int, col: int, prev_y: int) -> bool:
+        """Helper function handling castle special move. Ensures notation is proper and all figures moves properly.
+
+        Args:
+            row (int): Row of the king in which castle will be performed.
+            col (int): Column of the king in which king figure is.
+            prev_y (int): Previous y coordinate of the king.
+
+        Returns:
+            bool: Returns True if castle occurred, False otherwise.
+        """
         if not self.clicked_figure:
             return False
         castle = False
@@ -634,6 +655,7 @@ class Board(ctk.CTkFrame):
         self.notification = None
         self.game_over = False
         self.board = self.create_board()
+        self.current_save_name = None
 
     def destroy_loading_screen(self) -> None:
         """Destroys loading screen widget.
@@ -684,7 +706,7 @@ class Board(ctk.CTkFrame):
             for cell in row:
                 cell.update()
 
-    def load_board_from_file(self, file_info: dict) -> bool:
+    def load_board_from_file(self, file_info: dict, save_name: str) -> bool:
         """Updates board to match the state from the save file. Ensures all save information are in the file in correct format.
 
         Args:
@@ -764,4 +786,5 @@ class Board(ctk.CTkFrame):
         self.master.after(21, self.remove_highlights)
         self.game_over = file_info['game_over']
         self.clicked_figure = None
+        self.current_save_name = save_name
         return True
