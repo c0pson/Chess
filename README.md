@@ -2,7 +2,7 @@
 
 ## Overview
 
-An overview of the chess application, its features, and customization options. The application allows users to play chess with different themes, fonts and customize various settings, including color schemes. After update saving state of the game is possible, as well as creating your own saves using `.json` save file and adding to the saves folder.
+Application allows users to play chess with different themes, fonts and customize various settings, including color schemes. After update saving state of the game is possible, as well as creating your own saves using `.json` save file and adding to the saves folder.
 
 ## Features
 
